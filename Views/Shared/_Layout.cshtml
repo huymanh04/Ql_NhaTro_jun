@@ -1,0 +1,224 @@
+﻿@model Ql_NhaTro_jun.Models.UserInfo;
+@{
+    ViewData["Title"] = "Trang Chủ";
+    var user = Context.Items["CurrentUser"];
+
+}
+
+<!DOCTYPE html>
+<html lang="vi" id="htmlRoot">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Phòng Trọ Việt</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/dark-mode.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css?v=@DateTime.Now" asp-append-version="true" />
+
+</head>
+<body class="@ViewData["BodyClass"]">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark custom-navbar fixed-top">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/logo.png" alt="Phòng Trọ Việt" height="45" />
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home me-2"></i>Trang Chủ
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Room" asp-action="Index">
+                                <i class="fas fa-search me-2"></i>Tìm Phòng
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">
+                                <i class="fas fa-info-circle me-2"></i>Về Chúng Tôi
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">
+                                <i class="fas fa-envelope me-2"></i>Liên Hệ
+                            </a>
+                        </li>
+
+
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+
+                                    <div class="dropdown user-dropdown">
+                                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                                           data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-user-circle me-2"></i>
+                                     <span>Xin chào, @(user ?? "User")</span>
+                                            <span class="d-md-none">Menu</span>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="return false;">
+                                                    <i class="fas fa-user me-2"></i>
+                                                @(user ?? "User")
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="Index">
+                                                    <i class="fas fa-cog me-2"></i>
+                                                    Cài Đặt
+                                                </a>
+                                            </li>
+                                            <li>
+                                               <a href="#" class="dropdown-item" id="logoutBtn">
+                                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                                    Đăng Xuất
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                            }
+                            else
+                            {
+                                    <a class="nav-link" asp-area="" asp-controller="Users" asp-action="Login">
+                                        <i class="fas fa-sign-in-alt me-2"></i>
+                                        <span class="d-none d-md-inline">Đăng Nhập</span>
+                                     <span class="d-md-none">Login</span>
+                                    </a>
+                            }
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Spacer để tránh content bị che khi dùng fixed navbar -->
+        <div style="height: 80px;"></div>
+    </header>
+
+    <!-- Hero Section -->
+
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+
+           
+
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Phòng Trọ Việt</h5>
+                    <p>Nền tảng kết nối người thuê và chủ nhà uy tín nhất Việt Nam</p>
+                    <p>
+                        <i class="fas fa-map-marker-alt"></i> 123 Nguyễn Văn Linh, Q.7, TP. HCM<br>
+                        <i class="fas fa-phone"></i> 0123.456.789<br>
+                        <i class="fas fa-envelope"></i> info@phongtroviet.vn
+                    </p>
+                </div>
+                <div class="col-md-2">
+                    <h5>Khám Phá</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Phòng mới</a></li>
+                        <li><a href="#">Phòng nổi bật</a></li>
+                        <li><a href="#">Gần trường học</a></li>
+                        <li><a href="#">Gần bệnh viện</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h5>Hỗ Trợ</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Trung tâm hỗ trợ</a></li>
+                        <li><a href="#">Câu hỏi thường gặp</a></li>
+                        <li><a href="#">Hướng dẫn đăng ký</a></li>
+                        <li><a href="#">Chính sách</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Đăng Ký Nhận Tin</h5>
+                    <p>Nhận thông tin phòng trọ mới nhất từ chúng tôi</p>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Email của bạn">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">Đăng Ký</button>
+                        </div>
+                    </div>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="form-check form-switch text-light">
+    <input class="form-check-input" type="checkbox" id="darkModeSwitch">
+    <label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+</div>
+
+            <div class="text-center mt-3">
+                &copy; 2025 - Phòng Trọ Việt - <a asp-area="" asp-controller="Home" asp-action="Privacy">Chính Sách Bảo Mật</a>
+            </div>
+        </div>
+    </footer>
+
+
+
+     <script>
+             
+        // Gắn sự kiện trực tiếp vào document (event delegation)
+        document.body.addEventListener('click', function (e) {
+            if (e.target && e.target.id === 'logoutBtn') {
+                e.preventDefault();
+
+                (async () => {
+                    try {
+                        const response = await fetch('/api/Auth/Logout', {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+
+                        if (response.ok) {
+                            location.reload();
+
+                        } else {
+                            alert('Lỗi khi đăng xuất');
+                        }
+                    } catch {
+                        alert('Lỗi kết nối API đăng xuất');
+                    }
+                })();
+            }
+        });
+   
+
+        </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/dark-mode.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

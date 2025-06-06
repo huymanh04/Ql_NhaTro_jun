@@ -1,0 +1,577 @@
+﻿    @{
+        ViewData["Title"] = "Trang chủ";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Trang chủ</title>
+        <link href="~/css/site.css" rel="stylesheet" />
+        <link href="~/css/index.css?v=@DateTime.Now" rel="stylesheet" />
+    </head>
+
+    <div id="promo-banner-fullwidth" class="promo-banner-fullwidth" style="margin-bottom: 30px; display: none;">
+        <div class="promo-banner-container">
+            <div class="promo-banner-slider" id="promo-banner-slider">
+                <!-- Banner slides sẽ được thêm động ở đây -->
+            </div>
+
+            <button class="promo-banner-nav-btn" id="promo-banner-prev">&#10094;</button>
+            <button class="promo-banner-nav-btn" id="promo-banner-next">&#10095;</button>
+
+            <div class="promo-banner-controls" id="promo-banner-controls">
+                <!-- Nút điều khiển sẽ tạo động -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- #endregion -->
+    <!-- #region Tìm phòng -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 offset-md-2 text-center">
+                    <h1 class="display-4 text-white">Tìm Phòng Trọ Ưng Ý</h1>
+                    <p class="lead text-white">Hàng ngàn phòng trọ chất lượng đang chờ bạn</p>
+                    <div class="search-box mt-4">
+                        <form asp-controller="Room" asp-action="Search" method="get" class="search-form">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="price-label">Khu vực (Tỉnh thành)</div>
+                                    <div class="form-group">
+                                        <select name="location" class="form-control" id="locationSelect">
+                                            <option value="">-- Chọn Khu Vực --</option>
+
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="price-label">Khoảng giá (nghìn đồng)</div>
+                                    <div class="price-slider-container">
+                                        <div class="range-slider">
+                                            <div class="slider-track"></div>
+                                            <div class="range-input">
+                                                <input type="range" min="500" max="100000" value="500" id="slider-min">
+                                                <input type="range" min="500" max="100000" value="100000" id="slider-max">
+                                            </div>
+                                            <div id="min-price-tag" class="price-tag"></div>
+                                            <div id="max-price-tag" class="price-tag"></div>
+                                        </div>
+                                        <div class="price-values">
+                                            <span id="min-value-text">500.000đ</span>
+                                            <span id="max-value-text">100.000.000đ</span>
+                                        </div>
+                                        <div class="price-selected">
+                                            Đã chọn: <span id="price-range-selected">500.000đ - 100.000.000đ</span>
+                                        </div>
+                                        <input type="hidden" name="minPrice" id="minPrice" value="500000">
+                                        <input type="hidden" name="maxPrice" id="maxPrice" value="100000000">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-search mr-2"></i> Tìm Kiếm
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- #endregion -->
+    <!-- #region show list trọ -->
+    <section class="category-section py-5">
+        <div class="container">
+            <h2 class="section-title text-center mb-4">Phân loại phòng trọ</h2>
+
+        <div class="row g-4" id="typeroom">
+           
+                @*   @foreach (var item in Class.loaiphongtro)
+                {
+                <div class="col-md-3">
+                <div class="category-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQPvs_bY2O9MC_nQLjHsTDP9x9Gt9KsV2MwA&sg" class="img-fluid" alt="Phòng trọ sinh viên">
+                <div class="category-content">
+                <h3>@item.TenTheLoai</h3>
+                <p>@item.MoTa</p>
+                <a href="#" class="btn btn-outline-primary">Xem ngay</a>
+                </div>
+                </div>
+                </div>
+                }
+                *@
+
+            </div>
+        </div>
+    </section>
+
+    <section class="featured-rooms py-5 bg-light">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title">Phòng trọ nổi bật</h2>
+                <div class="filter-buttons">
+                    <button class="btn btn-sm btn-outline-secondary active">Tất cả</button>
+                    <button class="btn btn-sm btn-outline-secondary">Giá thấp nhất</button>
+                    <button class="btn btn-sm btn-outline-secondary">Mới nhất</button>
+                    <button class="btn btn-sm btn-outline-secondary">Cao cấp</button>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                @for (int i = 1; i <= 8; i++)
+                {
+                    <div class="col-md-3">
+                        <div class="room-card">
+                            <div class="room-thumb">
+                                <img src="~/images/room-" class="img-fluid" alt="Phòng trọ @i">
+                                <span class="badge bg-success position-absolute top-0 end-0 m-2">Mới</span>
+                            </div>
+                            <div class="room-info p-3">
+                                <h3 class="room-title">Phòng trọ quận @(i % 5 + 1), TP.HCM</h3>
+                                <div class="room-meta d-flex justify-content-between">
+                                    <span class="area"><i class="bi bi-house-door"></i> @(20 + i * 5)m²</span>
+                                    <span class="price text-primary fw-bold">@((i + 1) * 1000).000đ/tháng</span>
+                                </div>
+                                <p class="room-address mt-2"><i class="bi bi-geo-alt"></i> Đường ABC, Quận @(i % 5 + 1), TP.HCM</p>
+                                <div class="room-features d-flex justify-content-between mt-2">
+                                    <span><i class="bi bi-lightning"></i> Điện: 3.000đ/kwh</span>
+                                    <span><i class="bi bi-water"></i> Nước: 80.000đ</span>
+                                </div>
+                                <div class="mt-3">
+                                    <a href="#" class="btn btn-primary w-100">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="#" class="btn btn-outline-primary">Xem thêm phòng trọ</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="location-section py-5">
+        <div class="container">
+            <h2 class="section-title text-center mb-4">Khu vực phổ biến</h2>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="location-card">
+                        <img src="~/images/location-1.jpg" class="img-fluid" alt="Quận 1">
+                        <div class="location-overlay">
+                            <h3>Quận 1</h3>
+                            <p>125 phòng trọ</p>
+                            <a href="#" class="stretched-link"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="location-card">
+                        <img src="~/images/location-2.jpg" class="img-fluid" alt="Quận Bình Thạnh">
+                        <div class="location-overlay">
+                            <h3>Quận Bình Thạnh</h3>
+                            <p>210 phòng trọ</p>
+                            <a href="#" class="stretched-link"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="location-card">
+                        <img src="~/images/location-3.jpg" class="img-fluid" alt="Quận Gò Vấp">
+                        <div class="location-overlay">
+                            <h3>Quận Gò Vấp</h3>
+                            <p>180 phòng trọ</p>
+                            <a href="#" class="stretched-link"></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="why-choose-us py-5">
+        <div class="container">
+            <h2 class="section-title text-center mb-5">Tại sao chọn chúng tôi?</h2>
+
+            <div class="row g-4">
+                <div class="col-md-3 text-center">
+                    <div class="feature-box">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-shield-check fs-1 text-primary"></i>
+                        </div>
+                        <h3>Uy tín hàng đầu</h3>
+                        <p>Cam kết thông tin chính xác, phòng trọ thật 100%</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3 text-center">
+                    <div class="feature-box">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-currency-exchange fs-1 text-primary"></i>
+                        </div>
+                        <h3>Không phí môi giới</h3>
+                        <p>Kết nối trực tiếp với chủ phòng, không qua trung gian</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3 text-center">
+                    <div class="feature-box">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-search fs-1 text-primary"></i>
+                        </div>
+                        <h3>Tìm kiếm dễ dàng</h3>
+                        <p>Bộ lọc thông minh, tìm phòng phù hợp nhanh chóng</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3 text-center">
+                    <div class="feature-box">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-headset fs-1 text-primary"></i>
+                        </div>
+                        <h3>Hỗ trợ 24/7</h3>
+                        <p>Đội ngũ hỗ trợ chuyên nghiệp, giải đáp mọi thắc mắc</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="news-section py-5 bg-light">
+        <div class="container">
+            <h2 class="section-title text-center mb-4">Tin tức & Cẩm nang</h2>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <img src="~/images/blog-1.jpg" class="card-img-top" alt="Bài viết 1">
+                        <div class="card-body">
+                            <h5 class="card-title">Cách tìm phòng trọ phù hợp cho sinh viên</h5>
+                            <p class="card-text">Những lưu ý quan trọng khi tìm kiếm phòng trọ dành cho sinh viên...</p>
+                            <a href="#" class="btn btn-link p-0">Đọc thêm <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">Đăng ngày 18/05/2025</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <img src="~/images/blog-2.jpg" class="card-img-top" alt="Bài viết 2">
+                        <div class="card-body">
+                            <h5 class="card-title">Mẹo tiết kiệm chi phí khi thuê phòng trọ</h5>
+                            <p class="card-text">Các cách hiệu quả giúp bạn tiết kiệm chi phí khi thuê trọ...</p>
+                            <a href="#" class="btn btn-link p-0">Đọc thêm <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">Đăng ngày 15/05/2025</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <img src="~/images/blog-3.jpg" class="card-img-top" alt="Bài viết 3">
+                        <div class="card-body">
+                            <h5 class="card-title">Những điều cần biết về hợp đồng thuê phòng</h5>
+                            <p class="card-text">Hướng dẫn chi tiết về các điều khoản quan trọng trong hợp đồng...</p>
+                            <a href="#" class="btn btn-link p-0">Đọc thêm <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">Đăng ngày 10/05/2025</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section py-5 bg-primary text-white">
+        <div class="container text-center">
+            <h2 class="mb-3">Bạn đang có phòng cần cho thuê?</h2>
+            <p class="lead mb-4">Đăng tin ngay để tiếp cận hàng ngàn khách hàng tiềm năng</p>
+            <a href="#" class="btn btn-light btn-lg">Đăng tin ngay</a>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadBanners(); loadTinhThanh(); loadTheloaiPhongTro();
+            function updateFullwidthClass() {
+                const el = document.querySelector('.fullwidth-wrapper, .fullwidth-wrappee');
+                if (!el) return;
+
+                if (window.innerWidth <= 768) {
+                    el.classList.remove('fullwidth-wrapper');
+                    el.classList.add('fullwidth-wrappee');
+                } else {
+                    el.classList.remove('fullwidth-wrappee');
+                    el.classList.add('fullwidth-wrapper');
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', updateFullwidthClass);
+            window.addEventListener('resize', updateFullwidthClass);
+            const rangeInput = document.querySelectorAll(".range-input input");
+            const sliderTrack = document.querySelector(".slider-track");
+            const minValueText = document.getElementById("min-value-text");
+            const maxValueText = document.getElementById("max-value-text");
+            const priceRangeSelected = document.getElementById("price-range-selected");
+            const minPriceTag = document.getElementById("min-price-tag");
+            const maxPriceTag = document.getElementById("max-price-tag");
+            const minPriceInput = document.getElementById("minPrice");
+            const maxPriceInput = document.getElementById("maxPrice");
+
+            const priceGap = 500; // Khoảng cách tối thiểu 500 nghìn
+
+            // Hàm định dạng số tiền với dấu phân cách hàng nghìn
+            function formatPrice(price) {
+                return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
+
+            // Hàm cập nhật vị trí của price tag
+            function updatePriceTag(input, priceTag) {
+                const inputPercent = (input.value / input.max) * 100;
+                const tagPosition = inputPercent + "%";
+                priceTag.style.left = tagPosition;
+                priceTag.textContent = formatPrice(input.value) + ".000đ";
+            }
+
+            // Hàm cập nhật thanh trượt
+            function updateSlider() {
+                let minVal = parseInt(rangeInput[0].value);
+                let maxVal = parseInt(rangeInput[1].value);
+
+                if (maxVal - minVal < priceGap) {
+                    if (this === rangeInput[0]) {
+                        rangeInput[0].value = maxVal - priceGap;
+                        minVal = maxVal - priceGap;
+                    } else {
+                        rangeInput[1].value = minVal + priceGap;
+                        maxVal = minVal + priceGap;
+                    }
+                }
+
+                // Cập nhật giá trị hiển thị
+                minValueText.textContent = formatPrice(minVal) + ".000đ";
+                maxValueText.textContent = formatPrice(maxVal) + ".000đ";
+                priceRangeSelected.textContent = formatPrice(minVal) + ".000đ - " + formatPrice(maxVal) + ".000đ";
+
+                // Cập nhật giá trị input ẩn (đơn vị đồng)
+                minPriceInput.value = minVal * 1000;
+                maxPriceInput.value = maxVal * 1000;
+
+                // Cập nhật vị trí của slider track
+                const minPercent = (minVal / rangeInput[0].max) * 100;
+                const maxPercent = (maxVal / rangeInput[1].max) * 100;
+
+                sliderTrack.style.left = minPercent + "%";
+                sliderTrack.style.width = (maxPercent - minPercent) + "%";
+
+                // Cập nhật vị trí price tag
+                updatePriceTag(rangeInput[0], minPriceTag);
+                updatePriceTag(rangeInput[1], maxPriceTag);
+            }
+
+            // Sự kiện input cho thanh trượt
+            rangeInput.forEach(input => {
+                input.addEventListener("input", updateSlider);
+
+                // Hiển thị price tag khi đang kéo
+                input.addEventListener("mousedown", function () {
+                    let priceTag = this === rangeInput[0] ? minPriceTag : maxPriceTag;
+                    priceTag.classList.add("visible");
+                });
+
+                // Ẩn price tag khi thả chuột
+                document.addEventListener("mouseup", function () {
+                    minPriceTag.classList.remove("visible");
+                    maxPriceTag.classList.remove("visible");
+                });
+            });
+
+            // Khởi tạo ban đầu
+            updateSlider();
+        });
+    async function loadTinhThanh() {
+        try {
+            const response = await fetch('/api/Location/Tinh-thanh');
+            if (response.ok) {
+                const result = await response.json();
+                const tinhList = result.data;
+
+                const select = document.getElementById('locationSelect');
+             
+
+                tinhList.forEach(tinh => {
+                    const option = document.createElement('option');
+                    option.value = tinh.maTinh;
+                    option.textContent = tinh.tenTinh;
+                    select.appendChild(option);
+                });
+            } else {
+                alert('Không thể load danh sách tỉnh thành');
+            }
+
+        } catch (e) {
+            console.error('Lỗi gọi API:', e);
+        }
+    }
+    async function loadTheloaiPhongTro() {
+        const slider = document.getElementById('typeroom');
+        try {
+            const response = await fetch('/api/Roomtype/get-type-room');
+            if (!response.ok) throw new Error('Không thể load danh sách loại phòng');
+
+            const dataa = await response.json();
+            const dataaaaaa = dataa.data;
+
+            dataaaaaa.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'col-md-3';
+
+                div.innerHTML = `
+                        <div class="category-card">
+                                <img src="data:image/png;base64,${item.imageBase64}" class="img-fluid" alt="${item.tenTheLoai}">
+                            <div class="category-content">
+                                <h3>${item.tenTheLoai}</h3>
+                                <p>${item.moTa || ''}</p>
+                                <a href="${item.redirectUrl || '#'}" class="btn btn-outline-primary">Xem ngay</a>
+                            </div>
+                        </div>
+                    `;
+
+                slider.appendChild(div);
+            });
+
+        } catch (error) {
+            slider.innerHTML = `<p class="text-danger">${error.message}</p>`;
+        }
+    }
+        async function loadBanners() {
+            try {
+                const res = await fetch('/api/Banner/get-banner', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                const bannersa = await res.json();
+                const banners = bannersa.data;
+            if (!banners || banners.length === 0) return;
+
+                const container = document.getElementById('promo-banner-fullwidth');
+                const slider = document.getElementById('promo-banner-slider');
+                const controlsContainer = document.getElementById('promo-banner-controls');
+
+                container.style.display = 'block';
+
+                let activeBanners = banners.filter(b => b.isActive);
+                const slideCount = activeBanners.length;
+                if (slideCount === 0) return;
+
+                // Tạo slide banner
+                activeBanners.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'promo-banner-slide';
+                    div.style.backgroundImage = `url('data:image/png;base64,${item.imageBase64}')`;
+
+                    div.innerHTML = `
+                            <div class="promo-banner-slide-overlay"></div>
+                            <div class="promo-banner-slide-content">
+                                <h2>${item.title}</h2>
+                                <p>${item.content}</p>
+                                <a href="${item.redirectUrl}" class="promo-banner-cta-button">${item.text}</a>
+                            </div>
+                        `;
+
+                    slider.appendChild(div);
+                });
+
+                // Cập nhật chiều rộng và slide control
+                slider.style.width = (slideCount * 100) + '%';
+                const slides = slider.querySelectorAll('.promo-banner-slide');
+                slides.forEach(slide => {
+                    slide.style.width = (100 / slideCount) + '%';
+                });
+
+                let currentIndex = 0;
+                let autoSlideInterval;
+
+                for (let i = 0; i < slideCount; i++) {
+                    const btn = document.createElement('button');
+                    btn.classList.add('promo-banner-control-btn');
+                    if (i === 0) btn.classList.add('active');
+                    btn.setAttribute('data-index', i);
+                    controlsContainer.appendChild(btn);
+
+                    btn.addEventListener('click', () => {
+                        goToSlide(i);
+                        stopAutoSlide();
+                        startAutoSlide();
+                    });
+                }
+
+                const controlBtns = controlsContainer.querySelectorAll('.promo-banner-control-btn');
+
+                function goToSlide(index) {
+                    if (index < 0) index = slideCount - 1;
+                    if (index >= slideCount) index = 0;
+
+                    const translatePercent = index * (100 / slideCount);
+                    slider.style.transform = `translateX(-${translatePercent}%)`;
+
+                    controlBtns.forEach(btn => btn.classList.remove('active'));
+                    controlBtns[index].classList.add('active');
+
+                    currentIndex = index;
+                }
+
+                function startAutoSlide() {
+                    autoSlideInterval = setInterval(() => {
+                        goToSlide(currentIndex + 1);
+                    }, 5000);
+                }
+
+                function stopAutoSlide() {
+                    clearInterval(autoSlideInterval);
+                }
+
+                document.getElementById('promo-banner-prev').addEventListener('click', () => {
+                    goToSlide(currentIndex - 1);
+                    stopAutoSlide();
+                    startAutoSlide();
+                });
+
+                document.getElementById('promo-banner-next').addEventListener('click', () => {
+                    goToSlide(currentIndex + 1);
+                    stopAutoSlide();
+                    startAutoSlide();
+                });
+
+                startAutoSlide();
+
+
+            } catch (err) {
+                console.error('Lỗi tải banner:', err);
+
+            }
+
+        }
+
+
+    </script>
+   

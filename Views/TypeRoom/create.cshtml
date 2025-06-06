@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Upload TheLoaiPhongTro with FormData</title>
+</head>
+<body>
+    <h3>Thêm thể loại phòng trọ (Form + file upload)</h3>
+
+    <form id="theLoaiForm" enctype="multipart/form-data">
+        <label>
+            Tên thể loại:
+            <input type="text" name="TenTheLoai" required />
+        </label><br /><br />
+
+        <label>
+            Mô tả:
+            <textarea name="MoTa"></textarea>
+        </label><br /><br />
+
+        <label>
+            Ảnh:
+            <input type="file" name="ImageFile" accept="image/*" />
+        </label><br /><br />
+
+        <label>
+            Redirect URL:
+            <input type="url" name="RedirectUrl" />
+        </label><br /><br />
+
+        <button type="submit">Gửi</button>
+    </form>
+
+    <pre id="result"></pre>
+
+    <script>
+        const form = document.getElementById('theLoaiForm');
+        const result = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData(form);
+
+          try {
+            const response = await fetch('/api/Roomtype/add-room-type', {
+              method: 'POST',
+              body: formData
+            });
+
+            const json = await response.json();
+            result.textContent = JSON.stringify(json, null, 2);
+          } catch (error) {
+            result.textContent = 'Lỗi khi gửi API: ' + error.message;
+          }
+        });
+    </script>
+</body>
+</html>

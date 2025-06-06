@@ -1,0 +1,168 @@
+﻿<!-- Login Page (Views/Account/Login.cshtml) -->
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/css/notification.css" />
+</head>
+
+<div id="live-notification" class="hidden">
+    <div class="message">Notification message</div>
+    <div class="close-btn"></div>
+    <div class="progress-bar"></div>
+</div>
+<div class="container">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header">
+                    <h3 class="text-center font-weight-light my-4">Đăng nhập</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Login" id="loginForm">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="inputEmail" type="text" placeholder="Email hoặc số điện thoại" />
+                            <label for="inputEmail">Email hoặc username</label>
+                            <span class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="inputPassword" type="password" placeholder="Mật khẩu" />
+                            <label for="inputPassword">Mật khẩu</label>
+                            <span class="text-danger"></span>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" id="inputRememberPassword" type="checkbox" />
+                            <label class="form-check-label" for="inputRememberPassword">Ghi nhớ mật khẩu</label>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
+                            <a class="small" asp-action="ForgotPassword">Quên mật khẩu?</a>
+                            <button type="submit" class="btn btn-primary">Đăng nhập</button>
+                        </div>
+                    </form>
+                </div>
+
+
+                <div class="card-footer text-center py-3">
+                    <div class="small">
+                        <a asp-action="Register">Chưa có tài khoản? Đăng ký!</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+
+            document.getElementById("loginForm").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const email = document.getElementById("inputEmail").value;
+                const password = document.getElementById("inputPassword").value;
+
+
+                if (!email || !password) {
+                 showNotification('Vui lòng nhập đầy đủ Email và Mật khẩu', 'warning');
+
+                    return;
+                }
+
+                try {
+
+            const res = await fetch('/api/Auth/juntech', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                            body: JSON.stringify({ email: email })
+                        });
+
+
+                    const { manh, juntech } = await res.json();
+
+
+                    const encrypted = CryptoJS.AES.encrypt(password, CryptoJS.enc.Base64.parse(manh), {
+                        iv: CryptoJS.enc.Base64.parse(juntech),
+                        mode: CryptoJS.mode.CBC,
+                        padding: CryptoJS.pad.Pkcs7
+                    }).toString();
+                    console.log('mk'+encrypted);
+
+            const loginRes = await fetch('/api/Auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    soDienThoai: email,
+                    password: encrypted,
+                    rememberMe: document.getElementById('inputRememberPassword').checked
+                })
+            });
+
+
+                    const result = await loginRes.json();
+
+                    if (loginRes.ok) {
+                        showNotification(result.message, 'success');
+
+                        setTimeout(() => {
+            window.location.href = '/Home';
+            }, 5000);
+                        } else { showNotification(result.message, 'warning');
+
+
+                    }
+                } catch (error) {
+                    console.error(error);
+                     showNotification("Có lỗi xảy ra khi đăng nhập." , 'error');
+
+
+                }
+            });
+
+                    function showNotification(message, type, duration = 5000) {
+          const notification = document.getElementById('live-notification');
+          notification.querySelector('.message').textContent = message;
+          notification.className = ''; // Clear all classes
+          notification.classList.add(type); // Add type class (success, error, info, warning)
+          notification.classList.add('show');
+
+          // Clear any existing timeout
+          if (window.notificationTimeout) {
+            clearTimeout(window.notificationTimeout);
+          }
+
+          // Auto dismiss
+          window.notificationTimeout = setTimeout(() => {
+            notification.classList.add('remove');
+            setTimeout(() => {
+              notification.classList.remove('show', 'remove');
+              notification.classList.add('hidden');
+            }, 300);
+          }, duration);
+
+          // Close button functionality
+          notification.querySelector('.close-btn').addEventListener('click', function() {
+            clearTimeout(window.notificationTimeout);
+            notification.classList.add('remove');
+            setTimeout(() => {
+              notification.classList.remove('show', 'remove');
+              notification.classList.add('hidden');
+            }, 300);
+          }, { once: true });
+        }
+
+    </script>
+}

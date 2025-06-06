@@ -1,0 +1,444 @@
+﻿@model Ql_NhaTro_jun.Models.NguoiDung
+
+@{
+    ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký Tài Khoản</title>
+    <link rel="stylesheet" href="~/css/notification.css" />
+    <style>
+        .register-form-container body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .register-form-container {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            margin: 20px auto;
+        }
+
+            .register-form-container h1 {
+                text-align: center;
+                color: #333;
+                margin-bottom: 30px;
+            }
+
+            .register-form-container .form-group {
+                margin-bottom: 20px;
+            }
+
+            .register-form-container label {
+                display: block;
+                margin-bottom: 8px;
+                color: #555;
+                font-weight: 500;
+            }
+
+            .register-form-container input[type="text"],
+            .register-form-container input[type="email"],
+            .register-form-container input[type="password"],
+            .register-form-container input[type="tel"] {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                font-size: 16px;
+                transition: border-color 0.3s;
+                box-sizing: border-box;
+            }
+
+                .register-form-container input[type="text"]:focus,
+                .register-form-container input[type="email"]:focus,
+                .register-form-container input[type="password"]:focus,
+                .register-form-container input[type="tel"]:focus {
+                    border-color: #4285f4;
+                    outline: none;
+                }
+
+            .register-form-container .password-container {
+                position: relative;
+            }
+
+            .register-form-container .toggle-password {
+                position: absolute;
+                right: 10px;
+                top: 12px;
+                cursor: pointer;
+                color: #777;
+            }
+
+            .register-form-container .checkbox-group {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+                .register-form-container .checkbox-group input {
+                    margin-right: 10px;
+                }
+
+                .register-form-container .checkbox-group label {
+                    margin-bottom: 0;
+                }
+
+            .register-form-container .error-message {
+                color: #e53935;
+                font-size: 14px;
+                margin-top: 5px;
+                display: none;
+            }
+
+            .register-form-container .recaptcha {
+                margin-bottom: 20px;
+            }
+
+            .register-form-container .btn {
+                display: block;
+                width: 100%;
+                padding: 12px;
+                background-color: #4285f4;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+                .register-form-container .btn:hover {
+                    background-color: #3367d6;
+                }
+
+            .register-form-container .login-link {
+                text-align: center;
+                margin-top: 20px;
+                color: #555;
+            }
+
+                .register-form-container .login-link a {
+                    color: #4285f4;
+                    text-decoration: none;
+                }
+
+                    .register-form-container .login-link a:hover {
+                        text-decoration: underline;
+                    }
+
+            .register-form-container .password-strength {
+                height: 5px;
+                background-color: #eee;
+                margin-top: 8px;
+                border-radius: 3px;
+                overflow: hidden;
+            }
+
+            .register-form-container .password-strength-meter {
+                height: 100%;
+                width: 0;
+                transition: width 0.3s, background-color 0.3s;
+            }
+    </style>
+
+</head>
+<body>
+    <div id="live-notification" class="hidden">
+        <div class="message">Notification message</div>
+        <div class="close-btn"></div>
+        <div class="progress-bar"></div>
+    </div>
+    <div class="register-form-container">
+        <div class="container">
+            <h1>Đăng Ký Tài Khoản</h1>
+
+            <form asp-action="signupForm" id="Register">
+                <div class="form-group">
+
+                    <label for="HoTen" >Họ và tên</label>
+                    <input type="text"  id="HoTen" placeholder="Nhập họ và tên của bạn" required>
+                    <div class="error-message" id="nameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="SoDienThoai" >Số điện thoại</label>
+                    <input type="text"  id="SoDienThoai" placeholder="Nhập số điện thoại" required>
+                    <div class="error-message" id="phoneError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" >Email</label>
+                    <input type="email"  id="email" placeholder="Nhập địa chỉ email" required>
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <div class="password-container">
+                        <input type="password"  id="password" placeholder="Nhập mật khẩu" required>
+
+                        <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
+                    </div>
+                    <div class="password-strength">
+                        <div class="password-strength-meter" id="passwordStrengthMeter"></div>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword" >Xác nhận mật khẩu</label>
+                    <div class="password-container">
+                        <input type="password" id="confirmPassword" placeholder="Nhập lại mật khẩu" required>
+                        <span class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</span>
+                    </div>
+                    <div class="error-message" id="confirmPasswordError"></div>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">Tôi đã đọc và đồng ý với <a href="#">điều khoản sử dụng</a></label>
+                </div>
+
+                <div class="recaptcha">
+                    <div id="recaptcha" class="g-recaptcha" data-sitekey="6LcQdhUrAAAAACbFTMK9PJEoCq1yoKf3esqJShB2"></div>
+                    <div class="error-message" id="recaptchaError"></div>
+                </div>
+
+                <button type="submit" class="btn">Đăng Ký</button>
+            </form>
+
+
+
+            <div class="login-link">
+                Bạn đã có tài khoản? <a asp-action="Login">Đăng nhập</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+            } else {
+                passwordInput.type = 'password';
+            }
+        }
+
+        function validateForm() {
+            let isValid = true;
+
+            // Reset error messages
+            const errorElements = document.querySelectorAll('.error-message');
+            errorElements.forEach(element => {
+                element.style.display = 'none';
+            });
+
+            // Validate name
+            const name = document.getElementById('HoTen').value;
+            if (name.trim().length < 2) {
+                document.getElementById('nameError').textContent = 'Họ tên phải có ít nhất 2 ký tự';
+                document.getElementById('nameError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate username
+
+            const username = document.getElementById('SoDienThoai').value;
+            // Validate email
+            const email = document.getElementById('email').value;
+            if (!/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(email)) {
+                document.getElementById('emailError').textContent = 'Email không hợp lệ';
+                document.getElementById('emailError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate phone
+            const phone = document.getElementById('SoDienThoai').value;
+            if (!/^(0|\+84)\d{9,10}$/.test(phone)) {
+                document.getElementById('phoneError').textContent = 'Số điện thoại không hợp lệ (VD: 0901234567 hoặc +84901234567)';
+                document.getElementById('phoneError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate password
+            const password = document.getElementById('password').value;
+            if (password.length < 8) {
+                document.getElementById('passwordError').textContent = 'Mật khẩu phải có ít nhất 8 ký tự';
+                document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+            }
+
+            // Validate confirm password
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Mật khẩu xác nhận không khớp';
+                document.getElementById('confirmPasswordError').style.display = 'block';
+                isValid = false;
+            }
+        if(username==confirmPassword){
+                    document.getElementById('passwordError').textContent = 'Mật khẩu phải khác username';
+                             document.getElementById('passwordError').style.display = 'block';
+                isValid = false;
+        }
+            // Validate reCAPTCHA
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (recaptchaResponse.length === 0) {
+                document.getElementById('recaptchaError').textContent = 'Vui lòng xác nhận bạn không phải robot';
+                document.getElementById('recaptchaError').style.display = 'block';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        // Password strength meter
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const meter = document.getElementById('passwordStrengthMeter');
+
+            if (password.length === 0) {
+                meter.style.width = '0%';
+                return;
+            }
+
+            let strength = 0;
+
+            // Complexity checks
+            if (password.length >= 8) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 25;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+
+            meter.style.width = strength + '%';
+
+            if (strength <= 25) {
+                meter.style.backgroundColor = '#f44336';
+            } else if (strength <= 50) {
+                meter.style.backgroundColor = '#ff9800';
+            } else if (strength <= 75) {
+                meter.style.backgroundColor = '#ffc107';
+            } else {
+                meter.style.backgroundColor = '#4caf50';
+            }
+        });
+    </script>
+</body>
+</html>
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+             document.getElementById("Register").addEventListener("submit", async function (e) {
+                    e.preventDefault();
+                     if (!validateForm()) return;
+                    const email = document.getElementById("email").value;
+                    const password = document.getElementById("password").value;
+                    const SoDienThoai = document.getElementById("SoDienThoai").value;
+                    const captchaToken = document.querySelector('[name="g-recaptcha-response"]').value;
+
+                    const HoTen = document.getElementById("HoTen").value;
+
+                    try {
+
+                const res = await fetch('/api/auth/juntech', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email: email })
+                });
+
+                        const { manh, juntech } = await res.json();
+
+                const encrypted = CryptoJS.AES.encrypt(password, CryptoJS.enc.Base64.parse(manh), {
+                    iv: CryptoJS.enc.Base64.parse(juntech),
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                }).toString();
+                console.log('mk' + encrypted);
+
+                            const Register = await fetch('/api/auth/Register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json'
+
+
+                    }, credentials: 'include',
+                            body: JSON.stringify({
+                                email: email,
+                        MatKhau: encrypted, SoDienThoai: SoDienThoai, HoTen: HoTen, "g-recaptcha-response": captchaToken
+                    })
+                        });
+
+                        const result = await Register.json();
+
+                            if (Register.ok) {
+                            showNotification(result.message, 'success');
+
+                            setTimeout(() => {
+                window.location.href = '/Home';
+                }, 5000);
+                            } else { showNotification(result.message, 'warning');
+
+
+                        }
+                    } catch (error) {
+                        console.error(error);
+                         showNotification("Có lỗi xảy ra khi đăng nhập." , 'error');
+
+
+                    }
+                });
+                        function showNotification(message, type, duration = 5000) {
+              const notification = document.getElementById('live-notification');
+              notification.querySelector('.message').textContent = message;
+              notification.className = ''; // Clear all classes
+              notification.classList.add(type); // Add type class (success, error, info, warning)
+              notification.classList.add('show');
+
+              // Clear any existing timeout
+              if (window.notificationTimeout) {
+                clearTimeout(window.notificationTimeout);
+              }
+
+              // Auto dismiss
+              window.notificationTimeout = setTimeout(() => {
+                notification.classList.add('remove');
+                setTimeout(() => {
+                  notification.classList.remove('show', 'remove');
+                  notification.classList.add('hidden');
+                }, 300);
+              }, duration);
+
+              // Close button functionality
+              notification.querySelector('.close-btn').addEventListener('click', function() {
+                clearTimeout(window.notificationTimeout);
+                notification.classList.add('remove');
+                setTimeout(() => {
+                  notification.classList.remove('show', 'remove');
+                  notification.classList.add('hidden');
+                }, 300);
+              }, { once: true });
+            }
+
+        // Gọi khi có TempData
+
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
