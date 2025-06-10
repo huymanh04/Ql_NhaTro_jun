@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Trang Chủ";
     var user = Context.Items["CurrentUser"];
-
 }
 
 <!DOCTYPE html>
@@ -10,97 +9,148 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Phòng Trọ Việt</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <title>@ViewData["Title"] - Phòng Trọ Việt - Tìm Phòng Trọ Uy Tín #1 Việt Nam</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Phòng Trọ Việt - Nền tảng tìm phòng trọ uy tín #1 Việt Nam. Hàng nghìn phòng trọ giá rẻ, chất lượng tại TP.HCM. Đăng tin miễn phí, tìm phòng nhanh chóng." />
+    <meta name="keywords" content="phòng trọ, nhà trọ, cho thuê phòng, tìm phòng trọ, phòng trọ giá rẻ, TP.HCM, phòng trọ sinh viên" />
+    <meta name="author" content="Phòng Trọ Việt" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://phongtroviet.vn" />
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Phòng Trọ Việt - Tìm Phòng Trọ Uy Tín" />
+    <meta property="og:description" content="Nền tảng kết nối người thuê và chủ nhà uy tín với hàng nghìn lựa chọn chất lượng" />
+    <meta property="og:image" content="~/images/og-image.jpg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://phongtroviet.vn" />
+    <meta property="og:site_name" content="Phòng Trọ Việt" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Phòng Trọ Việt - Tìm Phòng Trọ Uy Tín" />
+    <meta name="twitter:description" content="Nền tảng tìm phòng trọ uy tín #1 Việt Nam" />
+    <meta name="twitter:image" content="~/images/og-image.jpg" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="~/images/apple-touch-icon.png" />
+
+    <!-- CSS Files -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css?v=@DateTime.Now.Ticks" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/dark-mode.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css?v=@DateTime.Now" asp-append-version="true" />
 
+    <!-- Schema Markup -->
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "RealEstateAgent",
+            "name": "Phòng Trọ Việt",
+            "description": "Nền tảng kết nối người thuê và chủ nhà uy tín nhất Việt Nam",
+            "url": "https://phongtroviet.vn",
+            "logo": "https://phongtroviet.vn/images/logo.png",
+            "address": {
+                "@@type": "PostalAddress",
+                "streetAddress": "123 Nguyễn Văn Linh",
+                "addressLocality": "Quận 7",
+                "addressRegion": "TP. Hồ Chí Minh",
+                "postalCode": "700000",
+                "addressCountry": "VN"
+            },
+            "telephone": "+84123456789",
+            "email": "info@phongtroviet.vn",
+            "sameAs": [
+                "https://facebook.com/phongtroviet",
+                "https://instagram.com/phongtroviet"
+            ]
+        }
+    </script>
 </head>
+
 <body class="@ViewData["BodyClass"]">
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark custom-navbar fixed-top">
+   
+    <header role="banner">
+        <nav class="navbar navbar-expand-lg navbar-dark custom-navbar fixed-top" role="navigation" aria-label="Main navigation">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/logo.png" alt="Phòng Trọ Việt" height="45" />
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index" aria-label="Phòng Trọ Việt - Trang chủ">
+                    <img src="~/images/logo.png" alt="Logo Phòng Trọ Việt" height="45" width="auto" loading="eager" />
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Mở menu điều hướng">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">
-                                <i class="fas fa-home me-2"></i>Trang Chủ
+                    <ul class="navbar-nav me-auto" role="menubar">
+                        <li class="nav-item" role="none">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index" role="menuitem">
+                                <i class="fas fa-home me-2" aria-hidden="true"></i>Trang Chủ
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Room" asp-action="Index">
-                                <i class="fas fa-search me-2"></i>Tìm Phòng
+                        <li class="nav-item" role="none">
+                            <a class="nav-link" asp-area="" asp-controller="Room" asp-action="Index" role="menuitem">
+                                <i class="fas fa-search me-2" aria-hidden="true"></i>Tìm Phòng
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">
-                                <i class="fas fa-info-circle me-2"></i>Về Chúng Tôi
+                        <li class="nav-item" role="none">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About" role="menuitem">
+                                <i class="fas fa-info-circle me-2" aria-hidden="true"></i>Về Chúng Tôi
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">
-                                <i class="fas fa-envelope me-2"></i>Liên Hệ
+                        <li class="nav-item" role="none">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact" role="menuitem">
+                                <i class="fas fa-envelope me-2" aria-hidden="true"></i>Liên Hệ
                             </a>
                         </li>
-
-
                     </ul>
 
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
+                    <ul class="navbar-nav" role="menubar">
+                        <li class="nav-item" role="none">
                             @if (User.Identity.IsAuthenticated)
                             {
-
-                                    <div class="dropdown user-dropdown">
-                                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
-                                           data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-user-circle me-2"></i>
-                                     <span>Xin chào, @(user ?? "User")</span>
-                                            <span class="d-md-none">Menu</span>
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" href="#" onclick="return false;">
-                                                    <i class="fas fa-user me-2"></i>
+                                <div class="dropdown user-dropdown">
+                                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                                       data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Menu người dùng">
+                                        <i class="fas fa-user-circle me-2" aria-hidden="true"></i>
+                                        <span>Xin chào, @(user ?? "User")</span>
+                                       
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" role="menu">
+                                        <li role="none">
+                                            <a class="dropdown-item" href="#" onclick="return false;" role="menuitem">
+                                                <i class="fas fa-user me-2" aria-hidden="true"></i>
                                                 @(user ?? "User")
-                                                </a>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="Index">
-                                                    <i class="fas fa-cog me-2"></i>
-                                                    Cài Đặt
-                                                </a>
-                                            </li>
-                                            <li>
-                                               <a href="#" class="dropdown-item" id="logoutBtn">
-                                                    <i class="fas fa-sign-out-alt me-2"></i>
-                                                    Đăng Xuất
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" role="separator"></li>
+                                        <li role="none">
+                                            <a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="Index" role="menuitem">
+                                                <i class="fas fa-cog me-2" aria-hidden="true"></i>
+                                                Cài Đặt
+                                            </a>
+                                        </li>
+                                        <li role="none">
+                                            <a href="#" class="dropdown-item" id="logoutBtn" role="menuitem">
+                                                <i class="fas fa-sign-out-alt me-2" aria-hidden="true"></i>
+                                                Đăng Xuất
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             }
                             else
                             {
-                                    <a class="nav-link" asp-area="" asp-controller="Users" asp-action="Login">
-                                        <i class="fas fa-sign-in-alt me-2"></i>
-                                        <span class="d-none d-md-inline">Đăng Nhập</span>
-                                     <span class="d-md-none">Login</span>
-                                    </a>
+                                <a class="nav-link" asp-area="" asp-controller="Users" asp-action="Login" role="menuitem">
+                                    <i class="fas fa-sign-in-alt me-2" aria-hidden="true"></i>
+                                    <span class="d-none d-md-inline">Đăng Nhập</span>
+                                    <span class="d-md-none">Login</span>
+                                </a>
                             }
                         </li>
                     </ul>
@@ -109,84 +159,130 @@
         </nav>
 
         <!-- Spacer để tránh content bị che khi dùng fixed navbar -->
-        <div style="height: 80px;"></div>
+        <div class="navbar-spacer" aria-hidden="true"></div>
     </header>
 
-    <!-- Hero Section -->
-
-
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="container-fluid px-0">
+        <main role="main" class="main-content" id="main-content">
             @RenderBody()
-
-           
-
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="footer" role="contentinfo">
         <div class="container">
             <div class="row">
-                <div class="col-md-4">
-                    <h5>Phòng Trọ Việt</h5>
-                    <p>Nền tảng kết nối người thuê và chủ nhà uy tín nhất Việt Nam</p>
-                    <p>
-                        <i class="fas fa-map-marker-alt"></i> 123 Nguyễn Văn Linh, Q.7, TP. HCM<br>
-                        <i class="fas fa-phone"></i> 0123.456.789<br>
-                        <i class="fas fa-envelope"></i> info@phongtroviet.vn
-                    </p>
-                </div>
-                <div class="col-md-2">
-                    <h5>Khám Phá</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#">Phòng mới</a></li>
-                        <li><a href="#">Phòng nổi bật</a></li>
-                        <li><a href="#">Gần trường học</a></li>
-                        <li><a href="#">Gần bệnh viện</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-2">
-                    <h5>Hỗ Trợ</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#">Trung tâm hỗ trợ</a></li>
-                        <li><a href="#">Câu hỏi thường gặp</a></li>
-                        <li><a href="#">Hướng dẫn đăng ký</a></li>
-                        <li><a href="#">Chính sách</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5>Đăng Ký Nhận Tin</h5>
-                    <p>Nhận thông tin phòng trọ mới nhất từ chúng tôi</p>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Email của bạn">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" type="button">Đăng Ký</button>
-                        </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="footer-section">
+                        <h3 class="footer-title">Phòng Trọ Việt</h3>
+                        <p class="footer-description">Nền tảng kết nối người thuê và chủ nhà uy tín nhất Việt Nam với hàng nghìn lựa chọn chất lượng.</p>
+                        <address class="footer-address">
+                            <div class="address-item">
+                                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                                <span>123 Nguyễn Văn Linh, Q.7, TP. Hồ Chí Minh</span>
+                            </div>
+                            <div class="address-item">
+                                <i class="fas fa-phone" aria-hidden="true"></i>
+                                <a href="tel:+84123456789">0123.456.789</a>
+                            </div>
+                            <div class="address-item">
+                                <i class="fas fa-envelope" aria-hidden="true"></i>
+                                <a href="mailto:info@phongtroviet.vn">info@phongtroviet.vn</a>
+                            </div>
+                        </address>
                     </div>
-                    <div class="social-links">
-                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
+                </div>
+
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <div class="footer-section">
+                        <h4 class="footer-subtitle">Khám Phá</h4>
+                        <nav aria-label="Footer navigation - Khám phá">
+                            <ul class="footer-links">
+                                <li><a href="/phong-moi">Phòng mới</a></li>
+                                <li><a href="/phong-noi-bat">Phòng nổi bật</a></li>
+                                <li><a href="/gan-truong-hoc">Gần trường học</a></li>
+                                <li><a href="/gan-benh-vien">Gần bệnh viện</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <div class="footer-section">
+                        <h4 class="footer-subtitle">Hỗ Trợ</h4>
+                        <nav aria-label="Footer navigation - Hỗ trợ">
+                            <ul class="footer-links">
+                                <li><a href="/ho-tro">Trung tâm hỗ trợ</a></li>
+                                <li><a href="/faq">Câu hỏi thường gặp</a></li>
+                                <li><a href="/huong-dan">Hướng dẫn đăng ký</a></li>
+                                <li><a href="/chinh-sach">Chính sách</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="footer-section">
+                        <h4 class="footer-subtitle">Đăng Ký Nhận Tin</h4>
+                        <p class="newsletter-description">Nhận thông tin phòng trọ mới nhất và ưu đãi đặc biệt từ chúng tôi</p>
+                        <form class="newsletter-form" aria-label="Đăng ký nhận tin">
+                            <div class="input-group">
+                                <input type="email" class="form-control" placeholder="Nhập email của bạn"
+                                       aria-label="Email address" required>
+                                <button class="btn btn-primary" type="submit" aria-label="Đăng ký nhận tin">
+                                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="social-links" role="group" aria-label="Liên kết mạng xã hội">
+                            <a href="#" class="social-link" aria-label="Facebook" target="_blank" rel="noopener">
+                                <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                            </a>
+                            <a href="#" class="social-link" aria-label="YouTube" target="_blank" rel="noopener">
+                                <i class="fab fa-youtube" aria-hidden="true"></i>
+                            </a>
+                            <a href="#" class="social-link" aria-label="Instagram" target="_blank" rel="noopener">
+                                <i class="fab fa-instagram" aria-hidden="true"></i>
+                            </a>
+                            <a href="#" class="social-link" aria-label="TikTok" target="_blank" rel="noopener">
+                                <i class="fab fa-tiktok" aria-hidden="true"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="form-check form-switch text-light">
-    <input class="form-check-input" type="checkbox" id="darkModeSwitch">
-    <label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
-</div>
 
-            <div class="text-center mt-3">
-                &copy; 2025 - Phòng Trọ Việt - <a asp-area="" asp-controller="Home" asp-action="Privacy">Chính Sách Bảo Mật</a>
+            <div class="footer-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="darkModeSwitch" aria-label="Chế độ tối">
+                            <label class="form-check-label" for="darkModeSwitch">Chế độ tối</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="copyright">
+                            &copy; 2025 Phòng Trọ Việt. Tất cả quyền được bảo lưu.
+                            <a asp-area="" asp-controller="Home" asp-action="Privacy">Chính Sách Bảo Mật</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
 
+    <!-- Back to top button -->
+    <button id="backToTop" class="back-to-top" aria-label="Về đầu trang" title="Về đầu trang">
+        <i class="fas fa-chevron-up" aria-hidden="true"></i>
+    </button>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/dark-mode.js" asp-append-version="true"></script>
 
-     <script>
-             
-        // Gắn sự kiện trực tiếp vào document (event delegation)
+    <script>
+        // Logout functionality
         document.body.addEventListener('click', function (e) {
             if (e.target && e.target.id === 'logoutBtn') {
                 e.preventDefault();
@@ -201,7 +297,6 @@
 
                         if (response.ok) {
                             location.reload();
-
                         } else {
                             alert('Lỗi khi đăng xuất');
                         }
@@ -211,14 +306,22 @@
                 })();
             }
         });
-   
 
-        </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/dark-mode.js" asp-append-version="true"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+        // Back to top functionality
+        window.addEventListener('scroll', function () {
+            const backToTop = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('show');
+            } else {
+                backToTop.classList.remove('show');
+            }
+        });
+
+        document.getElementById('backToTop').addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
-
 </body>
 </html>

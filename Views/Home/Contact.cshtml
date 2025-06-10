@@ -1,0 +1,426 @@
+﻿@{
+    ViewData["Title"] = "Liên Hệ - Hỗ Trợ Tìm Phòng Trọ 24/7";
+    ViewData["Description"] = "Liên hệ với chúng tôi để được tư vấn và hỗ trợ tìm phòng trọ phù hợp. Đội ngũ chuyên viên sẵn sàng hỗ trợ 24/7 qua điện thoại, email và chat trực tuyến.";
+    ViewData["Keywords"] = "liên hệ, hỗ trợ khách hàng, tư vấn thuê phòng, hotline, email, địa chỉ liên hệ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Hero Section -->
+<section class="hero-contact py-5" style="background: var(--primary-gradient); color: white; margin-top: -5px; padding-top: 120px;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 fade-in-up">
+                <h1 class="display-4 fw-bold mb-4">Liên Hệ Với Chúng Tôi</h1>
+                <p class="lead mb-4">
+                    Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7. Hãy liên hệ để được tư vấn 
+                    và tìm kiếm phòng trọ phù hợp nhất với nhu cầu của bạn.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-phone-alt me-2"></i>
+                        <span>Hotline: 1900-123-456</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-envelope me-2"></i>
+                        <span>Email hỗ trợ 24/7</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="/images/contact-hero.jpg" alt="Liên hệ với chúng tôi" 
+                     class="img-fluid rounded shadow-lg" style="max-height: 400px; object-fit: cover;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Information -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 text-center border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                             style="width: 80px; height: 80px; background: var(--primary-gradient);">
+                            <i class="fas fa-phone-alt text-white fs-3"></i>
+                        </div>
+                        <h4 class="card-title fw-bold mb-3">Hotline 24/7</h4>
+                        <p class="text-muted mb-3">Gọi ngay để được tư vấn miễn phí</p>
+                        <a href="tel:1900123456" class="btn btn-primary">1900-123-456</a>
+                        <div class="mt-3">
+                            <small class="text-muted">Miễn phí cuộc gọi</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 text-center border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                             style="width: 80px; height: 80px; background: var(--accent-gradient);">
+                            <i class="fas fa-envelope text-white fs-3"></i>
+                        </div>
+                        <h4 class="card-title fw-bold mb-3">Email Hỗ Trợ</h4>
+                        <p class="text-muted mb-3">Gửi câu hỏi, chúng tôi phản hồi trong 2h</p>
+                        <a href="mailto:support@example.com" class="btn btn-accent">support@example.com</a>
+                        <div class="mt-3">
+                            <small class="text-muted">Phản hồi trong 2 giờ</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 text-center border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                             style="width: 80px; height: 80px; background: var(--success-color);">
+                            <i class="fas fa-comments text-white fs-3"></i>
+                        </div>
+                        <h4 class="card-title fw-bold mb-3">Chat Trực Tuyến</h4>
+                        <p class="text-muted mb-3">Tư vấn trực tiếp với chuyên viên</p>
+                        <button class="btn btn-success" onclick="openChat()">Bắt Đầu Chat</button>
+                        <div class="mt-3">
+                            <small class="text-muted">Online: 8:00 - 22:00</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form & Map -->
+<section class="py-5" style="background-color: var(--light-color);">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Contact Form -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h3 class="card-title fw-bold mb-4">
+                            <i class="fas fa-paper-plane me-2 text-primary"></i>
+                            Gửi Tin Nhắn Cho Chúng Tôi
+                        </h3>
+                        
+                        <form id="contactForm" method="post" action="/Contact/SendMessage">
+                            @Html.AntiForgeryToken()
+                            
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <label for="fullName" class="form-label fw-semibold">Họ và Tên *</label>
+                                    <input type="text" class="form-control" id="fullName" name="FullName" required>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="phone" class="form-label fw-semibold">Số Điện Thoại *</label>
+                                    <input type="tel" class="form-control" id="phone" name="Phone" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="email" class="form-label fw-semibold">Email *</label>
+                                                                        <input type="email" class="form-control" id="email" name="Email" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="subject" class="form-label fw-semibold">Chủ Đề *</label>
+                                    <select class="form-select" id="subject" name="Subject" required>
+                                        <option value="">Chọn chủ đề...</option>
+                                        <option value="tim-phong">Tìm phòng trọ</option>
+                                        <option value="dang-tin">Đăng tin cho thuê</option>
+                                        <option value="ho-tro-ky-thuat">Hỗ trợ kỹ thuật</option>
+                                        <option value="khieu-nai">Khiếu nại/Góp ý</option>
+                                        <option value="hop-tac">Hợp tác kinh doanh</option>
+                                        <option value="khac">Khác</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label for="message" class="form-label fw-semibold">Nội Dung Tin Nhắn *</label>
+                                    <textarea class="form-control" id="message" name="Message" rows="5" 
+                                              placeholder="Mô tả chi tiết yêu cầu của bạn..." required></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                        <label class="form-check-label" for="agreeTerms">
+                                            Tôi đồng ý với <a href="/terms" target="_blank">Điều khoản sử dụng</a> 
+                                            và <a href="/privacy" target="_blank">Chính sách bảo mật</a> *
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-paper-plane me-2"></i>
+                                        Gửi Tin Nhắn
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Map -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h3 class="card-title fw-bold mb-4">
+                            <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                            Địa Chỉ Văn Phòng
+                        </h3>
+                        <div class="mb-4">
+                            <h5 class="fw-semibold">Văn Phòng Chính</h5>
+                            <p class="mb-2">
+                                <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                                123 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-clock me-2 text-info"></i>
+                                Thứ 2 - Chủ Nhật: 8:00 - 22:00
+                            </p>
+                            <p class="mb-4">
+                                <i class="fas fa-subway me-2 text-success"></i>
+                                Gần Metro Tân Cảng, Bus 18, 53
+                            </p>
+                        </div>
+                        
+                        <div class="map-responsive">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.631122536757!2d106.61737551012794!3d10.839515557983246!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752a2d03fafe3b%3A0x127d6979bfdc6907!2zNzhBIMSQw7RuZyBIxrBuZyBUaHXhuq1uIDUsIMSQw7RuZyBIxrBuZyBUaHXhuq1uLCBRdeG6rW4gMTIsIEjhu5MgQ2jDrSBNaW5oLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1749552031852!5m2!1svi!2s" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Câu Hỏi Thường Gặp</h2>
+            <p class="text-muted">Tìm câu trả lời nhanh chóng cho những thắc mắc phổ biến</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq1" aria-expanded="true" aria-controls="faq1">
+                                <i class="fas fa-question-circle me-2 text-primary"></i>
+                                Làm thế nào để đăng tin cho thuê phòng?
+                            </button>
+                        </h3>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Bạn có thể đăng tin miễn phí bằng cách đăng ký tài khoản, sau đó chọn "Đăng tin" 
+                                và điền đầy đủ thông tin phòng trọ. Tin đăng sẽ được duyệt trong vòng 2-4 giờ.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                                <i class="fas fa-search me-2 text-info"></i>
+                                Tôi có thể tìm phòng theo tiêu chí nào?
+                            </button>
+                        </h3>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Bạn có thể tìm kiếm theo: địa điểm, mức giá, diện tích, loại phòng, 
+                                tiện ích (wifi, máy lạnh, bảo vệ), gần trường học/bệnh viện/chợ.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                                <i class="fas fa-shield-alt me-2 text-success"></i>
+                                Website có đảm bảo an toàn không?
+                            </button>
+                        </h3>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Chúng tôi xác minh thông tin chủ nhà, kiểm duyệt tin đăng và có đội ngũ 
+                                hỗ trợ 24/7. Mọi giao dịch đều được theo dõi để đảm bảo an toàn cho người dùng.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4">
+                                <i class="fas fa-money-bill-wave me-2 text-warning"></i>
+                                Chi phí sử dụng dịch vụ như thế nào?
+                            </button>
+                        </h3>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Tìm kiếm và liên hệ hoàn toàn miễn phí. Đăng tin cơ bản miễn phí, 
+                                các gói VIP có phí để tin được ưu tiên hiển thị và có nhiều tính năng hơn.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5" style="background: var(--primary-gradient); color: white;">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="fw-bold mb-4">Bạn Cần Hỗ Trợ Gấp?</h2>
+                <p class="lead mb-4">
+                    Đội ngũ chuyên viên của chúng tôi luôn sẵn sàng hỗ trợ bạn tìm được phòng trọ ưng ý
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="tel:1900123456" class="btn btn-light btn-lg">
+                        <i class="fas fa-phone me-2"></i>
+                        Gọi Ngay: 1900-123-456
+                    </a>
+                    <button class="btn btn-outline-light btn-lg" onclick="openChat()">
+                        <i class="fas fa-comments me-2"></i>
+                        Chat Trực Tuyến
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.map-responsive {
+    overflow: hidden;
+    padding-bottom: 56.25%;
+    position: relative;
+    height: 0;
+    border-radius: var(--border-radius);
+}
+
+.map-responsive iframe {
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    border-radius: var(--border-radius);
+}
+
+.btn-accent {
+    background: var(--accent-gradient);
+    border: none;
+    color: white;
+    font-weight: 600;
+}
+
+.btn-accent:hover {
+    background: var(--accent-gradient);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.8s ease;
+}
+
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    color: var(--dark-color);
+}
+
+.accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+@@media (max-width: 768px) {
+    .hero-contact {
+        text-align: center;
+    }
+    
+    .hero-contact .d-flex {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+    }
+}
+</style>
+
+<script>// Thêm function validate email
+export function validateEmailBasic(email) {
+  const re = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+  return re.test(email);
+}
+
+// Cập nhật form validation
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const requiredFields = this.querySelectorAll('[required]');
+    const emailField = document.getElementById('email');
+    let isValid = true;
+    
+    // Validate required fields
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+    
+    // Validate email format
+    if (emailField.value && !validateEmail(emailField.value)) {
+        emailField.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    if (isValid) {
+        // Xử lý submit form
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi...';
+        submitBtn.disabled = true;
+        
+        setTimeout(() => {
+            alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi trong vòng 2 giờ.');
+            this.reset();
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 2000);
+    }
+});
+
+// Chat function
+function openChat() {
+    // Replace with actual chat integration
+    alert('Tính năng chat sẽ được tích hợp sớm. Vui lòng gọi hotline: 1900-123-456');
+}
+
+// Phone number formatting
+document.getElementById('phone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 0) {
+        if (value.length <= 3) {
+            value = value;
+        } else if (value.length <= 6) {
+            value = value.slice(0, 3) + '.' + value.slice(3);
+        } else if (value.length <= 9) {
+            value = value.slice(0, 3) + '.' + value.slice(3, 6) + '.' + value.slice(6);
+        } else {
+            value = value.slice(0, 3) + '.' + value.slice(3, 6) + '.' + value.slice(6, 9);
+        }
+    }
+    e.target.value = value;
+});
+</script>

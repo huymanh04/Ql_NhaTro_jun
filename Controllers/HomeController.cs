@@ -16,9 +16,12 @@ namespace Ql_NhaTro_jun.Controllers
         public IActionResult Index()
         {
             return View();
+        }  public IActionResult About()
+        {
+            return View();
         } 
 
-        public IActionResult Privacy()
+        public IActionResult Contact()
         {
             return View();
         }
