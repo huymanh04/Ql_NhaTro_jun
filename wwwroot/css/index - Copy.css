@@ -1,0 +1,610 @@
+﻿/* Thiết lập chung */
+:root {
+    --primary-color: #3c6ef8;
+    --secondary-color: #42a5f5;
+    --dark-color: #333;
+    --light-color: #f9f9f9;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --error-color: #f44336;
+    --border-radius: 10px;
+    --box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: var(--dark-color);
+    background-color: #f5f7fa;
+}
+
+/* Banner Styling - Cải thiện */
+.promo-banner-container {
+    position: relative;
+    width: 100%;
+    height: 500px; /* Tăng chiều cao */
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin: 40px 0; /* Tăng margin */
+}
+
+.promo-banner-slider {
+    display: flex;
+    width: 600%;
+    height: 100%;
+    transition: transform 0.9s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.promo-banner-slide {
+    width: 16.666%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    font-size: 24px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+
+}
+
+.promo-banner-slide-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)); /* Tối hơn một chút */
+    z-index: 1;
+}
+
+.promo-banner-controls {
+    position: absolute;
+    bottom: 25px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    z-index: 10;
+}
+
+.promo-banner-control-btn {
+    width: 14px; /* Tăng kích thước */
+    height: 14px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+    .promo-banner-control-btn.active {
+        background-color: white;
+        transform: scale(1.4);
+    }
+
+.promo-banner-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.25);
+    border: none;
+    width: 60px; /* Tăng kích thước */
+    height: 60px;
+    border-radius: 50%;
+    font-size: 24px; /* Tăng font size */
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    z-index: 10;
+    transition: var(--transition);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+    .promo-banner-nav-btn:hover {
+        background-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+#promo-banner-prev {
+    left: 15px;
+}
+
+#promo-banner-next {
+    right: 15px;
+}
+
+.promo-banner-slide-content {
+    max-width: 65%; /* Thu hẹp lại để tập trung hơn */
+    position: relative;
+    z-index: 2;
+    transform: translateY(0);
+    opacity: 1;
+    transition: var(--transition);
+    padding: 35px; /* Tăng padding */
+    border-radius: var(--border-radius);
+    background-color: rgba(0, 0, 0, 0.35); /* Tối hơn một chút */
+    backdrop-filter: blur(10px); /* Tăng độ blur */
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.promo-banner-slide h2 {
+    margin-bottom: 20px;
+    font-size: 48px; /* Tăng font size */
+    font-weight: 800;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Tăng đổ bóng */
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+
+.promo-banner-slide p {
+    margin-bottom: 30px;
+    font-size: 20px; /* Tăng font size */
+    line-height: 1.6;
+    font-weight: 400;
+    opacity: 0.95;
+}
+
+.promo-banner-cta-button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 18px 35px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 16px;
+    transition: var(--transition);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+}
+
+    .promo-banner-cta-button:hover {
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        text-decoration: none;
+        color: white;
+    }
+
+    .promo-banner-cta-button::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-color: rgba(255, 255, 255, 0.2);
+        transition: width 0.3s ease;
+    }
+
+    .promo-banner-cta-button:hover::after {
+        width: 120%;
+    }
+
+/* Hero Section cải thiện */
+.hero-section {
+    background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3');
+    background-size: cover;
+    background-position: center;
+    padding: 120px 0; /* Tăng padding */
+    position: relative;
+    margin-top: -30px; /* Đẩy lên để lấp với banner */
+}
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+
+    .hero-section h1 {
+        font-size: 56px; /* Tăng font size */
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        letter-spacing: -1px;
+    }
+
+    .hero-section .lead {
+        font-size: 22px; /* Tăng font size */
+        font-weight: 400;
+        margin-bottom: 30px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+.search-box {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 35px; /* Tăng padding */
+    border-radius: var(--border-radius);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25); /* Tăng đổ bóng */
+    position: relative;
+    z-index: 2;
+    transform: translateY(0);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+    .search-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+.search-form .row {
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    padding: 14px 25px;
+    height: 55px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 18px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(60, 110, 248, 0.3);
+}
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(60, 110, 248, 0.4);
+        background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    }
+
+.form-control {
+    height: 55px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 0 20px;
+    font-size: 16px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: var(--transition);
+}
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(60, 110, 248, 0.15);
+    }
+
+select.form-control {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%233c6ef8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 18px;
+    padding-right: 45px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Thanh trượt giá cải thiện */
+.price-label {
+    color: #444;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+    .price-label::before {
+        content: '';
+        display: inline-block;
+        width: 4px;
+        height: 14px;
+        background-color: var(--primary-color);
+        margin-right: 8px;
+        border-radius: 2px;
+    }
+
+.price-slider-container {
+    position: relative;
+    padding: 5px 10px;
+    margin-top: 5px;
+}
+
+.range-slider {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    margin: 35px 0 20px;
+}
+
+.slider-track {
+    height: 100%;
+    position: absolute;
+    border-radius: 10px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+}
+
+.range-input {
+    position: relative;
+    height: 6px;
+}
+
+    .range-input input {
+        position: absolute;
+        width: 100%;
+        height: 6px;
+        top: 0;
+        left: 0;
+        background: none;
+        pointer-events: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        margin: 0;
+        padding: 0;
+    }
+
+input[type="range"]::-webkit-slider-thumb {
+    height: 22px;
+    width: 22px;
+    border-radius: 50%;
+    background-color: white;
+    pointer-events: auto;
+    -webkit-appearance: none;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    margin-top: -8px;
+    border: 2px solid var(--primary-color);
+}
+
+input[type="range"]::-moz-range-thumb {
+    height: 22px;
+    width: 22px;
+    border-radius: 50%;
+    background-color: white;
+    pointer-events: auto;
+    -moz-appearance: none;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--primary-color);
+}
+
+.price-values {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.price-tag {
+    position: absolute;
+    top: -40px;
+    padding: 5px 10px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    transform: translateX(-50%);
+    display: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+    .price-tag::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 6px solid var(--primary-color);
+    }
+
+    .price-tag.visible {
+        display: block;
+    }
+
+.price-selected {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 10px;
+    background-color: rgba(60, 110, 248, 0.05);
+    border-radius: 5px;
+    border: 1px dashed rgba(60, 110, 248, 0.3);
+}
+
+/* Animation cho các phần tử */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+/* Media query cho thiết bị di động */
+@media (max-width: 991px) {
+    .hero-section {
+        padding: 80px 0;
+    }
+
+        .hero-section h1 {
+            font-size: 42px;
+        }
+
+        .hero-section .lead {
+            font-size: 18px;
+        }
+
+    .search-box {
+        padding: 25px;
+    }
+
+    .promo-banner-container {
+        height: 400px;
+    }
+
+    .promo-banner-slide h2 {
+        font-size: 36px;
+    }
+
+    .promo-banner-slide p {
+        font-size: 18px;
+    }
+
+    .promo-banner-slide-content {
+        max-width: 85%;
+    }
+}
+
+@media (max-width: 767px) {
+    .hero-section {
+        padding: 60px 0;
+    }
+
+        .hero-section h1 {
+            font-size: 32px;
+        }
+
+        .hero-section .lead {
+            font-size: 16px;
+        }
+
+    .search-box {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .promo-banner-container {
+        height: 350px;
+        margin: 20px 0;
+    }
+
+    .promo-banner-slide h2 {
+        font-size: 28px;
+    }
+
+    .promo-banner-slide p {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    .promo-banner-slide-content {
+        max-width: 90%;
+        padding: 20px;
+    }
+
+    .promo-banner-cta-button {
+        padding: 12px 25px;
+        font-size: 14px;
+    }
+
+    .promo-banner-nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-section h1 {
+        font-size: 26px;
+    }
+
+    .promo-banner-container {
+        height: 300px;
+    }
+
+    .promo-banner-slide h2 {
+        font-size: 22px;
+    }
+
+    .promo-banner-slide p {
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    .btn-primary {
+        height: 48px;
+        font-size: 16px;
+    }
+
+    .form-control {
+        height: 48px;
+    }
+}
+
+
+
+.promo-banner-fullwidth {
+    position: relative;
+    width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    overflow: hidden;
+    background: #000; /* hoặc màu nền, ảnh nền, v.v. */
+}
+.layout-container, .main-wrapper, .container {
+    position: relative;
+    z-index: 0;
+}
+.promo-banner-container {
+    padding: 0;
+    margin: 0;
+}
+@media (max-width: 768px) {
+    .fullwidth-wrapper {
+        width: 100%;
+        position: static;
+        margin-left: 0;
+        left: 0;
+    }
+
+    .promo-banner-slide {
+        height: auto; /* hoặc một chiều cao nhỏ hơn */
+    }
+
+    .promo-banner-slide-content {
+        padding: 10px;
+        text-align: center;
+    }
+}

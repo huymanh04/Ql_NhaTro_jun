@@ -88,7 +88,7 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
-        [HttpPut("update-contract/{id}")]
+        [HttpPut("edit-contract/{id}")]
         public async Task<IActionResult> UpdateContract(int id, [FromBody] ContractCreateDto model)
         {
             if (model == null)
