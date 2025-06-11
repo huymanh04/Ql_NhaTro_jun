@@ -44,6 +44,7 @@ public partial class QlNhatroContext : DbContext
     public virtual DbSet<TinNhan> TinNhans { get; set; }
 
     public virtual DbSet<TinhThanh> TinhThanhs { get; set; }
+    public virtual DbSet<Bank> Banks { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -293,6 +294,29 @@ public partial class QlNhatroContext : DbContext
             entity.ToTable("TinhThanh");
 
             entity.Property(e => e.TenTinh).HasMaxLength(100);
+        });
+        modelBuilder.Entity<Bank>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Bank__3214EC07");
+
+            entity.ToTable("Bank");
+
+            entity.Property(e => e.Ten)
+                .HasMaxLength(50)
+                .IsUnicode(true);
+
+            entity.Property(e => e.SoTaiKhoan)
+                .HasMaxLength(100)
+                .IsUnicode(true);
+
+            entity.Property(e => e.TenNganHang)
+                .HasMaxLength(50)
+                .IsUnicode(true);
+
+            entity.Property(e => e.GhiChu)
+                .HasColumnType("nvarchar(max)");
+
+            
         });
 
         OnModelCreatingPartial(modelBuilder);

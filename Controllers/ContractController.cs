@@ -53,6 +53,46 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+        [HttpGet("get-contract/{id}")]
+        public async Task<IActionResult> GetContractById(int id)
+        {
+            try
+            {
+                var contract = await _context.HopDongs
+                    .Where(c => c.MaHopDong == id)
+                    .Select(c => new ContractDto
+                    {
+                        ContractId = c.MaHopDong,
+                        RoomId = c.MaPhong ?? 0,
+                        TenantId = c.MaKhachThue ?? 0,
+                        StartDate = c.NgayBatDau.HasValue
+                            ? c.NgayBatDau.Value.ToDateTime(TimeOnly.MinValue)
+                            : default(DateTime),
+                        EndDate = c.NgayKetThuc.HasValue
+                            ? c.NgayKetThuc.Value.ToDateTime(TimeOnly.MinValue)
+                            : default(DateTime),
+                        NumberOfTenants = c.SoNguoiO ?? 0,
+                        DepositAmount = c.TienDatCoc ?? 0,
+                        IsCompleted = c.DaKetThuc ?? false
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (contract == null)
+                    return NotFound(ApiResponse<object>.CreateError("Hợp đồng không tồn tại"));
+
+                return Ok(ApiResponse<ContractDto>.CreateSuccess(
+                    "Lấy hợp đồng thành công",
+                    contract
+                ));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy hợp đồng");
+                return StatusCode(500, ApiResponse<object>.CreateError(
+                    "Đã xảy ra lỗi khi lấy hợp đồng"
+                ));
+            }
+        }
         [HttpPost("add-contract")]
         public async Task<IActionResult> CreateContract([FromBody] ContractCreateDto model)
         {

@@ -48,6 +48,39 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+            [HttpGet("get-denbu-mahopdong/{id}")]
+            public async Task<IActionResult> GetDenbuById(int id)
+            {
+                try
+                {
+                    var denbu = await _context.DenBus
+                        .Where(d => d.MaHopDong == id)
+                        .Select(d => new CompensationDto
+                        {
+                            MaDenBu = d.MaDenBu,
+                            MaHopDong = d.MaHopDong ?? 0,
+                            NoiDung = d.NoiDung,
+                            SoTien = d.SoTien ?? 0,
+                            NgayTao = d.NgayTao ?? default(DateTime)
+                        })
+                        .FirstOrDefaultAsync();
+
+                    if (denbu == null)
+                        return NotFound(ApiResponse<object>.CreateError("Đền bù không tồn tại"));
+
+                    return Ok(ApiResponse<CompensationDto>.CreateSuccess(
+                        "Lấy thông tin đền bù thành công",
+                        denbu
+                    ));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Lỗi khi lấy thông tin đền bù");
+                    return StatusCode(500, ApiResponse<object>.CreateError(
+                        "Đã xảy ra lỗi khi lấy thông tin đền bù"
+                    ));
+                }
+            }
         [HttpPost("add-denbu")]
         public async Task<IActionResult> CreateDenbu([FromBody] CompensationCreateDto model)
         {

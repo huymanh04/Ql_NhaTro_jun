@@ -19,11 +19,21 @@ namespace Ql_NhaTro_jun.Controllers
             _context = context;
         }
         #region Nhà trọ
-        [HttpGet("get-motel")]
+        [HttpGet("get-list-motel")]
         public async Task<IActionResult> getMotel()
         {
             var banners = await _context.NhaTros.ToListAsync();
             return Ok(banners);
+        }
+        [HttpGet("get-motel-by-id/{id}")]
+        public async Task<IActionResult> GetMotelById(int id)
+        {
+            var motel = await _context.NhaTros.FindAsync(id);
+            if (motel == null)
+            {
+                return NotFound(ApiResponse<NhaTro>.CreateError("Không tìm thấy nhà trọ"));
+            }
+            return Ok(ApiResponse<NhaTro>.CreateSuccess("Lấy thông tin nhà trọ thành công", motel));
         }
         [HttpPost("add-motel")]
         public async Task<IActionResult> AddTinh([FromBody] NhaTroDto dto)
