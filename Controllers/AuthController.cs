@@ -16,10 +16,10 @@ namespace Api_Ql_nhatro.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-      
+
         private readonly ILogger<AuthController> _logger;
         QlNhatroContext _context;
-        public AuthController(ILogger<AuthController> logger,QlNhatroContext cc)
+        public AuthController(ILogger<AuthController> logger, QlNhatroContext cc)
         {
             _logger = logger; _context = cc;
         }
@@ -279,7 +279,83 @@ namespace Api_Ql_nhatro.Controllers
         }
 
         #endregion
+        #region get info
+        [HttpGet("get-phong/{id}")]
+        public async Task<IActionResult> GetPhong(int id)
+        {
+            var phong = await _context.PhongTros
+                .Where(p => p.MaPhong == id)
+                .Select(p => new
+                {
+                    p.MaPhong,
+                    p.TenPhong,
+                    p.Gia,
+                    p.DienTich,
+                    p.ConTrong,
+                    p.MoTa,
+                    TheLoai = p.MaTheLoaiNavigation.TenTheLoai
+                })
+                .FirstOrDefaultAsync();
 
+            if (phong == null)
+            {
+                return NotFound(ApiResponse<object>.CreateError("Không tìm thấy phòng trọ"));
+            }
 
-    }
+            return Ok(ApiResponse<object>.CreateSuccess("Lấy thông tin phòng thành công", phong));
+        }
+        [HttpGet("get-hop-dong/{id}")]
+        public async Task<IActionResult> Gethopdong(int id)
+        {
+            #region check quyền và login
+            var userName = User.Identity.Name;
+            if (userName == null)
+            {
+                return Unauthorized(new { message = "Bạn chưa đăng nhập" });
+            }
+            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
+            if (user == null)
+            {
+                user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
+            }
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Người dùng không tồn tại" });
+            }
+            
+            #endregion
+            try
+            {
+                var hopDong = await _context.HopDongs
+                     .Where(h => h.MaKhachThue == id)
+                     .Select(h => new
+                     {
+                         h.MaHopDong,
+                         h.MaPhong,
+                         h.MaKhachThue,
+                         NgayBatDau = h.NgayBatDau.HasValue ? h.NgayBatDau.Value.ToString("yyyy-MM-dd") : null,
+                         NgayKetThuc = h.NgayKetThuc.HasValue ? h.NgayKetThuc.Value.ToString("yyyy-MM-dd") : null,
+                         h.SoNguoiO,
+                         h.TienDatCoc,
+                         h.DaKetThuc
+                     })
+                     .FirstOrDefaultAsync();
+
+                if (hopDong == null)
+                {
+                    return NotFound(ApiResponse<object>.CreateError("Không tìm thấy hợp đồng"));
+                }
+
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy thông tin hợp đồng thành công", hopDong));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ApiResponse<object>.CreateError("Lỗi khi lấy thông tin hợp đồng: " + ex.Message));
+            }
+            #endregion
+
+        }
+     
+
+    } 
 }

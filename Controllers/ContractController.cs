@@ -92,13 +92,71 @@ namespace Ql_NhaTro_jun.Controllers
                     "Đã xảy ra lỗi khi lấy hợp đồng"
                 ));
             }
+        }[HttpGet("get-contract-by-id/{id}")]
+        public async Task<IActionResult> GetContractById1(int id)
+        {
+            try
+            {
+                var contract = await _context.HopDongs
+                    .Where(c => c.MaKhachThue == id)
+                    .Select(c => new ContractDto
+                    {
+                        ContractId = c.MaHopDong,
+                        RoomId = c.MaPhong ?? 0,
+                        TenantId = c.MaKhachThue ?? 0,
+                        StartDate = c.NgayBatDau.HasValue
+                            ? c.NgayBatDau.Value.ToDateTime(TimeOnly.MinValue)
+                            : default(DateTime),
+                        EndDate = c.NgayKetThuc.HasValue
+                            ? c.NgayKetThuc.Value.ToDateTime(TimeOnly.MinValue)
+                            : default(DateTime),
+                        NumberOfTenants = c.SoNguoiO ?? 0,
+                        DepositAmount = c.TienDatCoc ?? 0,
+                        IsCompleted = c.DaKetThuc ?? false
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (contract == null)
+                    return NotFound(ApiResponse<object>.CreateError("Hợp đồng không tồn tại"));
+
+                return Ok(ApiResponse<ContractDto>.CreateSuccess(
+                    "Lấy hợp đồng thành công",
+                    contract
+                ));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy hợp đồng");
+                return StatusCode(500, ApiResponse<object>.CreateError(
+                    "Đã xảy ra lỗi khi lấy hợp đồng"
+                ));
+            }
         }
         [HttpPost("add-contract")]
         public async Task<IActionResult> CreateContract([FromBody] ContractCreateDto model)
         {
             if (model == null)
                 return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
-
+            #region check quyền và login
+            var userName = User.Identity.Name;
+            if (userName == null)
+            {
+                return Unauthorized(new { message = "Bạn chưa đăng nhập" });
+            }
+            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
+            if (user == null)
+            {
+                user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
+            }
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Người dùng không tồn tại" });
+            }
+            if (user.VaiTro == "0") // Kiểm tra quyền người dùng
+            {
+                return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
+            }
+            #endregion
             try
             {
                 var contract = new HopDong
@@ -113,11 +171,14 @@ namespace Ql_NhaTro_jun.Controllers
                 };
 
                 _context.HopDongs.Add(contract);
+                var m = await _context.PhongTros.FindAsync(model.RoomId);
+                m.ConTrong = false;
+                _context.PhongTros.Update(m);
                 await _context.SaveChangesAsync();
 
                 return Ok(ApiResponse<object>.CreateSuccess(
                     "Tạo hợp đồng thành công",
-                    null
+                    contract
                 ));
             }
             catch (Exception ex)
@@ -152,7 +213,7 @@ namespace Ql_NhaTro_jun.Controllers
 
                 return Ok(ApiResponse<object>.CreateSuccess(
                     "Cập nhật hợp đồng thành công",
-                    null
+                    contract
                 ));
             }
             catch (Exception ex)
@@ -177,7 +238,7 @@ namespace Ql_NhaTro_jun.Controllers
 
                 return Ok(ApiResponse<object>.CreateSuccess(
                     "Xóa hợp đồng thành công",
-                    null
+                    contract
                 ));
             }
             catch (Exception ex)

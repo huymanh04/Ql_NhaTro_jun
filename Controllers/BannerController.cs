@@ -22,24 +22,24 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                var banners = await _context.Banners
-                    .Select(b => new BannerDto // Tạo DTO riêng để trả về
-                    {
-                        BannerId = b.BannerId,
-                        Title = b.Title,
-                        Content = b.Content,
-                        Text = b.Text,
-                        ImageBase64 = b.ImageUrl != null ? Convert.ToBase64String(b.ImageUrl) : null,
-                        RedirectUrl = b.RedirectUrl,
-                        IsActive = b.IsActive,
-                        CreatedAt = b.CreatedAt
-                    })
-                    .ToListAsync();
+                var bannerEntities = await _context.Banners.ToListAsync();
 
+                var banners = bannerEntities.Select(b => new BannerDto
+                {
+                    BannerId = b.BannerId,
+                    Title = b.Title,
+                    Content = b.Content,
+                    Text = b.Text,
+                    ImageBase64 = b.ImageUrl != null ? Convert.ToBase64String(b.ImageUrl) : null,
+                    RedirectUrl = b.RedirectUrl,
+                    IsActive = b.IsActive,
+                    CreatedAt = b.CreatedAt
+                }).ToList();
                 return Ok(ApiResponse<List<BannerDto>>.CreateSuccess(
-                    "Lấy danh sách banner thành công",
-                    banners
-                ));
+    "Lấy danh sách banner thành công",
+    banners
+));
+
             }
             catch (Exception ex)
             {

@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="~/css/admin.css?@DateTime.Now" rel="stylesheet" />
+
+</head>
+
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3>Admin Panel</h3>
+                <strong><i class="fas fa-layer-group"></i></strong>
+            </div>
+
+            <div class="admin-profile">
+                <div class="admin-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="admin-info">
+                    <h4>Đàm Huy Mạnh</h4>
+                    <p>Administrator</p>
+                </div>
+            </div>
+
+            <ul class="list-unstyled components">
+                <li class="active">
+                    <a href="@Url.Action("Dashborad", "Users")">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index", "Schools")">
+                        <i class="fas fa-school"></i>
+                        <span>Quản lý Trường</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("add_monny", "addmony")">
+                        <i class="fas fa-hand-holding-usd"></i>
+                        <span>Cộng Tiền Tay</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index", "Banking")">
+                        <i class="fas fa-university"></i>
+                        <span>Quản lý Banking</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Index", "Vouchers")">
+                        <i class="fas fa-tags"></i>
+                        <span>Quản lý Mã Giảm Giá</span>
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="list-unstyled sidebar-footer">
+                <li>
+                    <a href="@Url.Action("Index", "Home")">
+                        <i class="fas fa-cog"></i>
+                        <span>Quay lại Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Logout", "Users")">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Đăng Xuất</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+
+
+
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+                $('#content').toggleClass('active');
+            });
+
+            // Active menu item based on current controller
+            var currentController = '@ViewContext.RouteData.Values["controller"]';
+            $('nav ul li a').each(function () {
+                var href = $(this).attr('href').toLowerCase();
+                if (href.indexOf(currentController.toLowerCase()) > -1) {
+                    $(this).parent().addClass('active');
+                    $(this).parent().siblings().removeClass('active');
+                }
+            });
+        });
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

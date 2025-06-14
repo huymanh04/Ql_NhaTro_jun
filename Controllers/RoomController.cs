@@ -43,10 +43,23 @@ namespace Ql_NhaTro_jun.Controllers
                      MoTa = p.MoTa
                  })
                  .ToListAsync();
+                var img = await _context.HinhAnhPhongs
+                   
+                    .Select(i => new HinhAnhPhongDto
+                    {
+                        MaHinhAnh = i.MaHinhAnh,
+                        MaPhong = i.MaPhong,
+                        DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
+                        IsMain = i.IsMain
+                    })
+                    .ToListAsync();
+                var result = new PhongVaHinhDtoo
+                {
+                    Phong = tinhThanhs,
+                    HinhAnh = img
+                };
 
-                return Ok(ApiResponse<List<PhongTroDTO>>.CreateSuccess(
-                    "Lấy danh sách tỉnh thành thành công",
-                    tinhThanhs));
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy thành công", result));
             }
             catch (Exception ex)
             {
@@ -74,9 +87,23 @@ namespace Ql_NhaTro_jun.Controllers
                     })
                     .ToListAsync();
 
-                return Ok(ApiResponse<List<PhongTroDTO>>.CreateSuccess(
-                    "Lấy danh sách phòng theo nhà trọ thành công",
-                    phongTros));
+                var img = await _context.HinhAnhPhongs
+          .Where(i => i.MaPhong == id)
+          .Select(i => new HinhAnhPhongDto
+          {
+              MaHinhAnh = i.MaHinhAnh,
+              MaPhong = i.MaPhong,
+              DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
+              IsMain = i.IsMain
+          })
+          .ToListAsync();
+                var result = new PhongVaHinhDtoo
+                {
+                    Phong = phongTros,
+                    HinhAnh = img
+                };
+
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy thành công", result));
             }
             catch (Exception ex)
             {
@@ -104,9 +131,23 @@ namespace Ql_NhaTro_jun.Controllers
                     })
                     .ToListAsync();
 
-                return Ok(ApiResponse<List<PhongTroDTO>>.CreateSuccess(
-                    "Lấy danh sách phòng theo thể loại thành công",
-                    phongTros));
+                var img = await _context.HinhAnhPhongs
+              .Where(i => i.MaPhong == id)
+              .Select(i => new HinhAnhPhongDto
+              {
+                  MaHinhAnh = i.MaHinhAnh,
+                  MaPhong = i.MaPhong,
+                  DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
+                  IsMain = i.IsMain
+              })
+              .ToListAsync();
+                var result = new PhongVaHinhDtoo
+                {
+                    Phong = phongTros,
+                    HinhAnh = img
+                };
+
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy thành công", result));
             }
             catch (Exception ex)
             {
@@ -138,10 +179,24 @@ namespace Ql_NhaTro_jun.Controllers
                 {
                     return NotFound(ApiResponse<object>.CreateError("Phòng không tồn tại"));
                 }
+                var img= await _context.HinhAnhPhongs
+                    .Where(i => i.MaPhong == id)
+                    .Select(i => new HinhAnhPhongDto
+                    {
+                        MaHinhAnh = i.MaHinhAnh,
+                        MaPhong = i.MaPhong,
+                        DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
+                        IsMain = i.IsMain
+                    })
+                    .ToListAsync();
+                var result = new PhongVaHinhDto
+                {
+                    Phong = phongTro,
+                    HinhAnh = img
+                };
 
-                return Ok(ApiResponse<PhongTroDTO>.CreateSuccess(
-                    "Lấy thông tin phòng thành công",
-                    phongTro));
+                return Ok(ApiResponse<PhongVaHinhDto>.CreateSuccess("Lấy thành công", result));
+
             }
             catch (Exception ex)
             {
@@ -324,7 +379,7 @@ namespace Ql_NhaTro_jun.Controllers
                 }
                 
 
-                return Ok(ApiResponse<PhongTro>.CreateSuccess(
+                return Ok(ApiResponse<object>.CreateSuccess(
                     "Thêm loại phòng thành công",
                     phongTro));
             }
@@ -397,7 +452,7 @@ namespace Ql_NhaTro_jun.Controllers
                             {
                                 var imageData = binaryReader.ReadBytes((int)file.Length);
                                 var m = await _context.PhongTros.FirstOrDefaultAsync(t => t.TenPhong == updateDto.TenPhong);
-                                var image = new HinhAnhPhong
+                                    var image = new HinhAnhPhong
                                 {
                                     MaPhong = m.MaPhong,
                                     DuongDanHinh = imageData,
@@ -492,6 +547,16 @@ namespace Ql_NhaTro_jun.Controllers
         public bool ConTrong { get; set; }
         public string MoTa { get; set; }
     }
+    public class PhongVaHinhDto
+    {
+        public PhongTroDTO Phong { get; set; }
+        public List<HinhAnhPhongDto> HinhAnh { get; set; }
+    }   public class PhongVaHinhDtoo
+    {
+        public List<PhongTroDTO> Phong { get; set; }
+        public List<HinhAnhPhongDto> HinhAnh { get; set; }
+    }
+
     public class HinhAnhPhongDto
     {
         public int MaHinhAnh { get; set; }
