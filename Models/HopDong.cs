@@ -21,13 +21,15 @@ public partial class HopDong
 
     public bool? DaKetThuc { get; set; }
 
+    public int SoXe { get; set; }
+
     public virtual ICollection<DenBu> DenBus { get; set; } = new List<DenBu>();
 
     public virtual ICollection<HoaDonTong> HoaDonTongs { get; set; } = new List<HoaDonTong>();
 
-    public virtual ICollection<LichSuThanhToan> LichSuThanhToans { get; set; } = new List<LichSuThanhToan>();
+    public virtual ICollection<HopDongNguoiThue> HopDongNguoiThues { get; set; } = new List<HopDongNguoiThue>();
 
-    public virtual NguoiDung? MaKhachThueNavigation { get; set; }
+    public virtual ICollection<LichSuThanhToan> LichSuThanhToans { get; set; } = new List<LichSuThanhToan>();
 
     public virtual PhongTro? MaPhongNavigation { get; set; }
 }

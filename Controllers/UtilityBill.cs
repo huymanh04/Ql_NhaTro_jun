@@ -18,48 +18,15 @@ namespace Ql_NhaTro_jun.Controllers
         {
             _logger = logger; _context = cc;
         }
-        [HttpGet("get-hoadon-tien-ich")]
-        public async Task<IActionResult> GetHoaDonTienIch()
-        {
-            try
-            {
-                var hoaDonTienIch = await _context.HoaDonTienIches
-                    .Select(h => new HoaDonTienIchDTO
-                    {
-                        MaHoaDon = h.MaHoaDon,
-                        MaPhong = h.MaPhong ?? 0,
-                        Thang = h.Thang ?? 0,
-                        Nam = h.Nam ?? 0,
-                        SoDien = h.SoDien ?? 0,
-                        SoNuoc = h.SoNuoc ?? 0,
-                        DonGiaDien = h.DonGiaDien ?? 0,
-                        DonGiaNuoc = h.DonGiaNuoc ?? 0,
-                        TongTien = h.TongTien ?? 0,
-                        DaThanhToan = h.DaThanhToan ?? false
-                    })
-                    .ToListAsync();
 
-                return Ok(ApiResponse<List<HoaDonTienIchDTO>>.CreateSuccess(
-                    "Lấy danh sách hóa đơn tiện ích thành công",
-                    hoaDonTienIch
-                ));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi lấy danh sách hóa đơn tiện ích");
-                return StatusCode(500, ApiResponse<object>.CreateError(
-                    "Đã xảy ra lỗi khi lấy danh sách hóa đơn tiện ích"
-                ));
-            }
-        }
-        [HttpGet("get-hoadon-tien-ich/{id}")]
+        [HttpGet("get-hoa-don-chi-tiet/{id}")]
         public async Task<IActionResult> GetHoaDonTienIchById(int id)
         {
             try
             {
                 var hoaDon = await _context.HoaDonTienIches
                     .Where(h => h.MaHoaDon == id)
-                    .Select(h => new HoaDonTienIchDTO
+                    .Select(h => new HoaDonTienIch
                     {
                         MaHoaDon = h.MaHoaDon,
                         MaPhong = h.MaPhong ?? 0,
@@ -67,6 +34,8 @@ namespace Ql_NhaTro_jun.Controllers
                         Nam = h.Nam ?? 0,
                         SoDien = h.SoDien ?? 0,
                         SoNuoc = h.SoNuoc ?? 0,
+                        Phidv = h.Phidv,
+                        Soxe = h.Soxe,
                         DonGiaDien = h.DonGiaDien ?? 0,
                         DonGiaNuoc = h.DonGiaNuoc ?? 0,
                         TongTien = h.TongTien ?? 0,
@@ -77,7 +46,7 @@ namespace Ql_NhaTro_jun.Controllers
                 if (hoaDon == null)
                     return NotFound(ApiResponse<object>.CreateError("Hóa đơn tiện ích không tồn tại"));
 
-                return Ok(ApiResponse<HoaDonTienIchDTO>.CreateSuccess(
+                return Ok(ApiResponse<object>.CreateSuccess(
                     "Lấy hóa đơn tiện ích thành công",
                     hoaDon
                 ));
@@ -93,27 +62,45 @@ namespace Ql_NhaTro_jun.Controllers
         [HttpPost("add-hoadon-tien-ich")]
         public async Task<IActionResult> CreateHoaDonTienIch([FromBody] HoaDonTienIchDTO model)
         {
+            //add hóa đơn chi tiết kèm hóa đơn tong cho khách hàng
             if (model == null)
                 return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
 
             try
             {
+                DateTime date = DateTime.Now;
+                var m = await _context.CaiDatHeThongs.FirstOrDefaultAsync();
+                var phong = await _context.PhongTros.FirstOrDefaultAsync(p => p.MaPhong == model.MaPhong);
+                var hopdong = await _context.HopDongs.FirstOrDefaultAsync(h => h.MaPhong == model.MaPhong);
                 var hoaDon = new HoaDonTienIch
                 {
                     MaPhong = model.MaPhong,
-                    Thang = model.Thang,
-                    Nam = model.Nam,
+                    Thang = date.Month,
+                    Nam = date.Year,
                     SoDien = model.SoDien,
                     SoNuoc = model.SoNuoc,
-                    DonGiaDien = model.DonGiaDien,
-                    DonGiaNuoc = model.DonGiaNuoc,
-                    TongTien = model.TongTien,
-                    DaThanhToan = model.DaThanhToan
+                    DonGiaDien = m.TienDien ?? 0,
+                    DonGiaNuoc = m.TienNuoc ?? 0,
+                    Soxe = hopdong.SoXe,
+                    Phidv = m.Phidv ?? 0,
+                    TongTien = phong.Gia + ((decimal)model.SoDien * m.TienDien) + ((decimal)model.SoNuoc * m.TienNuoc) + ((decimal)hopdong.SoXe * m.PhiGiuXe) + m.Phidv,
+                    DaThanhToan = false,
                 };
 
                 _context.HoaDonTienIches.Add(hoaDon);
                 await _context.SaveChangesAsync();
+                var hdct = await _context.HoaDonTienIches.FirstOrDefaultAsync(h => h.MaPhong == model.MaPhong && h.Thang == date.Month && h.Nam == date.Year);
 
+                var hoaDonTong = new HoaDonTong
+                {
+                    MaHopDong = hopdong.MaHopDong,
+                    NgayXuat = DateOnly.FromDateTime(date),
+                    TongTien = hdct.TongTien,
+                    GhiChu = model.note
+                };
+
+                _context.HoaDonTongs.Add(hoaDonTong);
+                await _context.SaveChangesAsync();
                 return Ok(ApiResponse<HoaDonTienIchDTO>.CreateSuccess(
                     "Thêm mới hóa đơn tiện ích thành công",
                     model
@@ -128,7 +115,7 @@ namespace Ql_NhaTro_jun.Controllers
             }
         }
         [HttpPut("edit-hoadon-tien-ich/{id}")]
-        public async Task<IActionResult> UpdateHoaDonTienIch(int id, [FromBody] HoaDonTienIchDTO model)
+        public async Task<IActionResult> UpdateHoaDonTienIch(int id, [FromBody] HoaDonTienIchDTO model, bool DaThanhToan = false)
         {
             if (model == null)
                 return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
@@ -138,21 +125,42 @@ namespace Ql_NhaTro_jun.Controllers
                 var hoaDon = await _context.HoaDonTienIches.FindAsync(id);
                 if (hoaDon == null)
                     return NotFound(ApiResponse<object>.CreateError("Hóa đơn tiện ích không tồn tại"));
-
-                hoaDon.MaPhong = model.MaPhong;
-                hoaDon.Thang = model.Thang;
-                hoaDon.Nam = model.Nam;
+                var hoadowntong = await _context.HoaDonTongs.FirstOrDefaultAsync(h => h.MaHopDong == hoaDon.MaHoaDon);
                 hoaDon.SoDien = model.SoDien;
                 hoaDon.SoNuoc = model.SoNuoc;
-                hoaDon.DonGiaDien = model.DonGiaDien;
-                hoaDon.DonGiaNuoc = model.DonGiaNuoc;
-                hoaDon.TongTien = model.TongTien;
-                hoaDon.DaThanhToan = model.DaThanhToan;
+                if (DaThanhToan)
+                {
+                    hoaDon.DaThanhToan = true;
+                }
+                decimal tong = 0;
+                if (model.SoDien > 0 || model.SoNuoc > 0)
+                {
+                    if (model.SoNuoc != hoaDon.SoNuoc && model.SoDien != 0)
+                    {
+                        hoaDon.SoNuoc = model.SoNuoc;
 
+                    }
+                    if (model.SoDien != hoaDon.SoDien && model.SoDien != 0)
+                    {
+                        hoaDon.SoDien = model.SoDien;
+                    }
+                    decimal tongcu = hoaDon.TongTien - ((decimal)hoaDon.SoDien * hoaDon.DonGiaDien) + ((decimal)hoaDon.SoNuoc * hoaDon.DonGiaNuoc) ?? 0;
+                    hoaDon.TongTien = tongcu + ((decimal)model.SoDien * hoaDon.DonGiaDien) + ((decimal)model.SoNuoc * hoaDon.DonGiaNuoc);
+                    tong = hoaDon.TongTien ?? 0;
+                    hoadowntong.TongTien = tong;
+                }
+
+
+
+                if (model.note != string.Empty && model.note != null)
+                {
+                    hoadowntong.GhiChu = model.note;
+                }
                 _context.HoaDonTienIches.Update(hoaDon);
+                _context.HoaDonTongs.Update(hoadowntong);
                 await _context.SaveChangesAsync();
 
-                return Ok(ApiResponse<HoaDonTienIchDTO>.CreateSuccess(
+                return Ok(ApiResponse<object>.CreateSuccess(
                     "Cập nhật hóa đơn tiện ích thành công",
                     model
                 ));
@@ -171,30 +179,29 @@ namespace Ql_NhaTro_jun.Controllers
             var manh = await _context.HoaDonTienIches.FindAsync(id);
             if (manh == null)
                 return NotFound(ApiResponse<object>.CreateError("Hóa đơn tiện ích không tồn tại"));
-            try {
+            try
+            {
+                var hoadowntong = await _context.HoaDonTongs.FirstOrDefaultAsync(h => h.MaHopDong == manh.MaHoaDon);
+                _context.HoaDonTongs.Remove(hoadowntong);
+
                 _context.HoaDonTienIches.Remove(manh);
-                await _context.SaveChangesAsync();
+
                 return Ok(ApiResponse<object>.CreateSuccess(
                     "Xóa hó đơn thành công",
                     null
                 ));
-            } catch { }
+            }
+            catch { }
             return StatusCode(500, ApiResponse<object>.CreateError(
                     "Đã xảy ra lỗi khi xóa hợp đồng"
                 ));
         }
         public class HoaDonTienIchDTO
         {
-            public int MaHoaDon { get; set; }
             public int MaPhong { get; set; }
-            public int Thang { get; set; }
-            public int Nam { get; set; }
             public double SoDien { get; set; }
             public double SoNuoc { get; set; }
-            public decimal DonGiaDien { get; set; }
-            public decimal DonGiaNuoc { get; set; }
-            public decimal TongTien { get; set; }
-            public bool DaThanhToan { get; set; }
+            public string note { get; set; }
         }
     }
 }

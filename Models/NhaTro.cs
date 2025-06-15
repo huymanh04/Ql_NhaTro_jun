@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Ql_NhaTro_jun.Models;
 
@@ -19,7 +18,6 @@ public partial class NhaTro
     public int? MaKhuVuc { get; set; }
 
     public string? MoTa { get; set; }
-  
 
     public DateTime? NgayTao { get; set; }
 

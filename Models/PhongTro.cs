@@ -21,7 +21,7 @@ public partial class PhongTro
 
     public string? MoTa { get; set; }
 
-    public virtual ICollection<HinhAnhPhong> HinhAnhPhongs { get; set; } = new List<HinhAnhPhong>();
+    public virtual ICollection<HinhAnhPhongTro> HinhAnhPhongTros { get; set; } = new List<HinhAnhPhongTro>();
 
     public virtual ICollection<HoaDonTienIch> HoaDonTienIches { get; set; } = new List<HoaDonTienIch>();
 

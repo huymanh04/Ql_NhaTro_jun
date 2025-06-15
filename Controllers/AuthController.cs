@@ -327,12 +327,11 @@ namespace Api_Ql_nhatro.Controllers
             try
             {
                 var hopDong = await _context.HopDongs
-                     .Where(h => h.MaKhachThue == id)
+                     .Where(h => h.MaPhong == id)
                      .Select(h => new
                      {
                          h.MaHopDong,
-                         h.MaPhong,
-                         h.MaKhachThue,
+                         h.MaPhong, 
                          NgayBatDau = h.NgayBatDau.HasValue ? h.NgayBatDau.Value.ToString("yyyy-MM-dd") : null,
                          NgayKetThuc = h.NgayKetThuc.HasValue ? h.NgayKetThuc.Value.ToString("yyyy-MM-dd") : null,
                          h.SoNguoiO,

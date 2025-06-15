@@ -15,6 +15,14 @@ public partial class CaiDatHeThong
 
     public string? DiaChi { get; set; }
 
+    public decimal? TienDien { get; set; }
+
+    public decimal? TienNuoc { get; set; }
+
+    public decimal? Phidv { get; set; }
+
+    public decimal? PhiGiuXe { get; set; }
+
     public string? SoDienThoai { get; set; }
 
     public string? GoogleMapEmbed { get; set; }

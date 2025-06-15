@@ -21,7 +21,7 @@ public partial class NguoiDung
     [NotMapped]
     [JsonPropertyName("g-recaptcha-response")]
     public string? RecaptchaResponse { get; set; }
-    public virtual ICollection<HopDong> HopDongs { get; set; } = new List<HopDong>();
+    public virtual ICollection<HopDongNguoiThue> HopDongNguoiThues { get; set; } = new List<HopDongNguoiThue>();
 
     public virtual ICollection<NhaTro> NhaTros { get; set; } = new List<NhaTro>();
 

@@ -53,6 +53,8 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API quản lý nhà trọ cho Admin và Người dùng"
     });
 });
+
+
 builder.Services.AddDbContext<QlNhatroContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.Configure<FormOptions>(options =>

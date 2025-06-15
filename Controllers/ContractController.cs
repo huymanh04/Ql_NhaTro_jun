@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Ql_NhaTro_jun.Models;
+using System.Text.Json;
 
 namespace Ql_NhaTro_jun.Controllers
 {
@@ -26,7 +27,6 @@ namespace Ql_NhaTro_jun.Controllers
      {
          ContractId = c.MaHopDong,
          RoomId = c.MaPhong ?? 0,
-         TenantId = c.MaKhachThue ?? 0,
          StartDate = c.NgayBatDau.HasValue
              ? c.NgayBatDau.Value.ToDateTime(TimeOnly.MinValue)
              : default(DateTime),
@@ -64,7 +64,6 @@ namespace Ql_NhaTro_jun.Controllers
                     {
                         ContractId = c.MaHopDong,
                         RoomId = c.MaPhong ?? 0,
-                        TenantId = c.MaKhachThue ?? 0,
                         StartDate = c.NgayBatDau.HasValue
                             ? c.NgayBatDau.Value.ToDateTime(TimeOnly.MinValue)
                             : default(DateTime),
@@ -72,6 +71,7 @@ namespace Ql_NhaTro_jun.Controllers
                             ? c.NgayKetThuc.Value.ToDateTime(TimeOnly.MinValue)
                             : default(DateTime),
                         NumberOfTenants = c.SoNguoiO ?? 0,
+                        TenantIds = c.HopDongNguoiThues.Select(nt => nt.MaKhachThue).ToList(),
                         DepositAmount = c.TienDatCoc ?? 0,
                         IsCompleted = c.DaKetThuc ?? false
                     })
@@ -92,18 +92,18 @@ namespace Ql_NhaTro_jun.Controllers
                     "Đã xảy ra lỗi khi lấy hợp đồng"
                 ));
             }
-        }[HttpGet("get-contract-by-id/{id}")]
+        }
+        [HttpGet("get-contract-by-room-id/{id}")]
         public async Task<IActionResult> GetContractById1(int id)
         {
             try
             {
                 var contract = await _context.HopDongs
-                    .Where(c => c.MaKhachThue == id)
+                    .Where(c => c.MaPhong == id)
                     .Select(c => new ContractDto
                     {
                         ContractId = c.MaHopDong,
                         RoomId = c.MaPhong ?? 0,
-                        TenantId = c.MaKhachThue ?? 0,
                         StartDate = c.NgayBatDau.HasValue
                             ? c.NgayBatDau.Value.ToDateTime(TimeOnly.MinValue)
                             : default(DateTime),
@@ -111,6 +111,7 @@ namespace Ql_NhaTro_jun.Controllers
                             ? c.NgayKetThuc.Value.ToDateTime(TimeOnly.MinValue)
                             : default(DateTime),
                         NumberOfTenants = c.SoNguoiO ?? 0,
+                        Soxe = c.SoXe,
                         DepositAmount = c.TienDatCoc ?? 0,
                         IsCompleted = c.DaKetThuc ?? false
                     })
@@ -159,13 +160,18 @@ namespace Ql_NhaTro_jun.Controllers
             #endregion
             try
             {
+                bool daCoHopDong = await _context.HopDongs
+        .AnyAsync(h => h.MaPhong == model.RoomId && h.DaKetThuc == false);
+                if (daCoHopDong)
+                    return BadRequest(ApiResponse<object>.CreateError("Phòng đã có hợp đồng chưa kết thúc"));
+
                 var contract = new HopDong
                 {
                     MaPhong = model.RoomId,
-                    MaKhachThue = model.TenantId,
-                    NgayBatDau = DateOnly.FromDateTime(  model.StartDate),
+                    NgayBatDau = DateOnly.FromDateTime(model.StartDate),
                     NgayKetThuc = DateOnly.FromDateTime(model.EndDate),
                     SoNguoiO = model.NumberOfTenants,
+                    SoXe = model.Soxe,
                     TienDatCoc = model.DepositAmount,
                     DaKetThuc = false // Mặc định là chưa kết thúc
                 };
@@ -175,10 +181,76 @@ namespace Ql_NhaTro_jun.Controllers
                 m.ConTrong = false;
                 _context.PhongTros.Update(m);
                 await _context.SaveChangesAsync();
+                // Lấy cấu hình hệ thống (giá điện/nước)
+                var caiDat = await _context.CaiDatHeThongs.FirstOrDefaultAsync();
+                decimal tienDien = caiDat?.TienDien ?? 0;
+                decimal tienNuoc = caiDat?.TienNuoc ?? 0;
 
+                // Lấy phòng và giá thuê
+                var phong = await _context.PhongTros.FindAsync(model.RoomId);
+                decimal tienPhong = phong?.Gia ?? 0;
+
+                // Tính tổng tiền hóa đơn tiện ích
+
+                decimal tongTien = tienPhong;
+
+                // Tạo hóa đơn tiện ích
+                var hoaDonTienIch = new HoaDonTienIch
+                {
+                    MaPhong = model.RoomId,
+                    Thang = DateTime.Now.Month,
+                    Nam = DateTime.Now.Year,
+                    SoDien = 0,
+                    SoNuoc = 0,
+                    DonGiaDien = tienDien,
+                    DonGiaNuoc = tienNuoc,
+                    TongTien = 0,
+                    DaThanhToan = true
+                };
+                _context.HoaDonTienIches.Add(hoaDonTienIch);
+                await _context.SaveChangesAsync();
+
+                // Tạo hóa đơn tổng
+                var hoaDonTong = new HoaDonTong
+                {
+                    MaHopDong = contract.MaHopDong,  // FK đến hợp đồng vừa tạo
+                    NgayXuat = DateOnly.FromDateTime(DateTime.Today),
+                    TongTien = tongTien,
+                    GhiChu = "Đóng tiền cọc tháng đầu tiên. Chưa có hóa đơn tiện ích cụ thể. " +
+                             "Hóa đơn tiện ích sẽ được tạo sau khi có số liệu điện nước.",
+                };
+                _context.HoaDonTongs.Add(hoaDonTong);
+
+                foreach (var id in model.TenantIds)
+                {
+                    _context.HopDongNguoiThues.Add(new HopDongNguoiThue
+                    {
+                        MaHopDong = contract.MaHopDong,
+                        MaKhachThue = id
+                    });
+                }
+                //Console.WriteLine(JsonSerializer.Serialize(contract)); // sẽ lỗi nếu có vòng lặp
+
+                await _context.SaveChangesAsync();
+                var dto = new
+                {
+                    MaHopDong = contract.MaHopDong,
+                    MaPhong = contract.MaPhong,
+                    NgayBatDau = contract.NgayBatDau?.ToDateTime(TimeOnly.MinValue),
+                    NgayKetThuc = contract.NgayKetThuc?.ToDateTime(TimeOnly.MinValue),
+                    SoNguoiO = contract.SoNguoiO,
+                    Soxe = contract.SoXe,
+                    TienDatCoc = contract.TienDatCoc,
+                    DaKetThuc = contract.DaKetThuc,
+
+                    Tenants = contract.HopDongNguoiThues.Select(x => new HopDongNguoiThueDto
+                    {
+                        MaKhachThue = x.MaKhachThue
+                    })
+                };
                 return Ok(ApiResponse<object>.CreateSuccess(
                     "Tạo hợp đồng thành công",
-                    contract
+                    dto
                 ));
             }
             catch (Exception ex)
@@ -190,30 +262,68 @@ namespace Ql_NhaTro_jun.Controllers
             }
         }
         [HttpPut("edit-contract/{id}")]
-        public async Task<IActionResult> UpdateContract(int id, [FromBody] ContractCreateDto model)
+        public async Task<IActionResult> UpdateContract(int id, [FromBody] ContractUpdateDto model, bool xoangdung = false)
         {
-            if (model == null)
-                return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
 
             try
             {
                 var contract = await _context.HopDongs.FindAsync(id);
                 if (contract == null)
                     return NotFound(ApiResponse<object>.CreateError("Hợp đồng không tồn tại"));
+                if (model != null && !xoangdung)
+                {
+                    contract.NgayKetThuc = DateOnly.FromDateTime(model.EndDate);
+                    contract.SoNguoiO = model.NumberOfTenants;
+                    contract.SoXe = model.Soxe;
+                    contract.DaKetThuc = model.DaKetThuc; // Cập nhật trạng thái kết thúc
+                }
+                // Mặc định là chưa kết thúc
+                // Cập nhật danh sách người thuê
+                var manh = await _context.HopDongNguoiThues
+                    .Where(h => h.MaHopDong == contract.MaHopDong)
+                    .ToListAsync();
+                if (!xoangdung)
+                {
 
-                contract.MaPhong = model.RoomId;
-                contract.MaKhachThue = model.TenantId;
-                contract.NgayBatDau = DateOnly.FromDateTime(model.StartDate);
-                contract.NgayKetThuc = DateOnly.FromDateTime(model.EndDate);
-                contract.SoNguoiO = model.NumberOfTenants;
-                contract.TienDatCoc = model.DepositAmount;
-
+                    #region add thêm người thuê
+                    foreach (var tenantId in model.TenantIds)
+                    {
+                        _context.HopDongNguoiThues.Add(new HopDongNguoiThue
+                        {
+                            MaHopDong = contract.MaHopDong,
+                            MaKhachThue = tenantId
+                        });
+                    }
+                    #endregion
+                }
+                else
+                {
+                    #region Xóa người dùng
+                    _context.HopDongNguoiThues.RemoveRange(
+                  manh.Where(h => model.TenantIds.Contains(h.MaKhachThue)));
+                    #endregion
+                }
                 _context.HopDongs.Update(contract);
                 await _context.SaveChangesAsync();
+                var dto = new
+                {
+                    MaHopDong = contract.MaHopDong,
+                    MaPhong = contract.MaPhong,
+                    NgayBatDau = contract.NgayBatDau?.ToDateTime(TimeOnly.MinValue),
+                    NgayKetThuc = contract.NgayKetThuc?.ToDateTime(TimeOnly.MinValue),
+                    SoNguoiO = contract.SoNguoiO,
+                    Soxe = contract.SoXe,
+                    TienDatCoc = contract.TienDatCoc,
+                    DaKetThuc = contract.DaKetThuc,
 
+                    Tenants = contract.HopDongNguoiThues.Select(x => new HopDongNguoiThueDto
+                    {
+                        MaKhachThue = x.MaKhachThue
+                    })
+                };
                 return Ok(ApiResponse<object>.CreateSuccess(
                     "Cập nhật hợp đồng thành công",
-                    contract
+                    dto
                 ));
             }
             catch (Exception ex)
@@ -232,6 +342,26 @@ namespace Ql_NhaTro_jun.Controllers
                 var contract = await _context.HopDongs.FindAsync(id);
                 if (contract == null)
                     return NotFound(ApiResponse<object>.CreateError("Hợp đồng không tồn tại"));
+                var hoadontong = await _context.HoaDonTongs
+                    .FirstOrDefaultAsync(h => h.MaHopDong == contract.MaHopDong);
+                if (hoadontong != null)
+                {
+                    var hoadowntienich = await _context.HoaDonTienIches
+                        .Where(h => h.MaPhong == contract.MaPhong)
+                        .ToListAsync();
+                    _context.HoaDonTienIches.RemoveRange(hoadowntienich);
+                    await _context.SaveChangesAsync();
+                    _context.HoaDonTongs.Remove(hoadontong);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Xóa các bản ghi liên quan đến hợp đồng
+                var hodongnguoithue = await _context.HopDongNguoiThues
+                    .Where(h => h.MaHopDong == contract.MaHopDong)
+                    .ToListAsync();
+                _context.HopDongNguoiThues.RemoveRange(hodongnguoithue);
+                await _context.SaveChangesAsync();
+                // Xóa hợp đồng
 
                 _context.HopDongs.Remove(contract);
                 await _context.SaveChangesAsync();
@@ -249,29 +379,45 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+        public class HopDongNguoiThueDto
+        {
+            public int MaKhachThue { get; set; }
+        }
+
         public class ContractDto
         {
             public int ContractId { get; set; }              // MaHopDong
             public int RoomId { get; set; }                  // MaPhong
-            public int TenantId { get; set; }                // MaKhachThue
+                                                             // MaKhachThue
             public DateTime StartDate { get; set; }          // NgayBatDau
             public DateTime EndDate { get; set; }            // NgayKetThuc
             public int NumberOfTenants { get; set; }         // SoNguoiO
+            public int Soxe { get; set; }         // SoNguoiO
             public decimal DepositAmount { get; set; }       // TienDatCoc
             public bool IsCompleted { get; set; }            // DaKetThuc
+            public List<int>? TenantIds { get; set; }
         }
 
         // DTO cho tạo mới hợp đồng
         public class ContractCreateDto
         {
             public int RoomId { get; set; }                  // MaPhong
-            public int TenantId { get; set; }                // MaKhachThue
             public DateTime StartDate { get; set; }          // NgayBatDau
             public DateTime EndDate { get; set; }            // NgayKetThuc
             public int NumberOfTenants { get; set; }         // SoNguoiO
+            public int Soxe { get; set; }         // SoNguoiO
             public decimal DepositAmount { get; set; }       // TienDatCoc
+            public List<int>? TenantIds { get; set; }
         }
 
+        public class ContractUpdateDto
+        {
 
+            public DateTime EndDate { get; set; }            // NgayKetThuc
+            public int NumberOfTenants { get; set; }         // SoNguoiO
+            public int Soxe { get; set; }         // SoNguoiO
+            public List<int>? TenantIds { get; set; }
+            public bool DaKetThuc { get; set; } = false; // Mặc định là chưa kết thúc
+        }
     }
 }

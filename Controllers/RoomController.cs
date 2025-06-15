@@ -43,14 +43,14 @@ namespace Ql_NhaTro_jun.Controllers
                      MoTa = p.MoTa
                  })
                  .ToListAsync();
-                var img = await _context.HinhAnhPhongs
-                   
+                var img = await _context.HinhAnhPhongTros
+
                     .Select(i => new HinhAnhPhongDto
                     {
                         MaHinhAnh = i.MaHinhAnh,
                         MaPhong = i.MaPhong,
                         DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-                        IsMain = i.IsMain
+                        IsMain = (bool)i.IsMain
                     })
                     .ToListAsync();
                 var result = new PhongVaHinhDtoo
@@ -87,14 +87,14 @@ namespace Ql_NhaTro_jun.Controllers
                     })
                     .ToListAsync();
 
-                var img = await _context.HinhAnhPhongs
+                var img = await _context.HinhAnhPhongTros
           .Where(i => i.MaPhong == id)
           .Select(i => new HinhAnhPhongDto
           {
               MaHinhAnh = i.MaHinhAnh,
               MaPhong = i.MaPhong,
               DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-              IsMain = i.IsMain
+              IsMain = (bool)i.IsMain
           })
           .ToListAsync();
                 var result = new PhongVaHinhDtoo
@@ -131,14 +131,14 @@ namespace Ql_NhaTro_jun.Controllers
                     })
                     .ToListAsync();
 
-                var img = await _context.HinhAnhPhongs
+                var img = await _context.HinhAnhPhongTros
               .Where(i => i.MaPhong == id)
               .Select(i => new HinhAnhPhongDto
               {
                   MaHinhAnh = i.MaHinhAnh,
                   MaPhong = i.MaPhong,
                   DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-                  IsMain = i.IsMain
+                  IsMain = (bool)i.IsMain
               })
               .ToListAsync();
                 var result = new PhongVaHinhDtoo
@@ -179,14 +179,14 @@ namespace Ql_NhaTro_jun.Controllers
                 {
                     return NotFound(ApiResponse<object>.CreateError("Phòng không tồn tại"));
                 }
-                var img= await _context.HinhAnhPhongs
+                var img= await _context.HinhAnhPhongTros
                     .Where(i => i.MaPhong == id)
                     .Select(i => new HinhAnhPhongDto
                     {
                         MaHinhAnh = i.MaHinhAnh,
                         MaPhong = i.MaPhong,
                         DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-                        IsMain = i.IsMain
+                        IsMain = (bool)i.IsMain
                     })
                     .ToListAsync();
                 var result = new PhongVaHinhDto
@@ -209,14 +209,14 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                var images = await _context.HinhAnhPhongs
+                var images = await _context.HinhAnhPhongTros
            .Where(i => i.MaPhong == id)
            .Select(i => new HinhAnhPhongDto
            {
                MaHinhAnh = i.MaHinhAnh,
                MaPhong = i.MaPhong,
                DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-               IsMain = i.IsMain
+               IsMain = (bool)i.IsMain
            })
            .ToListAsync();
 
@@ -362,14 +362,14 @@ namespace Ql_NhaTro_jun.Controllers
                             {
                                 var imageData = binaryReader.ReadBytes((int)file.Length);
                                 var m = await _context.PhongTros.FirstOrDefaultAsync(t => t.TenPhong == createDto.TenPhong);
-                                var image = new HinhAnhPhong
+                                var image = new HinhAnhPhongTro
                                 {
                                     MaPhong = m.MaPhong,
                                     DuongDanHinh = imageData,
                                     IsMain = (i == 0) // ảnh đầu tiên là ảnh chính
                                 };
 
-                                _context.HinhAnhPhongs.Add(image);
+                                _context.HinhAnhPhongTros.Add(image);
                             }
                         }
                     }
@@ -452,14 +452,14 @@ namespace Ql_NhaTro_jun.Controllers
                             {
                                 var imageData = binaryReader.ReadBytes((int)file.Length);
                                 var m = await _context.PhongTros.FirstOrDefaultAsync(t => t.TenPhong == updateDto.TenPhong);
-                                    var image = new HinhAnhPhong
+                                    var image = new HinhAnhPhongTro
                                 {
                                     MaPhong = m.MaPhong,
                                     DuongDanHinh = imageData,
                                     IsMain = (i == 0) // ảnh đầu tiên là ảnh chính
                                 };
 
-                                _context.HinhAnhPhongs.Add(image);
+                                _context.HinhAnhPhongTros.Add(image);
                             }
                         }
                     }
@@ -507,10 +507,10 @@ namespace Ql_NhaTro_jun.Controllers
                 }
                 #endregion
                 // Xóa tất cả hình ảnh liên quan đến phòng
-                var images = await _context.HinhAnhPhongs
+                var images = await _context.HinhAnhPhongTros
                  .Where(i => i.MaPhong == id)
                  .ToListAsync();
-                _context.HinhAnhPhongs.RemoveRange(images);
+                _context.HinhAnhPhongTros.RemoveRange(images);
                 var phongTro = await _context.PhongTros.FindAsync(id);
          
                 if (phongTro == null)
