@@ -27,5 +27,14 @@ namespace Ql_NhaTro_jun.Controllers
             return View();
         }
 
+        public async Task<IActionResult> Dashborad()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Users");
+            }
+            return View();
+        }
+
     }
 }

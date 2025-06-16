@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
 using System.Text.Json.Serialization;
@@ -9,6 +10,7 @@ namespace Ql_NhaTro_jun.Models
     public class UserInfo
     {
         private readonly RequestDelegate _next;
+        QlNhatroContext _context = new QlNhatroContext();
 
         public UserInfo(RequestDelegate next)
         {
@@ -45,7 +47,15 @@ namespace Ql_NhaTro_jun.Models
                     {
                         var json = await response.Content.ReadAsStringAsync();
                         var user = Regex.Match(json, @"""hoTen"":""(.*?)""").Groups[1].Value;
+                        var Email = Regex.Match(json, @"""email"":""(.*?)""").Groups[1].Value;
                         context.Items["CurrentUser"] = user;
+                        context.Items["Email"] = Email;
+                        var manh = await _context.NguoiDungs.FirstOrDefaultAsync(t=>t.Email==   Email);
+                        context.Items["role"] = manh.VaiTro;
+                        context.Items["id"] = manh.MaNguoiDung;
+                        JunTech.id= manh.MaNguoiDung; 
+                        JunTech.nguoiDung=manh;
+
                     }
                    
                 }

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Account Management - Dark Mode</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="wwwroot/css/account-management.css">
+    <style>
+        /* Additional test styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="account-management-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="page-title">
+                        <i class="fas fa-users"></i>
+                        Quản lý tài khoản
+                    </h1>
+                    <nav class="breadcrumb">
+                        <a href="#">Dashboard</a>
+                        <span class="separator">/</span>
+                        <span class="current">Quản lý tài khoản</span>
+                    </nav>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary btn-create" onclick="openCreateModal()">
+                        <i class="fas fa-plus"></i>
+                        Tạo tài khoản mới
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i>
+                        Làm mới
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="filters-section">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Tìm kiếm theo tên, email, số điện thoại...">
+            </div>
+            <div class="filter-options">
+                <select class="form-select">
+                    <option value="">Tất cả vai trò</option>
+                    <option value="2">Admin</option>
+                    <option value="1">Quản lý</option>
+                    <option value="0">Khách hàng</option>
+                </select>
+                <select class="form-select">
+                    <option value="10">10 / trang</option>
+                    <option value="25">25 / trang</option>
+                    <option value="50">50 / trang</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-container">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Nguyễn Văn An</td>
+                        <td>admin@example.com</td>
+                        <td>0123456789</td>
+                        <td>
+                            <span class="role-badge admin">
+                                <i class="fas fa-crown"></i>
+                                Admin
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge active">
+                                <i class="fas fa-circle"></i>
+                                Hoạt động
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-edit" onclick="openEditModal()" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-action btn-role" onclick="openRoleModal()" title="Thay đổi quyền">
+                                    <i class="fas fa-user-cog"></i>
+                                </button>
+                                <button class="btn-action btn-delete" onclick="openDeleteModal()" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Trần Thị Bình</td>
+                        <td>manager@example.com</td>
+                        <td>0987654321</td>
+                        <td>
+                            <span class="role-badge manager">
+                                <i class="fas fa-user-tie"></i>
+                                Quản lý
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge active">
+                                <i class="fas fa-circle"></i>
+                                Hoạt động
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-edit" onclick="openEditModal()" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-action btn-role" onclick="openRoleModal()" title="Thay đổi quyền">
+                                    <i class="fas fa-user-cog"></i>
+                                </button>
+                                <button class="btn-action btn-delete" onclick="openDeleteModal()" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Cards Container -->
+        <div class="mobile-cards-container">
+            <div class="user-card">
+                <div class="user-card-header">
+                    <div class="user-card-avatar">NVA</div>
+                    <div class="user-card-info">
+                        <div class="user-card-name">Nguyễn Văn An</div>
+                        <div class="user-card-email">admin@example.com</div>
+                        <span class="role-badge admin">
+                            <i class="fas fa-crown"></i>
+                            Admin
+                        </span>
+                    </div>
+                </div>
+                <div class="user-card-details">
+                    <div class="user-card-detail">
+                        <div class="user-card-detail-label">ID</div>
+                        <div class="user-card-detail-value">#1</div>
+                    </div>
+                    <div class="user-card-detail">
+                        <div class="user-card-detail-label">Số điện thoại</div>
+                        <div class="user-card-detail-value">0123456789</div>
+                    </div>
+                    <div class="user-card-detail">
+                        <div class="user-card-detail-label">Trạng thái</div>
+                        <div class="user-card-detail-value">
+                            <span class="status-badge active">
+                                <i class="fas fa-circle"></i>
+                                Hoạt động
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-card-actions">
+                    <button class="btn-action btn-edit" onclick="openEditModal()" title="Chỉnh sửa">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action btn-role" onclick="openRoleModal()" title="Thay đổi quyền">
+                        <i class="fas fa-user-cog"></i>
+                    </button>
+                    <button class="btn-action btn-delete" onclick="openDeleteModal()" title="Xóa">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit User Modal -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👤 Tạo tài khoản mới</h3>
+                <button class="modal-close" onclick="closeUserModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="email">Email <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="soDienThoai">Số điện thoại <span class="required">*</span></label>
+                    <input type="tel" id="soDienThoai" name="soDienThoai" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="matKhau">Mật khẩu <span class="required">*</span></label>
+                    <div class="password-input">
+                        <input type="password" id="matKhau" name="matKhau" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="form-hint">Để trống nếu không muốn thay đổi mật khẩu</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="vaiTro">Vai trò <span class="required">*</span></label>
+                    <select id="vaiTro" name="vaiTro" required>
+                        <option value="">Chọn vai trò</option>
+                        <option value="0">Khách hàng</option>
+                        <option value="1">Quản lý</option>
+                        <option value="2">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Hủy</button>
+                <button type="button" class="btn btn-success">
+                    <i class="fas fa-save"></i>
+                    Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Change Modal -->
+    <div class="modal-overlay" id="roleModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>🔧 Thay đổi quyền</h3>
+                <button class="modal-close" onclick="closeRoleModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Thay đổi quyền cho: <strong>Nguyễn Văn An</strong></p>
+                <div class="form-group">
+                    <label for="newRole">Vai trò mới</label>
+                    <select id="newRole">
+                        <option value="0">Khách hàng</option>
+                        <option value="1">Quản lý</option>
+                        <option value="2">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRoleModal()">Hủy</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-check"></i>
+                    Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>⚠️ Xác nhận xóa</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Bạn có chắc chắn muốn xóa tài khoản: <strong>Nguyễn Văn An</strong>?</p>
+                    <p class="warning-text">Hành động này không thể hoàn tác!</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+                <button type="button" class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test functions for modal interactions
+        function openCreateModal() {
+            document.getElementById('userModal').classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function openEditModal() {
+            document.getElementById('userModal').classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function openRoleModal() {
+            document.getElementById('roleModal').classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function openDeleteModal() {
+            document.getElementById('deleteModal').classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        function closeRoleModal() {
+            document.getElementById('roleModal').classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('matKhau');
+            const passwordIcon = passwordInput.nextElementSibling.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.className = 'fas fa-eye';
+            }
+        }
+
+        // Close modal when clicking overlay
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.body.classList.remove('modal-open');
+            }
+        });
+    </script>
+    
+    <script src="wwwroot/js/dark-mode.js"></script>
+</body>
+</html> 

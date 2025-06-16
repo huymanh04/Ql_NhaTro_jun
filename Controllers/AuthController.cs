@@ -232,12 +232,14 @@ namespace Api_Ql_nhatro.Controllers
             {
                 return NotFound(new { message = "Người dùng không tồn tại" });
             }
-
+           
             return Ok(ApiResponse<object>.CreateSuccess("Lấy thông tin thành công", new
             {
                 HoTen = user.HoTen,
                 phone = user.SoDienThoai,
-                email = user.Email
+                email = user.Email,
+                MaNguoidung = user.MaNguoiDung,
+               
             }));
 
 
@@ -354,7 +356,82 @@ namespace Api_Ql_nhatro.Controllers
             #endregion
 
         }
-     
 
+        [HttpPost("profile/update")]
+        public async Task<IActionResult> UpdateProfileApi([FromBody] UpdateProfileRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("Profile update request received");
+                
+                if (!User.Identity.IsAuthenticated)
+                {
+                    _logger.LogWarning("User not authenticated");
+                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
+                }
+
+                // Get current user using same method as other APIs
+                var userName = User.Identity.Name;
+                _logger.LogInformation($"Current user name: {userName}");
+                
+                if (userName == null)
+                {
+                    _logger.LogWarning("User name is null");
+                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
+                }
+
+                var existingUser = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
+                _logger.LogInformation($"User found by phone: {existingUser != null}");
+                
+                if (existingUser == null)
+                {
+                    // Try to find by email if not found by phone
+                    existingUser = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
+                    _logger.LogInformation($"User found by email: {existingUser != null}");
+                }
+
+                if (existingUser == null)
+                {
+                    _logger.LogWarning($"User not found with identifier: {userName}");
+                    return NotFound(new { message = "Không tìm thấy người dùng" });
+                }
+
+                // Validate input
+                if (string.IsNullOrWhiteSpace(request.HoTen))
+                {
+                    return BadRequest(new { message = "Họ tên không được để trống" });
+                }
+
+                // Update allowed fields only
+                existingUser.HoTen = request.HoTen.Trim();
+
+                // Only update password if provided
+                if (!string.IsNullOrWhiteSpace(request.MatKhau))
+                {
+                    existingUser.MatKhau = request.MatKhau;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Cập nhật thông tin cá nhân thành công!",
+                    data = new
+                    {
+                        MaNguoiDung = existingUser.MaNguoiDung,
+                        HoTen = existingUser.HoTen,
+                        Email = existingUser.Email,
+                        SoDienThoai = existingUser.SoDienThoai
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Có lỗi xảy ra khi cập nhật thông tin", error = ex.Message });
+            }
+        }
+
+        // API: Get current user profile
+       
     } 
 }

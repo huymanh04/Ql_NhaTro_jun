@@ -118,6 +118,8 @@ namespace Ql_NhaTro_jun.Controllers
                     TienDien = modle.TienDien,
                     TienNuoc = modle.TienNuoc,
                     DiaChi = modle.DiaChi,
+                    Phidv = modle.PhiDV,
+                    PhiGiuXe = modle.PhiGiuXe,
                     SoDienThoai = modle.SoDienThoai,
                     GoogleMapEmbed = modle.GoogleMapEmbed,
                     AiApikey = modle.AiApikey,
@@ -131,7 +133,7 @@ namespace Ql_NhaTro_jun.Controllers
             return Ok(ApiResponse<object>.CreateError("Cài đặt hệ thống đã được cập nhật thất bại"));
         }
         [HttpPut("update-cai-dat-he-thong")]
-        public async Task<IActionResult> UpdateCaiDatHeThong([FromBody] CaiDatHeThongDTO model)
+        public async Task<IActionResult> UpdateCaiDatHeThong([FromForm] CaiDatHeThongUpdateDTO model)
         {
             #region check quyền và login
             var userName = User.Identity.Name;
@@ -162,15 +164,31 @@ namespace Ql_NhaTro_jun.Controllers
                 if (existingCaiDat == null)
                     return NotFound(ApiResponse<object>.CreateError("Cài đặt hệ thống không tồn tại"));
 
+                // Handle logo upload if provided
+                if (model.ImageFile != null)
+                {
+                    if (model.ImageFile.Length > MaxImageSize)
+                    {
+                        return BadRequest(ApiResponse<object>.CreateError(
+                            "Kích thước ảnh không được vượt quá 5MB"));
+                    }
+
+                    if (!IsValidImageFile(model.ImageFile))
+                    {
+                        return BadRequest(ApiResponse<object>.CreateError(
+                            "Chỉ chấp nhận file ảnh định dạng JPG, PNG, GIF"));
+                    }
+
+                    using var ms = new MemoryStream();
+                    await model.ImageFile.CopyToAsync(ms);
+                    existingCaiDat.LogoUrl = ms.ToArray();
+                }
+
                 // Chỉ cập nhật nếu giá trị thay đổi
                 if (model.CheDoGiaoDien != null && model.CheDoGiaoDien != existingCaiDat.CheDoGiaoDien)
                 {
                     existingCaiDat.CheDoGiaoDien = model.CheDoGiaoDien;
                 }
-                //if (model.LogoUrl != null && !model.LogoUrl.SequenceEqual(existingCaiDat.LogoUrl ?? Array.Empty<byte>()))
-                //{
-                //    existingCaiDat.LogoUrl = model.LogoUrl;
-                //}
                 if (model.TieuDeWeb != null && model.TieuDeWeb != existingCaiDat.TieuDeWeb)
                 {
                     existingCaiDat.TieuDeWeb = model.TieuDeWeb;
@@ -203,6 +221,14 @@ namespace Ql_NhaTro_jun.Controllers
                 {
                     existingCaiDat.MoTaThem = model.MoTaThem;
                 }
+                if(model.PhiGiuXe != null && model.PhiGiuXe != existingCaiDat.PhiGiuXe)
+                {
+                    existingCaiDat.PhiGiuXe = model.PhiGiuXe;
+                }
+                if (model.PhiDV != null && model.PhiDV != existingCaiDat.Phidv)
+                {
+                    existingCaiDat.Phidv = model.PhiDV;
+                }
                 _context.CaiDatHeThongs.Update(existingCaiDat);
                 await _context.SaveChangesAsync();
 
@@ -225,6 +251,8 @@ namespace Ql_NhaTro_jun.Controllers
             public decimal? TienDien { get; set; }
 
             public decimal? TienNuoc { get; set; }
+            public decimal? PhiGiuXe { get; set; }
+            public decimal? PhiDV { get; set; }
 
             public string? DiaChi { get; set; }
 
@@ -236,6 +264,23 @@ namespace Ql_NhaTro_jun.Controllers
 
             public string? MoTaThem { get; set; }
         }
+
+        public class CaiDatHeThongUpdateDTO
+        {
+            public string? CheDoGiaoDien { get; set; }
+            public string? TieuDeWeb { get; set; }
+            public decimal? TienDien { get; set; }
+            public decimal? TienNuoc { get; set; }
+            public decimal? PhiGiuXe { get; set; }
+            public decimal? PhiDV { get; set; }
+            public string? DiaChi { get; set; }
+            public string? SoDienThoai { get; set; }
+            public string? GoogleMapEmbed { get; set; }
+            public string? AiApikey { get; set; }
+            public string? MoTaThem { get; set; }
+            public IFormFile? ImageFile { get; set; }
+        }
+
         #region Helper Methods
         private bool IsValidImageFile(IFormFile file)
         {

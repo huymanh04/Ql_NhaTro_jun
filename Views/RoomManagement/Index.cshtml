@@ -1,0 +1,416 @@
+@{
+    ViewData["Title"] = "Quản lý Phòng Trọ";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+
+<div class="room-management">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-door-open"></i> Quản lý Phòng Trọ</h1>
+                <p>Thêm, sửa, xóa và quản lý các phòng trọ</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="addRoomBtn">
+                    <i class="fas fa-plus"></i> Thêm phòng trọ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filters-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên phòng...">
+            </div>
+            
+            <div class="filter-group">
+                <select id="nhaTroFilter">
+                    <option value="">Tất cả nhà trọ</option>
+                </select>
+                
+                <select id="theLoaiFilter">
+                    <option value="">Tất cả loại phòng</option>
+                </select>
+                
+                <select id="trangThaiFilter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="true">Còn trống</option>
+                    <option value="false">Đã thuê</option>
+                </select>
+                
+                <button class="btn btn-secondary" id="clearFiltersBtn">
+                    <i class="fas fa-times"></i> Xóa bộ lọc
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alertContainer"></div>
+
+    <!-- Rooms Table -->
+    <div class="table-section">
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="rooms-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Hình ảnh</th>
+                            <th>Tên phòng</th>
+                            <th>Nhà trọ</th>
+                            <th>Loại phòng</th>
+                            <th>Giá thuê</th>
+                            <th>Diện tích</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roomsTableBody">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="mobile-cards" id="mobileRoomCards">
+            <!-- Mobile cards will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span id="paginationInfo">Hiển thị 0 - 0 của 0 phòng trọ</span>
+            </div>
+            <div class="pagination-controls">
+                <button class="btn btn-outline" id="prevPageBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Trước
+                </button>
+                <div class="page-numbers" id="pageNumbers"></div>
+                <button class="btn btn-outline" id="nextPageBtn" disabled>
+                    Sau <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Room Modal -->
+<div class="modal" id="roomModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">
+                <i class="fas fa-door-open"></i> 
+                <span id="modalTitleText">Thêm phòng trọ</span>
+            </h2>
+            <button class="modal-close" id="closeModalBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="roomForm" class="modal-body" enctype="multipart/form-data">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="tenPhong">Tên phòng <span class="required">*</span></label>
+                    <input type="text" id="tenPhong" name="tenPhong" required 
+                           placeholder="Nhập tên phòng">
+                    <div class="error-message" id="tenPhongError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="maNhaTro">Nhà trọ <span class="required">*</span></label>
+                    <select id="maNhaTro" name="maNhaTro" required>
+                        <option value="">Chọn nhà trọ</option>
+                    </select>
+                    <div class="error-message" id="maNhaTroError"></div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="maTheLoai">Loại phòng <span class="required">*</span></label>
+                    <select id="maTheLoai" name="maTheLoai" required>
+                        <option value="">Chọn loại phòng</option>
+                    </select>
+                    <div class="error-message" id="maTheLoaiError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gia">Giá thuê (VNĐ) <span class="required">*</span></label>
+                    <input type="number" id="gia" name="gia" required min="0" step="1000"
+                           placeholder="Nhập giá thuê">
+                    <div class="error-message" id="giaError"></div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="dienTich">Diện tích (m²) <span class="required">*</span></label>
+                    <input type="number" id="dienTich" name="dienTich" required min="0" step="0.1"
+                           placeholder="Nhập diện tích">
+                    <div class="error-message" id="dienTichError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="conTrong">Trạng thái <span class="required">*</span></label>
+                    <select id="conTrong" name="conTrong" required>
+                        <option value="">Chọn trạng thái</option>
+                        <option value="true">Còn trống</option>
+                        <option value="false">Đã thuê</option>
+                    </select>
+                    <div class="error-message" id="conTrongError"></div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="moTa">Mô tả</label>
+                <textarea id="moTa" name="moTa" rows="4" 
+                         placeholder="Nhập mô tả về phòng trọ (tùy chọn)"></textarea>
+                <div class="error-message" id="moTaError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="images">Hình ảnh</label>
+                <input type="file" id="images" name="images" accept="image/*" multiple>
+                <div class="file-info">
+                    <small>Chấp nhận: JPG, PNG, GIF. Tối đa 5MB mỗi ảnh. Có thể chọn nhiều ảnh.</small>
+                    <small id="imageUpdateNote" style="display: none; color: #f59e0b; font-weight: 600;">
+                        <i class="fas fa-info-circle"></i> Lưu ý: Nếu chọn ảnh mới, tất cả ảnh cũ sẽ được thay thế. Bỏ trống nếu không muốn thay đổi ảnh.
+                    </small>
+                </div>
+                <div class="error-message" id="imagesError"></div>
+                
+                <!-- Image Preview -->
+                <div id="imagePreview" class="image-preview-container" style="display: none;">
+                    <!-- Preview images will be shown here -->
+                </div>
+            </div>
+        </form>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelModalBtn">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn btn-primary" id="saveRoomBtn">
+                <i class="fas fa-save"></i> <span id="saveBtnText">Lưu</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content delete-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-exclamation-triangle text-danger"></i> Xác nhận xóa</h2>
+            <button class="modal-close" id="closeDeleteModalBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <p>Bạn có chắc chắn muốn xóa phòng trọ <strong id="deleteRoomName"></strong> không?</p>
+            <p class="text-danger"><i class="fas fa-warning"></i> Hành động này không thể hoàn tác!</p>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                <i class="fas fa-trash"></i> Xóa
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+    </div>
+</div>
+
+<style>
+    /* Ensure modal is properly displayed */
+    .modal {
+        z-index: 99999 !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding: 20px !important;
+        padding-top: 10px !important;
+        padding-bottom: 60px !important;
+        overflow-y: auto !important;
+    }
+    
+    .modal-content {
+        max-height: 80vh !important;
+        overflow: visible !important;
+        margin: 0 auto 50px auto !important;
+        position: relative !important;
+        top: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    .modal-body {
+        max-height: calc(80vh - 160px) !important;
+        overflow-y: auto !important;
+        flex: 1 !important;
+    }
+    
+    .modal-footer {
+        position: sticky !important;
+        bottom: 0 !important;
+        background: #f8fafc !important;
+        border-top: 1px solid #e5e7eb !important;
+        z-index: 100 !important;
+        flex-shrink: 0 !important;
+        margin-top: auto !important;
+    }
+    
+    /* Desktop specific */
+    @@media (min-width: 769px) {
+        .modal {
+            align-items: flex-start !important;
+            justify-content: center !important;
+            padding: 30px !important;
+            padding-top: 20px !important;
+            padding-bottom: 80px !important;
+        }
+        
+        .modal-content {
+            width: 700px !important;
+            max-width: 90vw !important;
+            max-height: 75vh !important;
+            margin: 0 auto 50px auto !important;
+        }
+        
+        .modal-body {
+            max-height: calc(75vh - 160px) !important;
+        }
+    }
+    
+    /* Mobile specific fixes */
+    @@media (max-width: 768px) {
+        .modal {
+            align-items: flex-start !important;
+            justify-content: center !important;
+            padding: 15px !important;
+            padding-top: 10px !important;
+            padding-bottom: 50px !important;
+        }
+        
+        .modal-content {
+            margin: 0 auto !important;
+            width: 100% !important;
+            max-width: none !important;
+            max-height: 82vh !important;
+        }
+        
+        .modal-body {
+            max-height: calc(82vh - 160px) !important;
+        }
+        
+        .modal-footer {
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+        
+        .modal-footer .btn {
+            width: 100% !important;
+            min-height: 50px !important;
+            font-size: 16px !important;
+        }
+    }
+    
+    @@media (max-width: 480px) {
+        .modal {
+            padding: 10px !important;
+            padding-top: 5px !important;
+            padding-bottom: 40px !important;
+        }
+        
+        .modal-content {
+            max-height: 85vh !important;
+        }
+        
+        .modal-body {
+            max-height: calc(85vh - 140px) !important;
+        }
+        
+        .modal-footer .btn {
+            min-height: 52px !important;
+            font-weight: 700 !important;
+        }
+    }
+    
+    /* Form row layout */
+    .form-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    @@media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .form-row .form-group {
+            margin-bottom: 20px;
+        }
+    }
+    
+    /* Image preview container */
+    .image-preview-container {
+        margin-top: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .image-preview-item {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .image-preview-item img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid #e5e7eb;
+    }
+    
+    .image-preview-item .remove-btn {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+</style>
+
+<link href="~/css/room-management.css?@DateTime.Now" rel="stylesheet">
+<script src="~/js/room-management.js?@DateTime.Now"></script> 

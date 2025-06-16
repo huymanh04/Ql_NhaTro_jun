@@ -1,0 +1,229 @@
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+
+<div class="account-management-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="page-title">
+                    <i class="fas fa-users"></i>
+                    Quản lý tài khoản
+                </h1>
+                <nav class="breadcrumb">
+                    <a href="/NguoiDungs/Dashborad">Dashboard</a>
+                    <span class="separator">/</span>
+                    <span class="current">Quản lý tài khoản</span>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary btn-create" onclick="openCreateModal()">
+                    <i class="fas fa-plus"></i>
+                    Tạo tài khoản mới
+                </button>
+                <button class="btn btn-secondary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                    Làm mới
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, email, số điện thoại...">
+        </div>
+        <div class="filter-options">
+            <select id="roleFilter" class="form-select">
+                <option value="">Tất cả vai trò</option>
+                <option value="2">Admin</option>
+                <option value="1">Quản lý</option>
+                <option value="0">Khách hàng</option>
+            </select>
+            <select id="pageSize" class="form-select">
+                <option value="10">10 / trang</option>
+                <option value="25">25 / trang</option>
+                <option value="50">50 / trang</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-container">
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Đang tải...</span>
+            </div>
+        </div>
+
+        <table class="users-table" id="usersTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Số điện thoại</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <i class="fas fa-users-slash"></i>
+            <h3>Không tìm thấy tài khoản</h3>
+            <p>Không có tài khoản nào phù hợp với tiêu chí tìm kiếm</p>
+        </div>
+    </div>
+
+    <!-- Mobile Cards Container -->
+    <div class="mobile-cards-container" id="mobileCardsContainer">
+        <!-- Mobile cards will be generated here -->
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-container" id="paginationContainer">
+        <div class="pagination-info">
+            <span id="paginationInfo">Hiển thị 0 - 0 của 0 kết quả</span>
+        </div>
+        <div class="pagination-controls" id="paginationControls">
+            <!-- Pagination buttons will be generated here -->
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit User Modal -->
+<div class="modal-overlay" id="userModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Tạo tài khoản mới</h3>
+            <button class="modal-close" onclick="closeUserModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="userForm" class="modal-body">
+            <input type="hidden" id="userId" value="">
+            
+            <div class="form-group">
+                <label for="hoTen">Họ tên <span class="required">*</span></label>
+                <input type="text" id="hoTen" name="hoTen" required>
+                <div class="error-message" id="hoTenError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" name="email" required>
+                <div class="error-message" id="emailError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="soDienThoai">Số điện thoại <span class="required">*</span></label>
+                <input type="tel" id="soDienThoai" name="soDienThoai" required>
+                <div class="error-message" id="soDienThoaiError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="matKhau">Mật khẩu <span class="required" id="passwordRequired">*</span></label>
+                <div class="password-input">
+                    <input type="password" id="matKhau" name="matKhau">
+                    <button type="button" class="password-toggle" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="passwordIcon"></i>
+                    </button>
+                </div>
+                <div class="form-hint" id="passwordHint">Để trống nếu không muốn thay đổi mật khẩu</div>
+                <div class="error-message" id="matKhauError"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="vaiTro">Vai trò <span class="required">*</span></label>
+                <select id="vaiTro" name="vaiTro" required>
+                    <option value="">Chọn vai trò</option>
+                    <option value="0">Khách hàng</option>
+                    <option value="1">Quản lý</option>
+                    <option value="2">Admin</option>
+                </select>
+                <div class="error-message" id="vaiTroError"></div>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Hủy</button>
+            <button type="button" class="btn btn-primary" onclick="saveUser()" id="saveButton">
+                <i class="fas fa-save"></i>
+                Lưu
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Role Change Modal -->
+<div class="modal-overlay" id="roleModal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h3>Thay đổi quyền</h3>
+            <button class="modal-close" onclick="closeRoleModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Thay đổi quyền cho: <strong id="roleUserName"></strong></p>
+            <div class="form-group">
+                <label for="newRole">Vai trò mới</label>
+                <select id="newRole" class="form-select">
+                    <option value="0">Khách hàng</option>
+                    <option value="1">Quản lý</option>
+                    <option value="2">Admin</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeRoleModal()">Hủy</button>
+            <button type="button" class="btn btn-primary" onclick="confirmRoleChange()">
+                <i class="fas fa-check"></i>
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-content modal-sm">
+        <div class="modal-header">
+            <h3>Xác nhận xóa</h3>
+            <button class="modal-close" onclick="closeDeleteModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="delete-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Bạn có chắc chắn muốn xóa tài khoản: <strong id="deleteUserName"></strong>?</p>
+                <p class="warning-text">Hành động này không thể hoàn tác!</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                <i class="fas fa-trash"></i>
+                Xóa
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container" id="toastContainer"></div>
+
+<link rel="stylesheet" href="~/css/account-management.css">
+<script src="~/js/account-management.js"></script>
+<script src="~/js/dark-mode.js"></script> 

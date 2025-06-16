@@ -1,0 +1,1007 @@
+@{
+    ViewData["Title"] = "Quản lý Ngân hàng";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+
+<div class="bank-management">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-university"></i> Quản lý Ngân hàng</h1>
+                <p>Quản lý thông tin tài khoản ngân hàng của hệ thống</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="addBankBtn">
+                    <i class="fas fa-plus"></i> Thêm ngân hàng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alertContainer"></div>
+
+    <!-- Banks Table -->
+    <div class="table-container">
+        <div class="table-header">
+            <div class="table-title">
+                <h3><i class="fas fa-list"></i> Danh sách ngân hàng</h3>
+            </div>
+            <div class="table-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm ngân hàng...">
+                </div>
+                <button class="btn btn-secondary" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i> Làm mới
+                </button>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="modern-table" id="banksTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên ngân hàng</th>
+                        <th>Số tài khoản</th>
+                        <th>Tên chủ tài khoản</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="banksTableBody">
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+            
+            <div id="loadingSpinner" class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Đang tải dữ liệu...</p>
+            </div>
+            
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i class="fas fa-university"></i>
+                <h3>Chưa có ngân hàng nào</h3>
+                <p>Hãy thêm ngân hàng đầu tiên của bạn</p>
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <i class="fas fa-plus"></i> Thêm ngân hàng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Bank Modal -->
+<div id="bankModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle"><i class="fas fa-university"></i> Thêm ngân hàng</h2>
+            <button class="modal-close" id="closeModal">&times;</button>
+        </div>
+        
+        <form id="bankForm" class="modal-form">
+            <input type="hidden" id="bankId" value="">
+            
+            <div class="form-group">
+                <label for="tenNganHang">Tên ngân hàng <span class="required">*</span></label>
+                <input type="text" id="tenNganHang" name="tenNganHang" required 
+                       placeholder="Ví dụ: Vietcombank, BIDV, Techcombank...">
+                <div class="error-message" id="tenNganHangError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="soTaiKhoan">Số tài khoản <span class="required">*</span></label>
+                <input type="text" id="soTaiKhoan" name="soTaiKhoan" required 
+                       placeholder="Nhập số tài khoản ngân hàng">
+                <div class="error-message" id="soTaiKhoanError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="ten">Tên chủ tài khoản <span class="required">*</span></label>
+                <input type="text" id="ten" name="ten" required 
+                       placeholder="Nhập tên chủ tài khoản">
+                <div class="error-message" id="tenError"></div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="cancelBtn">Hủy</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-small">
+        <div class="modal-header">
+            <h2><i class="fas fa-exclamation-triangle text-danger"></i> Xác nhận xóa</h2>
+            <button class="modal-close" id="closeDeleteModal">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            <p>Bạn có chắc chắn muốn xóa ngân hàng này không?</p>
+            <div class="bank-info" id="deleteBankInfo">
+                <!-- Bank info will be displayed here -->
+            </div>
+            <p class="warning-text">
+                <i class="fas fa-warning"></i> 
+                Hành động này không thể hoàn tác!
+            </p>
+        </div>
+        
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                <i class="fas fa-trash"></i> Xóa
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.bank-management {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #4a90a4 0%, #2c5f6f 100%);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+    color: white;
+    box-shadow: 0 8px 25px rgba(74, 144, 164, 0.3);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-left h1 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-left p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+.table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.table-header {
+    padding: 25px 30px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.table-title h3 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 15px;
+    color: #9ca3af;
+    z-index: 1;
+}
+
+.search-box input {
+    padding: 10px 15px 10px 45px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    width: 250px;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #4a90a4;
+    box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+}
+
+.table-wrapper {
+    position: relative;
+    min-height: 400px;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.modern-table thead {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.modern-table th {
+    padding: 18px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modern-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.modern-table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.modern-table tbody tr:hover {
+    background: linear-gradient(135deg, #f0f8fa 0%, #ffffff 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 144, 164, 0.1);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-action {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.btn-edit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.btn-delete:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4a90a4 0%, #2c5f6f 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(74, 144, 164, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 144, 164, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #6b7280;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #4a90a4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+}
+
+.empty-state i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    color: #d1d5db;
+}
+
+.empty-state h3 {
+    margin: 0 0 10px 0;
+    font-size: 20px;
+    color: #374151;
+}
+
+.empty-state p {
+    margin: 0 0 25px 0;
+    font-size: 16px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    margin: 5% auto;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-small {
+    max-width: 400px;
+}
+
+@@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 25px 30px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 5px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.modal-form {
+    padding: 30px;
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+.required {
+    color: #ef4444;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #4a90a4;
+    box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.bank-info {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    border-left: 4px solid #4a90a4;
+}
+
+.warning-text {
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.text-danger {
+    color: #ef4444;
+}
+
+.alert {
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.alert-error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+@@media (max-width: 768px) {
+    .bank-management {
+        padding: 15px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .table-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .search-box input {
+        width: 200px;
+    }
+    
+    .modern-table {
+        font-size: 12px;
+    }
+    
+    .modern-table th,
+    .modern-table td {
+        padding: 12px 10px;
+    }
+    
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+class BankManager {
+    constructor() {
+        this.banks = [];
+        this.currentBankId = null;
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.loadBanks();
+    }
+
+    bindEvents() {
+        // Add bank button
+        document.getElementById('addBankBtn').addEventListener('click', () => this.openAddModal());
+        
+        // Modal close buttons
+        document.getElementById('closeModal').addEventListener('click', () => this.closeModal());
+        document.getElementById('cancelBtn').addEventListener('click', () => this.closeModal());
+        document.getElementById('closeDeleteModal').addEventListener('click', () => this.closeDeleteModal());
+        document.getElementById('cancelDeleteBtn').addEventListener('click', () => this.closeDeleteModal());
+        
+        // Form submission
+        document.getElementById('bankForm').addEventListener('submit', (e) => this.handleSubmit(e));
+        
+        // Delete confirmation
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => this.confirmDelete());
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => this.filterBanks(e.target.value));
+        
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', () => this.loadBanks());
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                this.closeModal();
+                this.closeDeleteModal();
+            }
+        });
+    }
+
+    async loadBanks() {
+        try {
+            this.showLoading(true);
+            const response = await fetch('/api/Bank/get-banks', {
+                credentials: 'include'
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                this.banks = result.data || [];
+                this.renderBanks();
+            } else {
+                this.showAlert(result.message || 'Lỗi khi tải danh sách ngân hàng', 'error');
+                this.banks = [];
+                this.renderBanks();
+            }
+        } catch (error) {
+            console.error('Error loading banks:', error);
+            this.showAlert('Lỗi kết nối: ' + error.message, 'error');
+            this.banks = [];
+            this.renderBanks();
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    renderBanks(banksToRender = null) {
+        const banks = banksToRender || this.banks;
+        const tbody = document.getElementById('banksTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const table = document.getElementById('banksTable');
+
+        if (banks.length === 0) {
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        table.style.display = 'table';
+        emptyState.style.display = 'none';
+
+        tbody.innerHTML = banks.map(bank => `
+            <tr>
+                <td><strong>#${bank.id}</strong></td>
+                <td>
+                    <div style="font-weight: 600; color: #1f2937;">${this.escapeHtml(bank.tenNganHang)}</div>
+                </td>
+                <td>
+                    <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-family: monospace;">
+                        ${this.escapeHtml(bank.soTaiKhoan)}
+                    </code>
+                </td>
+                <td>
+                    <div style="font-weight: 500; color: #374151;">${this.escapeHtml(bank.ten)}</div>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-action btn-edit" onclick="bankManager.openEditModal(${bank.id})">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="btn-action btn-delete" onclick="bankManager.openDeleteModal(${bank.id})">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    filterBanks(searchTerm) {
+        if (!searchTerm.trim()) {
+            this.renderBanks();
+            return;
+        }
+
+        const filtered = this.banks.filter(bank => 
+            bank.tenNganHang.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            bank.soTaiKhoan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            bank.ten.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        this.renderBanks(filtered);
+    }
+
+    openAddModal() {
+        this.currentBankId = null;
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus"></i> Thêm ngân hàng';
+        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Thêm';
+        this.resetForm();
+        document.getElementById('bankModal').style.display = 'block';
+        document.getElementById('tenNganHang').focus();
+    }
+
+    openEditModal(bankId) {
+        const bank = this.banks.find(b => b.id === bankId);
+        if (!bank) return;
+
+        this.currentBankId = bankId;
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Sửa ngân hàng';
+        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Cập nhật';
+        
+        // Fill form with bank data
+        document.getElementById('bankId').value = bank.id;
+        document.getElementById('tenNganHang').value = bank.tenNganHang;
+        document.getElementById('soTaiKhoan').value = bank.soTaiKhoan;
+        document.getElementById('ten').value = bank.ten;
+        
+        this.clearErrors();
+        document.getElementById('bankModal').style.display = 'block';
+        document.getElementById('tenNganHang').focus();
+    }
+
+    openDeleteModal(bankId) {
+        const bank = this.banks.find(b => b.id === bankId);
+        if (!bank) return;
+
+        this.currentBankId = bankId;
+        document.getElementById('deleteBankInfo').innerHTML = `
+            <strong>Tên ngân hàng:</strong> ${this.escapeHtml(bank.tenNganHang)}<br>
+            <strong>Số tài khoản:</strong> ${this.escapeHtml(bank.soTaiKhoan)}<br>
+            <strong>Chủ tài khoản:</strong> ${this.escapeHtml(bank.ten)}
+        `;
+        
+        document.getElementById('deleteModal').style.display = 'block';
+    }
+
+    closeModal() {
+        document.getElementById('bankModal').style.display = 'none';
+        this.resetForm();
+    }
+
+    closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        this.currentBankId = null;
+    }
+
+    resetForm() {
+        document.getElementById('bankForm').reset();
+        document.getElementById('bankId').value = '';
+        this.clearErrors();
+    }
+
+    clearErrors() {
+        document.querySelectorAll('.error-message').forEach(el => {
+            el.style.display = 'none';
+            el.textContent = '';
+        });
+        document.querySelectorAll('.form-group input').forEach(input => {
+            input.style.borderColor = '#e5e7eb';
+        });
+    }
+
+    validateForm() {
+        this.clearErrors();
+        let isValid = true;
+
+        const tenNganHang = document.getElementById('tenNganHang').value.trim();
+        const soTaiKhoan = document.getElementById('soTaiKhoan').value.trim();
+        const ten = document.getElementById('ten').value.trim();
+
+        if (!tenNganHang) {
+            this.showFieldError('tenNganHang', 'Tên ngân hàng không được để trống');
+            isValid = false;
+        }
+
+        if (!soTaiKhoan) {
+            this.showFieldError('soTaiKhoan', 'Số tài khoản không được để trống');
+            isValid = false;
+        } else if (!/^\d+$/.test(soTaiKhoan)) {
+            this.showFieldError('soTaiKhoan', 'Số tài khoản chỉ được chứa số');
+            isValid = false;
+        }
+
+        if (!ten) {
+            this.showFieldError('ten', 'Tên chủ tài khoản không được để trống');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    showFieldError(fieldName, message) {
+        const errorEl = document.getElementById(fieldName + 'Error');
+        const inputEl = document.getElementById(fieldName);
+        
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+        inputEl.style.borderColor = '#ef4444';
+    }
+
+    async handleSubmit(e) {
+        e.preventDefault();
+        
+        if (!this.validateForm()) {
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerHTML;
+        
+        try {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+            const formData = {
+                tenNganHang: document.getElementById('tenNganHang').value.trim(),
+                soTaiKhoan: document.getElementById('soTaiKhoan').value.trim(),
+                ten: document.getElementById('ten').value.trim()
+            };
+
+            let response;
+            if (this.currentBankId) {
+                // Update
+                response = await fetch(`/api/Bank/update-bank/${this.currentBankId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(formData)
+                });
+            } else {
+                // Create
+                response = await fetch('/api/Bank/add-bank', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(formData)
+                });
+            }
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.showAlert(result.message || 'Thao tác thành công!', 'success');
+                this.closeModal();
+                this.loadBanks();
+            } else {
+                this.showAlert(result.message || 'Có lỗi xảy ra', 'error');
+            }
+
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            this.showAlert('Lỗi kết nối: ' + error.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
+
+    async confirmDelete() {
+        if (!this.currentBankId) return;
+
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const originalText = confirmBtn.innerHTML;
+        
+        try {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xóa...';
+
+            const response = await fetch(`/api/Bank/delete-bank/${this.currentBankId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.showAlert(result.message || 'Xóa ngân hàng thành công!', 'success');
+                this.closeDeleteModal();
+                this.loadBanks();
+            } else {
+                this.showAlert(result.message || 'Có lỗi xảy ra khi xóa', 'error');
+            }
+
+        } catch (error) {
+            console.error('Error deleting bank:', error);
+            this.showAlert('Lỗi kết nối: ' + error.message, 'error');
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalText;
+        }
+    }
+
+    showLoading(show) {
+        document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+    }
+
+    showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        const alertId = 'alert-' + Date.now();
+        
+        const alertHtml = `
+            <div id="${alertId}" class="alert alert-${type}">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                ${message}
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', alertHtml);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            const alertEl = document.getElementById(alertId);
+            if (alertEl) {
+                alertEl.style.opacity = '0';
+                alertEl.style.transform = 'translateY(-10px)';
+                setTimeout(() => alertEl.remove(), 300);
+            }
+        }, 5000);
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.bankManager = new BankManager();
+});
+
+// Global functions for onclick handlers
+function openAddModal() {
+    window.bankManager.openAddModal();
+}
+</script>

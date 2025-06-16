@@ -377,11 +377,24 @@ namespace Ql_NhaTro_jun.Controllers
 
 
                 }
-                
 
-                return Ok(ApiResponse<object>.CreateSuccess(
-                    "Thêm loại phòng thành công",
-                    phongTro));
+                var dto = new 
+                {
+                    MaPhong = phongTro.MaPhong,
+                    TenPhong = phongTro.TenPhong,
+                    Gia = phongTro.Gia,
+                    DienTich = phongTro.DienTich,
+                    ConTrong = phongTro.ConTrong,
+                    MoTa = phongTro.MoTa,
+                    AnhChinhBase64 = await _context.HinhAnhPhongTros
+        .Where(x => x.MaPhong == phongTro.MaPhong && (bool)x.IsMain)
+        .Select(x => Convert.ToBase64String(x.DuongDanHinh))
+        .ToListAsync()
+                };
+
+                return Ok(ApiResponse<object>.CreateSuccess("Thêm loại phòng thành công", dto));
+
+               
             }
             catch (Exception ex)
             {
@@ -416,45 +429,63 @@ namespace Ql_NhaTro_jun.Controllers
                     return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
                 }
                 #endregion
+                
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ApiResponse<object>.CreateError(
                         "Dữ liệu không hợp lệ"));
                 }
 
-                // Kiểm tra trùng tên loại phòng
-                if (await _context.PhongTros.AnyAsync(t =>
-                    t.TenPhong.ToLower() == updateDto.TenPhong.ToLower().Trim()))
+                // Tìm phòng cần cập nhật
+                var phongTro = await _context.PhongTros.FindAsync(id);
+                if (phongTro == null)
                 {
-                    return BadRequest(ApiResponse<object>.CreateError("Phòng không đã tồn tại"));
+                    return NotFound(ApiResponse<object>.CreateError("Phòng không tồn tại"));
                 }
-                var phongTro = new PhongTro
+
+                // Kiểm tra trùng tên phòng (trừ phòng hiện tại)
+                if (await _context.PhongTros.AnyAsync(t =>
+                    t.TenPhong.ToLower() == updateDto.TenPhong.ToLower().Trim() && t.MaPhong != id))
                 {
-                    TenPhong = updateDto.TenPhong,
-                    MaPhong=id,
-                    MaNhaTro = _context.PhongTros.Where(p => p.MaPhong == id).Select(p => p.MaNhaTro).FirstOrDefault(),
-                    Gia = updateDto.Gia,
-                    DienTich = updateDto.DienTich,
-                    ConTrong = updateDto.ConTrong,
-                    MoTa = updateDto.MoTa
-                };
-           
+                    return BadRequest(ApiResponse<object>.CreateError("Tên phòng đã tồn tại"));
+                }
+
+                // Cập nhật thông tin phòng
+                phongTro.TenPhong = updateDto.TenPhong;
+                phongTro.Gia = updateDto.Gia;
+                phongTro.DienTich = updateDto.DienTich;
+                phongTro.ConTrong = updateDto.ConTrong;
+                phongTro.MoTa = updateDto.MoTa;
+
+                _context.PhongTros.Update(phongTro);
                 await _context.SaveChangesAsync();
+
+                // Xử lý hình ảnh mới nếu có
                 if (updateDto.Images != null && updateDto.Images.Count > 0)
                 {
+                    // Xóa tất cả hình ảnh cũ trước khi thêm hình ảnh mới
+                    var oldImages = await _context.HinhAnhPhongTros
+                        .Where(i => i.MaPhong == id)
+                        .ToListAsync();
+                    
+                    if (oldImages.Any())
+                    {
+                        _context.HinhAnhPhongTros.RemoveRange(oldImages);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    // Thêm hình ảnh mới
                     for (int i = 0; i < updateDto.Images.Count; i++)
                     {
                         var file = updateDto.Images[i];
                         if (file != null && file.Length > 0)
                         {
-
                             using (var binaryReader = new BinaryReader(file.OpenReadStream()))
                             {
                                 var imageData = binaryReader.ReadBytes((int)file.Length);
-                                var m = await _context.PhongTros.FirstOrDefaultAsync(t => t.TenPhong == updateDto.TenPhong);
-                                    var image = new HinhAnhPhongTro
+                                var image = new HinhAnhPhongTro
                                 {
-                                    MaPhong = m.MaPhong,
+                                    MaPhong = id,
                                     DuongDanHinh = imageData,
                                     IsMain = (i == 0) // ảnh đầu tiên là ảnh chính
                                 };
@@ -464,20 +495,29 @@ namespace Ql_NhaTro_jun.Controllers
                         }
                     }
                     await _context.SaveChangesAsync();
-
-
                 }
 
+                var dto = new
+                {
+                    MaPhong = phongTro.MaPhong,
+                    TenPhong = phongTro.TenPhong,
+                    Gia = phongTro.Gia,
+                    DienTich = phongTro.DienTich,
+                    ConTrong = phongTro.ConTrong,
+                    MoTa = phongTro.MoTa,
+                    AnhChinhBase64 = await _context.HinhAnhPhongTros
+            .Where(x => x.MaPhong == phongTro.MaPhong && (bool)x.IsMain)
+            .Select(x => Convert.ToBase64String(x.DuongDanHinh))
+            .ToListAsync()
+                };
 
-                return Ok(ApiResponse<PhongTro>.CreateSuccess(
-                    "Thêm loại phòng thành công",
-                    phongTro));
+                return Ok(ApiResponse<object>.CreateSuccess("Update phòng thành công", dto));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi thêm loại phòng: {TenTheLoai}", updateDto.TenPhong);
+                _logger.LogError(ex, "Lỗi khi cập nhật phòng: {TenPhong}", updateDto.TenPhong);
                 return StatusCode(500, ApiResponse<object>.CreateError(
-                    "Đã xảy ra lỗi khi thêm loại phòng"));
+                    "Đã xảy ra lỗi khi cập nhật phòng"));
             }
         }
         // DELETE api/<ValuesController>/5

@@ -150,6 +150,45 @@ namespace Ql_NhaTro_jun.Controllers
             }
 
         }
+        [HttpGet("get-owners")]
+        public async Task<IActionResult> GetOwners()
+        {
+            try
+            {
+                var owners = await _context.NguoiDungs
+                    .Where(n => n.VaiTro == "1" || n.VaiTro == "2") // Manager or Admin
+                    .Select(n => new { n.MaNguoiDung, n.HoTen })
+                    .ToListAsync();
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy danh sách chủ trọ thành công", owners));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách chủ trọ");
+                return StatusCode(500, ApiResponse<object>.CreateError("Lỗi khi lấy danh sách chủ trọ"));
+            }
+        }
+
+        [HttpGet("test-data")]
+        public async Task<IActionResult> TestData()
+        {
+            try
+            {
+                var provinces = await _context.TinhThanhs.Take(5).ToListAsync();
+                var areas = await _context.KhuVucs.Take(10).ToListAsync();
+                
+                return Ok(new {
+                    success = true,
+                    provinces = provinces,
+                    areas = areas,
+                    message = "Test data retrieved successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi test data");
+                return StatusCode(500, new { success = false, message = "Lỗi test data" });
+            }
+        }
         #endregion
         public class NhaTroDto
         {       

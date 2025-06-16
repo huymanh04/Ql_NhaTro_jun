@@ -1,0 +1,1021 @@
+@{
+    ViewData["Title"] = "Quản lý Trang web";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+
+<div class="web-settings-management">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-globe"></i> Quản lý Trang web</h1>
+                <p>Cài đặt và tùy chỉnh giao diện, thông tin hệ thống</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="saveAllBtn">
+                    <i class="fas fa-save"></i> Lưu tất cả
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alertContainer"></div>
+
+    <!-- Settings Form -->
+    <div class="settings-container">
+        <form id="settingsForm" enctype="multipart/form-data">
+            
+            <!-- General Settings -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-cog"></i> Cài đặt chung</h2>
+                    <p>Thông tin cơ bản của website</p>
+                </div>
+                
+                <div class="section-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tieuDeWeb">Tiêu đề website <span class="required">*</span></label>
+                            <input type="text" id="tieuDeWeb" name="tieuDeWeb" required 
+                                   placeholder="Nhập tiêu đề website">
+                            <div class="error-message" id="tieuDeWebError"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cheDoGiaoDien">Chế độ giao diện</label>
+                            <select id="cheDoGiaoDien" name="cheDoGiaoDien">
+                                <option value="light">Sáng (Light)</option>
+                                <option value="dark">Tối (Dark)</option>
+                                <option value="auto">Tự động (Auto)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="moTaThem">Mô tả thêm</label>
+                        <textarea id="moTaThem" name="moTaThem" rows="4" 
+                                  placeholder="Mô tả chi tiết về website, dịch vụ..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logo Settings -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-image"></i> Logo & Hình ảnh</h2>
+                    <p>Tải lên và quản lý logo website</p>
+                </div>
+                
+                <div class="section-content">
+                    <div class="logo-upload-area">
+                        <div class="current-logo" id="currentLogoContainer" style="display: none;">
+                            <h4>Logo hiện tại:</h4>
+                            <img id="currentLogo" src="" alt="Current Logo" class="logo-preview">
+                        </div>
+                        
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h3>Tải lên logo mới</h3>
+                                <p>Kéo thả file hoặc click để chọn</p>
+                                <p class="file-info">Hỗ trợ: JPG, PNG, GIF (tối đa 5MB)</p>
+                            </div>
+                            <input type="file" id="logoFile" name="imageFile" accept="image/*" hidden>
+                        </div>
+                        
+                        <div class="preview-area" id="previewArea" style="display: none;">
+                            <h4>Xem trước:</h4>
+                            <img id="previewImage" src="" alt="Preview" class="logo-preview">
+                            <button type="button" class="btn btn-secondary btn-sm" id="removePreview">
+                                <i class="fas fa-times"></i> Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-address-book"></i> Thông tin liên hệ</h2>
+                    <p>Địa chỉ, số điện thoại và bản đồ</p>
+                </div>
+                
+                <div class="section-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="soDienThoai">Số điện thoại</label>
+                            <input type="tel" id="soDienThoai" name="soDienThoai" 
+                                   placeholder="Ví dụ: 0123456789">
+                            <div class="error-message" id="soDienThoaiError"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="diaChi">Địa chỉ</label>
+                            <input type="text" id="diaChi" name="diaChi" 
+                                   placeholder="Nhập địa chỉ đầy đủ">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="googleMapEmbed">Google Map Embed Code</label>
+                        <textarea id="googleMapEmbed" name="googleMapEmbed" rows="4" 
+                                  placeholder="Dán mã nhúng Google Maps vào đây..."></textarea>
+                        <small class="form-help">
+                            <i class="fas fa-info-circle"></i>
+                            Lấy mã nhúng từ Google Maps → Share → Embed a map
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing Settings -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-dollar-sign"></i> Cài đặt giá</h2>
+                    <p>Giá điện, nước và các dịch vụ</p>
+                </div>
+                
+                <div class="section-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tienDien">Giá điện (VNĐ/kWh)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="tienDien" name="tienDien" min="0" step="100" 
+                                       placeholder="3000">
+                                <span class="unit">VNĐ</span>
+                            </div>
+                            <div class="error-message" id="tienDienError"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tienNuoc">Giá nước (VNĐ/m³)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="tienNuoc" name="tienNuoc" min="0" step="100" 
+                                       placeholder="25000">
+                                <span class="unit">VNĐ</span>
+                            </div>
+                            <div class="error-message" id="tienNuocError"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="PhiGiuXe">Giá Giữ Xe (VNĐ/Chiếc)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="PhiGiuXe" name="PhiGiuXe" min="0" step="100"
+                                       placeholder="3000">
+                                <span class="unit">VNĐ</span>
+                            </div>
+                            <div class="error-message" id="PhiGiuXeError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="PhiDV">Giá Dịch Vụ (VNĐ/Phòng)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="PhiDV" name="PhiDV" min="0" step="100"
+                                       placeholder="25000">
+                                <span class="unit">VNĐ</span>
+                            </div>
+                            <div class="error-message" id="PhiDVError"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Settings -->
+            <div class="settings-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-robot"></i> Cài đặt AI</h2>
+                    <p>Tích hợp AI và chatbot</p>
+                </div>
+                
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="aiApikey">AI API Key</label>
+                        <div class="password-field">
+                            <input type="password" id="aiApikey" name="aiApikey" 
+                                   placeholder="Nhập API key cho dịch vụ AI">
+                            <button type="button" class="show-pass" id="toggleApiKey">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <small class="form-help">
+                            <i class="fas fa-shield-alt"></i>
+                            API key sẽ được mã hóa và bảo mật
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Đang tải cài đặt...</p>
+    </div>
+</div>
+
+<style>
+.web-settings-management {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #4a90a4 0%, #2c5f6f 100%);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+    color: white;
+    box-shadow: 0 8px 25px rgba(74, 144, 164, 0.3);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-left h1 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-left p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+.settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.settings-section {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.section-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 25px 30px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.section-header h2 {
+    margin: 0 0 5px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.section-content {
+    padding: 30px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+.required {
+    color: #ef4444;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4a90a4;
+    box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.input-with-unit {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-with-unit input {
+    padding-right: 60px;
+}
+
+.input-with-unit .unit {
+    position: absolute;
+    right: 15px;
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.password-field {
+    position: relative;
+    display: flex;
+}
+
+.password-field input {
+    padding-right: 50px;
+}
+
+.show-pass {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, #4a90a4, #2c5f6f);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 8px 10px;
+    font-size: 14px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(74, 144, 164, 0.3);
+}
+
+.show-pass:hover {
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 4px 12px rgba(74, 144, 164, 0.4);
+}
+
+.form-help {
+    color: #6b7280;
+    font-size: 12px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+
+.logo-upload-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.current-logo h4,
+.preview-area h4 {
+    margin: 0 0 10px 0;
+    color: #374151;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.logo-preview {
+    max-width: 200px;
+    max-height: 100px;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    padding: 10px;
+    background: white;
+}
+
+.upload-zone {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+}
+
+.upload-zone:hover {
+    border-color: #4a90a4;
+    background: #f0f8fa;
+}
+
+.upload-zone.dragover {
+    border-color: #4a90a4;
+    background: #e6f3f7;
+    transform: scale(1.02);
+}
+
+.upload-content i {
+    font-size: 48px;
+    color: #9ca3af;
+    margin-bottom: 15px;
+}
+
+.upload-content h3 {
+    margin: 0 0 8px 0;
+    color: #374151;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.upload-content p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.file-info {
+    font-size: 12px !important;
+    color: #9ca3af !important;
+    margin-top: 5px !important;
+}
+
+.preview-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4a90a4 0%, #2c5f6f 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(74, 144, 164, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 144, 164, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-content {
+    text-align: center;
+    color: white;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-top: 5px solid #4a90a4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.alert {
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.alert-error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+@@media (max-width: 768px) {
+    .web-settings-management {
+        padding: 15px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .section-content {
+        padding: 20px;
+    }
+    
+    .upload-zone {
+        padding: 30px 15px;
+    }
+    
+    .upload-content i {
+        font-size: 36px;
+    }
+    
+    .btn {
+        justify-content: center;
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+class WebSettingsManager {
+    constructor() {
+        this.currentSettings = null;
+        this.hasChanges = false;
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.loadSettings();
+    }
+
+    bindEvents() {
+        // Save button
+        document.getElementById('saveAllBtn').addEventListener('click', () => this.saveSettings());
+        
+        // Form change detection
+        document.getElementById('settingsForm').addEventListener('input', () => {
+            this.hasChanges = true;
+            this.updateSaveButton();
+        });
+        
+        // Logo upload
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('logoFile');
+        
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', (e) => this.handleDragOver(e));
+        uploadZone.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+        uploadZone.addEventListener('drop', (e) => this.handleDrop(e));
+        
+        fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        
+        // Remove preview
+        document.getElementById('removePreview').addEventListener('click', () => this.removePreview());
+        
+        // Toggle API key visibility
+        document.getElementById('toggleApiKey').addEventListener('click', () => this.toggleApiKeyVisibility());
+        
+        // Prevent form submission
+        document.getElementById('settingsForm').addEventListener('submit', (e) => e.preventDefault());
+        
+        // Warn before leaving if there are unsaved changes
+        window.addEventListener('beforeunload', (e) => {
+            if (this.hasChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    }
+
+    async loadSettings() {
+        try {
+            this.showLoading(true);
+            const response = await fetch('/api/CaiDatHeThong/get-cai-dat-he-thong', {
+                credentials: 'include'
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                this.currentSettings = result.data;
+                console.log('Loaded settings from API:', result.data);
+                this.populateForm(result.data);
+            } else if (response.status === 404) {
+                // No settings exist yet, show empty form
+                this.showAlert('Chưa có cài đặt nào. Hãy thiết lập lần đầu.', 'info');
+            } else {
+                console.error('API Error Response:', response.status, result);
+                console.error('Full error details:', JSON.stringify(result, null, 2));
+                this.showAlert(result.message || result.title || 'Có lỗi xảy ra khi tải cài đặt', 'error');
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            this.showAlert('Lỗi kết nối: ' + error.message, 'error');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    populateForm(settings) {
+        // Populate form fields
+        document.getElementById('tieuDeWeb').value = settings.tieuDeWeb || '';
+        document.getElementById('cheDoGiaoDien').value = settings.cheDoGiaoDien || 'light';
+        document.getElementById('moTaThem').value = settings.moTaThem || '';
+        document.getElementById('soDienThoai').value = settings.soDienThoai || '';
+        document.getElementById('diaChi').value = settings.diaChi || '';
+        document.getElementById('googleMapEmbed').value = settings.googleMapEmbed || '';
+        document.getElementById('tienDien').value = settings.tienDien || '';
+        document.getElementById('PhiGiuXe').value = settings.phiGiuXe || '';
+            document.getElementById('PhiDV').value = settings.phidv || '';
+        document.getElementById('tienNuoc').value = settings.tienNuoc || '';
+        document.getElementById('aiApikey').value = settings.aiApikey || '';
+        
+        // Show current logo if exists
+        if (settings.logoUrl) {
+            this.showCurrentLogo(settings.logoUrl);
+        }
+        
+        this.hasChanges = false;
+        this.updateSaveButton();
+    }
+
+    showCurrentLogo(logoBytes) {
+        const container = document.getElementById('currentLogoContainer');
+        const img = document.getElementById('currentLogo');
+        
+
+            img.src = `data:image/jpeg;base64,${logoBytes}`;
+            container.style.display = 'block';
+        
+    }
+
+    arrayBufferToBase64(buffer) {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    }
+
+    handleDragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('dragover');
+    }
+
+    handleDragLeave(e) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('dragover');
+    }
+
+    handleDrop(e) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            this.handleFile(files[0]);
+        }
+    }
+
+    handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+            this.handleFile(file);
+        }
+    }
+
+    handleFile(file) {
+        // Validate file
+        if (!this.validateImageFile(file)) {
+            return;
+        }
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('previewImage').src = e.target.result;
+            document.getElementById('previewArea').style.display = 'block';
+            document.getElementById('uploadZone').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+        
+        this.hasChanges = true;
+        this.updateSaveButton();
+    }
+
+    validateImageFile(file) {
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        
+        if (file.size > maxSize) {
+            this.showAlert('Kích thước file không được vượt quá 5MB', 'error');
+            return false;
+        }
+        
+        if (!allowedTypes.includes(file.type)) {
+            this.showAlert('Chỉ chấp nhận file ảnh định dạng JPG, PNG, GIF', 'error');
+            return false;
+        }
+        
+        return true;
+    }
+
+    removePreview() {
+        document.getElementById('previewArea').style.display = 'none';
+        document.getElementById('uploadZone').style.display = 'block';
+        document.getElementById('logoFile').value = '';
+        
+        this.hasChanges = true;
+        this.updateSaveButton();
+    }
+
+    toggleApiKeyVisibility() {
+        const input = document.getElementById('aiApikey');
+        const icon = document.querySelector('#toggleApiKey i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    validateForm() {
+        this.clearErrors();
+        let isValid = true;
+
+        const tieuDeWeb = document.getElementById('tieuDeWeb').value.trim();
+        const soDienThoai = document.getElementById('soDienThoai').value.trim();
+        const tienDien = document.getElementById('tienDien').value;
+        const PhiGiuXe = document.getElementById('PhiGiuXe').value;
+        const PhiDV = document.getElementById('PhiDV').value;
+        const tienNuoc = document.getElementById('tienNuoc').value;
+
+        if (!tieuDeWeb) {
+            this.showFieldError('tieuDeWeb', 'Tiêu đề website không được để trống');
+            isValid = false;
+        }
+
+        if (soDienThoai && !/^[0-9+\-\s()]+$/.test(soDienThoai)) {
+            this.showFieldError('soDienThoai', 'Số điện thoại không hợp lệ');
+            isValid = false;
+        }
+
+        if (tienDien && (isNaN(tienDien) || parseFloat(tienDien) < 0)) {
+            this.showFieldError('tienDien', 'Giá điện phải là số dương');
+            isValid = false;
+        }
+
+        if (tienNuoc && (isNaN(tienNuoc) || parseFloat(tienNuoc) < 0)) {
+            this.showFieldError('tienNuoc', 'Giá nước phải là số dương');
+            isValid = false;
+        }
+
+        if (PhiGiuXe && (isNaN(PhiGiuXe) || parseFloat(PhiGiuXe) < 0)) {
+            this.showFieldError('PhiGiuXe', 'Giá giữ xe phải là số dương');
+            isValid = false;
+        }
+
+        if (PhiDV && (isNaN(PhiDV) || parseFloat(PhiDV) < 0)) {
+            this.showFieldError('PhiDV', 'Giá dịch vụ phải là số dương');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    showFieldError(fieldName, message) {
+        const errorEl = document.getElementById(fieldName + 'Error');
+        const inputEl = document.getElementById(fieldName);
+        
+        if (errorEl && inputEl) {
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            inputEl.style.borderColor = '#ef4444';
+        }
+    }
+
+    clearErrors() {
+        document.querySelectorAll('.error-message').forEach(el => {
+            el.style.display = 'none';
+            el.textContent = '';
+        });
+        document.querySelectorAll('input, select, textarea').forEach(input => {
+            input.style.borderColor = '#e5e7eb';
+        });
+    }
+
+    async saveSettings() {
+        if (!this.validateForm()) {
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveAllBtn');
+        const originalText = saveBtn.innerHTML;
+        
+        try {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+            const formData = new FormData();
+            
+            // Add form fields
+            formData.append('tieuDeWeb', document.getElementById('tieuDeWeb').value.trim());
+            formData.append('cheDoGiaoDien', document.getElementById('cheDoGiaoDien').value);
+            formData.append('moTaThem', document.getElementById('moTaThem').value.trim());
+            formData.append('soDienThoai', document.getElementById('soDienThoai').value.trim());
+            formData.append('diaChi', document.getElementById('diaChi').value.trim());
+            formData.append('googleMapEmbed', document.getElementById('googleMapEmbed').value.trim());
+            
+            const tienDien = document.getElementById('tienDien').value;
+            const tienNuoc = document.getElementById('tienNuoc').value;
+            const PhiDV = document.getElementById('PhiDV').value;
+            const PhiGiuXe = document.getElementById('PhiGiuXe').value;
+            
+            if (tienDien) formData.append('tienDien', tienDien);
+            if (PhiGiuXe) formData.append('PhiGiuXe', PhiGiuXe);
+            if (PhiDV) formData.append('PhiDV', PhiDV);
+            if (tienNuoc) formData.append('tienNuoc', tienNuoc);
+            
+            formData.append('aiApikey', document.getElementById('aiApikey').value.trim());
+            
+            // Add logo file if selected
+            const logoFile = document.getElementById('logoFile').files[0];
+            if (logoFile) {
+                formData.append('imageFile', logoFile);
+            }
+
+            let response;
+            if (this.currentSettings) {
+                // Update existing settings - use FormData to support file upload
+                response = await fetch('/api/CaiDatHeThong/update-cai-dat-he-thong', {
+                    method: 'PUT',
+                    credentials: 'include',
+                    body: formData
+                });
+            } else {
+                // Create new settings
+                response = await fetch('/api/CaiDatHeThong/add-cai-dat-he-thong', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+            }
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                this.showAlert(result.message || 'Lưu cài đặt thành công!', 'success');
+                this.hasChanges = false;
+                this.updateSaveButton();
+                
+                // Reload settings to get updated data
+                setTimeout(() => this.loadSettings(), 1000);
+            } else {
+                console.error('API Error Response:', response.status, result);
+                console.error('Full error details:', JSON.stringify(result, null, 2));
+                this.showAlert(result.message || result.title || 'Có lỗi xảy ra khi lưu', 'error');
+            }
+
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            this.showAlert('Lỗi kết nối: ' + error.message, 'error');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
+        }
+    }
+
+    updateSaveButton() {
+        const saveBtn = document.getElementById('saveAllBtn');
+        if (this.hasChanges) {
+            saveBtn.classList.add('btn-warning');
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu thay đổi';
+        } else {
+            saveBtn.classList.remove('btn-warning');
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Lưu tất cả';
+        }
+    }
+
+    showLoading(show) {
+        document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+    }
+
+    showAlert(message, type) {
+        const container = document.getElementById('alertContainer');
+        const alertId = 'alert-' + Date.now();
+        
+        const alertHtml = `
+            <div id="${alertId}" class="alert alert-${type}">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                ${message}
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', alertHtml);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            const alertEl = document.getElementById(alertId);
+            if (alertEl) {
+                alertEl.style.opacity = '0';
+                alertEl.style.transform = 'translateY(-10px)';
+                setTimeout(() => alertEl.remove(), 300);
+            }
+        }, 5000);
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.webSettingsManager = new WebSettingsManager();
+});
+</script> 

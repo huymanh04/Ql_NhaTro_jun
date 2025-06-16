@@ -207,3 +207,80 @@ DarkModeUtils.initForAspNet();
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { DarkModeController, DarkModeUtils };
 }
+
+// Dark Mode Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Create dark mode toggle button
+    const darkModeToggle = document.createElement('button');
+    darkModeToggle.className = 'dark-mode-toggle';
+    darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+    darkModeToggle.setAttribute('aria-label', 'Toggle Dark Mode');
+    darkModeToggle.setAttribute('title', 'Toggle Dark Mode');
+    
+    // Add to body
+    document.body.appendChild(darkModeToggle);
+    
+    // Check for saved theme preference or default to light mode
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    
+    // Update button icon based on current theme
+    updateToggleIcon(currentTheme);
+    
+    // Toggle theme function
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateToggleIcon(newTheme);
+        
+        // Add smooth transition effect
+        document.documentElement.style.transition = 'all 0.3s ease';
+        setTimeout(() => {
+            document.documentElement.style.transition = '';
+        }, 300);
+    }
+    
+    // Update toggle button icon
+    function updateToggleIcon(theme) {
+        const icon = darkModeToggle.querySelector('i');
+        if (theme === 'dark') {
+            icon.className = 'fas fa-sun';
+            darkModeToggle.setAttribute('title', 'Switch to Light Mode');
+        } else {
+            icon.className = 'fas fa-moon';
+            darkModeToggle.setAttribute('title', 'Switch to Dark Mode');
+        }
+    }
+    
+    // Add click event listener
+    darkModeToggle.addEventListener('click', toggleTheme);
+    
+    // Add keyboard support
+    darkModeToggle.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleTheme();
+        }
+    });
+    
+    // Optional: Auto-detect system preference
+    if (!localStorage.getItem('theme')) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            updateToggleIcon('dark');
+        }
+    }
+    
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        if (!localStorage.getItem('theme')) {
+            const newTheme = e.matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            updateToggleIcon(newTheme);
+        }
+    });
+});
