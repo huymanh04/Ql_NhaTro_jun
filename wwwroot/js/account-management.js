@@ -155,40 +155,48 @@ class AccountManager {
 
         if (emptyState) emptyState.style.display = 'none';
 
+        // Calculate the starting index for STT
+        const startIndex = (this.currentPage - 1) * this.pageSize;
+
         // Render table for desktop
-        tbody.innerHTML = this.users.map(user => `
-            <tr>
-                <td data-label="ID">${user.maNguoiDung}</td>
-                <td data-label="Họ tên">${this.escapeHtml(user.hoTen)}</td>
-                <td data-label="Email">${this.escapeHtml(user.email)}</td>
-                <td data-label="Số điện thoại">${this.escapeHtml(user.soDienThoai)}</td>
-                <td data-label="Vai trò">
-                    <span class="role-badge ${user.vaiTro === '2' ? 'admin' : user.vaiTro === '1' ? 'manager' : 'customer'}">
-                        <i class="fas ${user.vaiTro === '2' ? 'fa-crown' : user.vaiTro === '1' ? 'fa-user-tie' : 'fa-user'}"></i>
-                        ${user.vaiTroText}
-                    </span>
-                </td>
-                <td data-label="Trạng thái">
-                    <span class="status-badge active">
-                        <i class="fas fa-circle"></i>
-                        Hoạt động
-                    </span>
-                </td>
-                <td data-label="Thao tác">
-                    <div class="action-buttons">
-                        <button class="btn-action btn-edit" onclick="accountManager.openEditModal(${user.maNguoiDung})" title="Chỉnh sửa">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-action btn-role" data-user-id="${user.maNguoiDung}" data-user-name="${this.escapeHtml(user.hoTen)}" data-user-role="${user.vaiTro}" title="Thay đổi quyền">
-                            <i class="fas fa-user-cog"></i>
-                        </button>
-                        <button class="btn-action btn-delete" data-user-id="${user.maNguoiDung}" data-user-name="${this.escapeHtml(user.hoTen)}" title="Xóa">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = this.users.map((user, index) => {
+            // Calculate STT (số thứ tự)
+            const stt = startIndex + index + 1;
+            
+            return `
+                <tr>
+                    <td data-label="STT"><strong>${stt}</strong></td>
+                    <td data-label="Họ tên">${this.escapeHtml(user.hoTen)}</td>
+                    <td data-label="Email">${this.escapeHtml(user.email)}</td>
+                    <td data-label="Số điện thoại">${this.escapeHtml(user.soDienThoai)}</td>
+                    <td data-label="Vai trò">
+                        <span class="role-badge ${user.vaiTro === '2' ? 'admin' : user.vaiTro === '1' ? 'manager' : 'customer'}">
+                            <i class="fas ${user.vaiTro === '2' ? 'fa-crown' : user.vaiTro === '1' ? 'fa-user-tie' : 'fa-user'}"></i>
+                            ${user.vaiTroText}
+                        </span>
+                    </td>
+                    <td data-label="Trạng thái">
+                        <span class="status-badge active">
+                            <i class="fas fa-circle"></i>
+                            Hoạt động
+                        </span>
+                    </td>
+                    <td data-label="Thao tác">
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="accountManager.openEditModal(${user.maNguoiDung})" title="Chỉnh sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-role" data-user-id="${user.maNguoiDung}" data-user-name="${this.escapeHtml(user.hoTen)}" data-user-role="${user.vaiTro}" title="Thay đổi quyền">
+                                <i class="fas fa-user-cog"></i>
+                            </button>
+                            <button class="btn-action btn-delete" data-user-id="${user.maNguoiDung}" data-user-name="${this.escapeHtml(user.hoTen)}" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
 
         // Render cards for mobile
         this.renderMobileCards();
@@ -198,8 +206,15 @@ class AccountManager {
         const mobileContainer = document.getElementById('mobileCardsContainer');
         if (!mobileContainer) return;
 
-        mobileContainer.innerHTML = this.users.map(user => {
+        // Calculate the starting index for STT
+        const startIndex = (this.currentPage - 1) * this.pageSize;
+
+        mobileContainer.innerHTML = this.users.map((user, index) => {
             const initials = user.hoTen.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+            
+            // Calculate STT (số thứ tự)
+            const stt = startIndex + index + 1;
+            
             return `
                 <div class="user-card">
                     <div class="user-card-header">
@@ -215,8 +230,8 @@ class AccountManager {
                     </div>
                     <div class="user-card-details">
                         <div class="user-card-detail">
-                            <div class="user-card-detail-label">ID</div>
-                            <div class="user-card-detail-value">#${user.maNguoiDung}</div>
+                            <div class="user-card-detail-label">STT</div>
+                            <div class="user-card-detail-value">${stt}</div>
                         </div>
                         <div class="user-card-detail">
                             <div class="user-card-detail-label">Số điện thoại</div>
@@ -801,7 +816,7 @@ class AccountManager {
         }
     }
 
-    closeAllModals() {
+    closeAllModals(resetVariables = true) {
         this.closeUserModal();
         this.closeRoleModal();
         this.closeDeleteModal();

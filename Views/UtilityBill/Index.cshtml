@@ -1,0 +1,305 @@
+@{
+    ViewData["Title"] = "Quản lý hóa đơn tiện ích";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+
+<div class="container-fluid">
+    <h2 class="text-center mb-4">Quản lý hóa đơn tiện ích</h2>
+
+    <!-- Button trigger modal -->
+    <div class="mb-3">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBillModal">
+            <i class="fas fa-plus"></i> Thêm hóa đơn mới
+        </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered" id="utilityBillTable">
+            <thead>
+                <tr>
+                    <th>Mã hóa đơn</th>
+                    <th>Phòng</th>
+                    <th>Tháng/Năm</th>
+                    <th>Số điện</th>
+                    <th>Số nước</th>
+                    <th>Phí DV</th>
+                    <th>Số xe</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Bill Modal -->
+<div class="modal fade" id="addBillModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm hóa đơn mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addBillForm">
+                    <div class="mb-3">
+                        <label class="form-label">Phòng</label>
+                        <select class="form-select" id="maPhong" required>
+                            <option value="">Chọn phòng</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện</label>
+                        <input type="number" class="form-control" id="soDien" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số nước</label>
+                        <input type="number" class="form-control" id="soNuoc" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú</label>
+                        <textarea class="form-control" id="note"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="saveBillBtn">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Bill Modal -->
+<div class="modal fade" id="editBillModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sửa hóa đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editBillForm">
+                    <input type="hidden" id="editMaHoaDon">
+                    <div class="mb-3">
+                        <label class="form-label">Phòng</label>
+                        <input type="text" class="form-control" id="editTenPhong" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện</label>
+                        <input type="number" class="form-control" id="editSoDien" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số nước</label>
+                        <input type="number" class="form-control" id="editSoNuoc" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú</label>
+                        <textarea class="form-control" id="editNote"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="editDaThanhToan">
+                            <label class="form-check-label">Đã thanh toán</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="updateBillBtn">Cập nhật</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Load danh sách phòng
+            function loadPhongList() {
+                $.get('/api/UtilityBill/get-all-phong', function (response) {
+                    if (response.success) {
+                        const phongSelect = $('#maPhong');
+                        phongSelect.empty().append('<option value="">Chọn phòng</option>');
+                        response.data.forEach(phong => {
+                            phongSelect.append(`<option value="${phong.maPhong}">${phong.tenPhong}</option>`);
+                        });
+                    }
+                });
+            }
+
+            // Load danh sách hóa đơn
+            function loadUtilityBills() {
+                $.get('/api/UtilityBill/get-all-hoa-don', function (response) {
+                    if (response.success) {
+                        const tbody = $('#utilityBillTable tbody');
+                        tbody.empty();
+                        response.data.forEach(bill => {
+                            tbody.append(`
+                                <tr>
+                                    <td>${bill.maHoaDon}</td>
+                                    <td>${bill.tenPhong}</td>
+                                    <td>${bill.thang}/${bill.nam}</td>
+                                    <td>${bill.soDien}</td>
+                                    <td>${bill.soNuoc}</td>
+                                    <td>${bill.phidv}</td>
+                                    <td>${bill.soxe}</td>
+                                    <td>${bill.tongTien.toLocaleString('vi-VN')} VNĐ</td>
+                                    <td>${bill.daThanhToan ? '<span class="badge bg-success">Đã thanh toán</span>' : '<span class="badge bg-warning">Chưa thanh toán</span>'}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" onclick="viewBill(${bill.maHoaDon})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" onclick="editBill(${bill.maHoaDon})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteBill(${bill.maHoaDon})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `);
+                        });
+                    }
+                });
+            }
+
+            // Thêm hóa đơn mới
+            $('#saveBillBtn').click(function () {
+                const data = {
+                    maPhong: $('#maPhong').val(),
+                    soDien: $('#soDien').val(),
+                    soNuoc: $('#soNuoc').val(),
+                    note: $('#note').val()
+                };
+
+                $.ajax({
+                    url: '/api/UtilityBill/add-hoadon-tien-ich',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        if (response.success) {
+                            $('#addBillModal').modal('hide');
+                            loadUtilityBills();
+                            toastr.success('Thêm hóa đơn thành công');
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    }
+                });
+            });
+
+            // Xem chi tiết hóa đơn
+            window.viewBill = function (id) {
+                $.get(`/api/UtilityBill/print-hoa-don/${id}`, function (response) {
+                    if (response.success) {
+                        const bill = response.data;
+                        Swal.fire({
+                            title: 'Chi tiết hóa đơn',
+                            html: `
+                                <div class="text-start">
+                                    <p><strong>Mã hóa đơn:</strong> ${bill.maHoaDon}</p>
+                                    <p><strong>Phòng:</strong> ${bill.tenPhong}</p>
+                                    <p><strong>Tháng/Năm:</strong> ${bill.thangNam}</p>
+                                    <p><strong>Ngày xuất:</strong> ${bill.ngayXuat}</p>
+                                    <p><strong>Khách hàng:</strong> ${bill.khachHang}</p>
+                                    <p><strong>Số điện:</strong> ${bill.soDien} (${bill.donGiaDien.toLocaleString('vi-VN')} VNĐ/kWh)</p>
+                                    <p><strong>Thành tiền điện:</strong> ${bill.thanhTienDien.toLocaleString('vi-VN')} VNĐ</p>
+                                    <p><strong>Số nước:</strong> ${bill.soNuoc} (${bill.donGiaNuoc.toLocaleString('vi-VN')} VNĐ/m³)</p>
+                                    <p><strong>Thành tiền nước:</strong> ${bill.thanhTienNuoc.toLocaleString('vi-VN')} VNĐ</p>
+                                    <p><strong>Tiền phòng:</strong> ${bill.tienPhong.toLocaleString('vi-VN')} VNĐ</p>
+                                    <p><strong>Phí dịch vụ:</strong> ${bill.phidv.toLocaleString('vi-VN')} VNĐ</p>
+                                    <p><strong>Số xe:</strong> ${bill.soxe}</p>
+                                    <p><strong>Tổng tiền:</strong> ${bill.tongTien.toLocaleString('vi-VN')} VNĐ</p>
+                                    <p><strong>Trạng thái:</strong> ${bill.daThanhToan}</p>
+                                </div>
+                            `,
+                            width: '600px'
+                        });
+                    }
+                });
+            };
+
+            // Sửa hóa đơn
+            window.editBill = function (id) {
+                $.get(`/api/UtilityBill/get-hoa-don-chi-tiet/${id}`, function (response) {
+                    if (response.success) {
+                        const bill = response.data;
+                        $('#editMaHoaDon').val(bill.maHoaDon);
+                        $('#editTenPhong').val(bill.tenPhong);
+                        $('#editSoDien').val(bill.soDien);
+                        $('#editSoNuoc').val(bill.soNuoc);
+                        $('#editDaThanhToan').prop('checked', bill.daThanhToan);
+                        $('#editBillModal').modal('show');
+                    }
+                });
+            };
+
+            // Cập nhật hóa đơn
+            $('#updateBillBtn').click(function () {
+                const id = $('#editMaHoaDon').val();
+                const data = {
+                    maPhong: $('#editMaPhong').val(),
+                    soDien: $('#editSoDien').val(),
+                    soNuoc: $('#editSoNuoc').val(),
+                    note: $('#editNote').val()
+                };
+
+                $.ajax({
+                    url: `/api/UtilityBill/edit-hoadon-tien-ich/${id}`,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        if (response.success) {
+                            $('#editBillModal').modal('hide');
+                            loadUtilityBills();
+                            toastr.success('Cập nhật hóa đơn thành công');
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    }
+                });
+            });
+
+            // Xóa hóa đơn
+            window.deleteBill = function (id) {
+                Swal.fire({
+                    title: 'Xác nhận xóa?',
+                    text: "Bạn có chắc chắn muốn xóa hóa đơn này?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/api/UtilityBill/delete-hoadon-tienich/${id}`,
+                            type: 'DELETE',
+                            success: function (response) {
+                                if (response.success) {
+                                    loadUtilityBills();
+                                    toastr.success('Xóa hóa đơn thành công');
+                                } else {
+                                    toastr.error(response.message);
+                                }
+                            }
+                        });
+                    }
+                });
+            };
+
+            // Initial load
+            loadPhongList();
+            loadUtilityBills();
+        });
+    </script>
+} 

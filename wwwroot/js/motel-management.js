@@ -40,6 +40,21 @@ class MotelManagement {
         document.getElementById('areaFilter').addEventListener('change', () => this.applyFilters());
         document.getElementById('clearFiltersBtn').addEventListener('click', () => this.clearFilters());
         
+        // Items per page change
+        document.getElementById('itemsPerPage').addEventListener('change', (e) => {
+            console.log('=== MOTEL ITEMS PER PAGE CHANGE EVENT ===');
+            console.log('Old itemsPerPage:', this.itemsPerPage);
+            console.log('New value from dropdown:', e.target.value);
+            
+            this.itemsPerPage = parseInt(e.target.value);
+            this.currentPage = 1; // Reset to first page
+            
+            console.log('Updated itemsPerPage:', this.itemsPerPage);
+            console.log('Current page reset to:', this.currentPage);
+            
+            this.renderMotels();
+        });
+        
         // Province change in form modal to load areas
         document.getElementById('maTinh').addEventListener('change', (e) => this.loadAreasByProvince(e.target.value));
         
@@ -57,6 +72,29 @@ class MotelManagement {
         
         // Form validation
         document.getElementById('motelForm').addEventListener('input', () => this.clearFieldErrors());
+        
+        // Event delegation for dynamically created buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-edit')) {
+                e.preventDefault();
+                const motelId = parseInt(e.target.closest('.btn-edit').dataset.id);
+                this.showEditModal(motelId);
+            }
+            
+            if (e.target.closest('.btn-delete')) {
+                e.preventDefault();
+                const motelId = parseInt(e.target.closest('.btn-delete').dataset.id);
+                const motel = this.motels.find(m => m.maNhaTro === motelId);
+                const motelName = motel ? motel.tenNhaTro : 'N/A';
+                this.showDeleteModal(motelId, motelName);
+            }
+            
+            if (e.target.closest('.page-number')) {
+                e.preventDefault();
+                const page = parseInt(e.target.closest('.page-number').textContent);
+                this.goToPage(page);
+            }
+        });
     }
 
     async loadInitialData() {
@@ -217,16 +255,29 @@ class MotelManagement {
 
     renderMotels() {
         this.renderTable();
-        this.renderMobileCards();
+        this.updatePagination();
     }
 
     renderTable() {
         const tbody = document.getElementById('motelsTableBody');
+        const mobileCards = document.getElementById('mobileMotelCards');
+        
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
         const endIndex = startIndex + this.itemsPerPage;
         const pageMotels = this.filteredMotels.slice(startIndex, endIndex);
 
+        // Clear existing content
         tbody.innerHTML = '';
+        mobileCards.innerHTML = '';
+
+        // Debug logging (temporary - can be removed later)
+        console.log('=== MOTEL PAGINATION DEBUG ===');
+        console.log('Current page:', this.currentPage);
+        console.log('Items per page:', this.itemsPerPage);
+        console.log('Total filtered motels:', this.filteredMotels.length);
+        console.log('Start index:', startIndex);
+        console.log('End index:', endIndex);
+        console.log('Page motels length (should be ≤ itemsPerPage):', pageMotels.length);
 
         if (pageMotels.length === 0) {
             tbody.innerHTML = `
@@ -237,48 +288,7 @@ class MotelManagement {
                     </td>
                 </tr>
             `;
-            return;
-        }
-
-        pageMotels.forEach(motel => {
-            const row = document.createElement('tr');
-            
-            const provinceName = this.getProvinceName(motel.maTinh);
-            const areaName = this.getAreaName(motel.maKhuVuc);
-            const ownerName = this.getOwnerName(motel.maChuTro);
-            const createdDate = this.formatDate(motel.ngayTao);
-
-            row.innerHTML = `
-                <td><strong>#${motel.maNhaTro}</strong></td>
-                <td><strong>${motel.tenNhaTro}</strong></td>
-                <td>${motel.diaChi || ''}</td>
-                <td>${provinceName}</td>
-                <td>${areaName}</td>
-                <td>${ownerName}</td>
-                <td>${createdDate}</td>
-                <td class="actions">
-                    <button class="btn btn-edit" onclick="motelManagement.showEditModal(${motel.maNhaTro})">
-                        <i class="fas fa-edit"></i> Sửa
-                    </button>
-                    <button class="btn btn-delete" onclick="motelManagement.showDeleteModal(${motel.maNhaTro}, '${motel.tenNhaTro}')">
-                        <i class="fas fa-trash"></i> Xóa
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
-    }
-
-    renderMobileCards() {
-        const container = document.getElementById('mobileMotelCards');
-        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-        const endIndex = startIndex + this.itemsPerPage;
-        const pageMotels = this.filteredMotels.slice(startIndex, endIndex);
-
-        container.innerHTML = '';
-
-        if (pageMotels.length === 0) {
-            container.innerHTML = `
+            mobileCards.innerHTML = `
                 <div style="text-align: center; padding: 40px;">
                     <i class="fas fa-search" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
                     <p style="margin: 0; color: #6b7280;">Không tìm thấy nhà trọ nào</p>
@@ -287,54 +297,97 @@ class MotelManagement {
             return;
         }
 
-        pageMotels.forEach(motel => {
-            const provinceName = this.getProvinceName(motel.maTinh);
-            const areaName = this.getAreaName(motel.maKhuVuc);
-            const ownerName = this.getOwnerName(motel.maChuTro);
-            const createdDate = this.formatDate(motel.ngayTao);
+        // Render desktop table
+        tbody.innerHTML = pageMotels.map((motel, index) => {
+            const tinh = this.provinces.find(p => p.maTinh === motel.maTinh);
+            const khuVuc = this.areas.find(a => a.maKhuVuc === motel.maKhuVuc);
+            const chuTro = this.owners.find(o => o.maNguoiDung === motel.maChuTro);
+            
+            // Calculate STT (số thứ tự)
+            const stt = (this.currentPage - 1) * this.itemsPerPage + index + 1;
+            
+            return `
+                <tr>
+                    <td><strong>${stt}</strong></td>
+                    <td><strong>${motel.tenNhaTro}</strong></td>
+                    <td title="${motel.diaChi}">${motel.diaChi}</td>
+                    <td>${tinh ? tinh.tenTinh : 'N/A'}</td>
+                    <td>${khuVuc ? khuVuc.tenKhuVuc : 'N/A'}</td>
+                    <td>${chuTro ? chuTro.hoTen : 'N/A'}</td>
+                    <td>${this.formatDate(motel.ngayTao)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" data-id="${motel.maNhaTro}">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button class="btn-action btn-delete" data-id="${motel.maNhaTro}">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
 
-            const card = document.createElement('div');
-            card.className = 'motel-card';
-            card.innerHTML = `
-                <div class="motel-card-header">
-                    <h3 class="motel-card-title">${motel.tenNhaTro}</h3>
-                    <span class="motel-card-id">#${motel.maNhaTro}</span>
-                </div>
-                
-                <div class="motel-card-info">
-                    <div class="info-row">
-                        <span class="info-label">Địa chỉ:</span>
-                        <span class="info-value">${motel.diaChi || 'Chưa có'}</span>
+        // Render mobile cards
+        mobileCards.innerHTML = pageMotels.map((motel, index) => {
+            const tinh = this.provinces.find(p => p.maTinh === motel.maTinh);
+            const khuVuc = this.areas.find(a => a.maKhuVuc === motel.maKhuVuc);
+            const chuTro = this.owners.find(o => o.maNguoiDung === motel.maChuTro);
+            
+            // Calculate STT (số thứ tự)
+            const stt = (this.currentPage - 1) * this.itemsPerPage + index + 1;
+            
+            return `
+                <div class="mobile-card">
+                    <div class="mobile-card-header">
+                        <div class="mobile-card-info">
+                            <h3>${motel.tenNhaTro}</h3>
+                            <p>STT: ${stt}</p>
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Tỉnh/Thành:</span>
-                        <span class="info-value">${provinceName}</span>
+                    <div class="mobile-card-details">
+                        <div class="mobile-detail-item">
+                            <span class="mobile-detail-label">Địa chỉ</span>
+                            <span class="mobile-detail-value">${motel.diaChi}</span>
+                        </div>
+                        <div class="mobile-detail-item">
+                            <span class="mobile-detail-label">Tỉnh/Thành</span>
+                            <span class="mobile-detail-value">${tinh ? tinh.tenTinh : 'N/A'}</span>
+                        </div>
+                        <div class="mobile-detail-item">
+                            <span class="mobile-detail-label">Khu vực</span>
+                            <span class="mobile-detail-value">${khuVuc ? khuVuc.tenKhuVuc : 'N/A'}</span>
+                        </div>
+                        <div class="mobile-detail-item">
+                            <span class="mobile-detail-label">Chủ trọ</span>
+                            <span class="mobile-detail-value">${chuTro ? chuTro.hoTen : 'N/A'}</span>
+                        </div>
+                        <div class="mobile-detail-item">
+                            <span class="mobile-detail-label">Ngày tạo</span>
+                            <span class="mobile-detail-value">${this.formatDate(motel.ngayTao)}</span>
+                        </div>
+                        <div class="mobile-detail-item">
+                            <span class="mobile-detail-label">Mô tả</span>
+                            <span class="mobile-detail-value">${motel.moTa || 'Không có mô tả'}</span>
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Khu vực:</span>
-                        <span class="info-value">${areaName}</span>
+                    <div class="mobile-card-actions">
+                        <button class="btn-action btn-edit" data-id="${motel.maNhaTro}">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="btn-action btn-delete" data-id="${motel.maNhaTro}">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Chủ trọ:</span>
-                        <span class="info-value">${ownerName}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Ngày tạo:</span>
-                        <span class="info-value">${createdDate}</span>
-                    </div>
-                </div>
-                
-                <div class="motel-card-actions">
-                    <button class="btn btn-edit" onclick="motelManagement.showEditModal(${motel.maNhaTro})">
-                        <i class="fas fa-edit"></i> Sửa
-                    </button>
-                    <button class="btn btn-delete" onclick="motelManagement.showDeleteModal(${motel.maNhaTro}, '${motel.tenNhaTro}')">
-                        <i class="fas fa-trash"></i> Xóa
-                    </button>
                 </div>
             `;
-            container.appendChild(card);
-        });
+        }).join('');
+
+        console.log('✅ MOTEL RENDERED:');
+        console.log('  - Table rows:', tbody.children.length);
+        console.log('  - Mobile cards:', mobileCards.children.length);
+        console.log('  - Both should equal pageMotels.length:', pageMotels.length);
     }
 
     applyFilters() {
@@ -355,7 +408,6 @@ class MotelManagement {
 
         this.currentPage = 1;
         this.renderMotels();
-        this.updatePagination();
     }
 
     clearFilters() {
@@ -649,7 +701,6 @@ class MotelManagement {
     goToPage(page) {
         this.currentPage = page;
         this.renderMotels();
-        this.updatePagination();
     }
 
     // Helper methods

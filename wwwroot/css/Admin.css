@@ -122,24 +122,24 @@ body {
     opacity: 0.3;
 }
 
-#sidebar.active {
-    width: var(--sidebar-collapsed-width);
-}
+    #sidebar.active {
+        width: var(--sidebar-collapsed-width);
+    }
 
 /* Sidebar Header */
-#sidebar .sidebar-header {
+    #sidebar .sidebar-header {
     padding: 25px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     position: relative;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
-}
+    }
 
 #sidebar .sidebar-header h1 {
-    display: block;
+            display: block;
     font-size: 1.75rem;
     font-weight: 700;
     background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
@@ -147,21 +147,21 @@ body {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin: 0;
-}
+        }
 
-#sidebar .sidebar-header strong {
-    display: none;
+        #sidebar .sidebar-header strong {
+            display: none;
     font-size: 1.75rem;
     color: #5aa3b8;
-}
+        }
 
 #sidebar.active .sidebar-header h1 {
-    display: none;
-}
+        display: none;
+    }
 
-#sidebar.active .sidebar-header strong {
-    display: block;
-}
+    #sidebar.active .sidebar-header strong {
+        display: block;
+    }
 
 /* Mobile Close Button */
 .btn-close-mobile {
@@ -173,13 +173,13 @@ body {
     padding: 10px 12px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all var(--transition-speed);
+        transition: all var(--transition-speed);
     position: absolute;
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
     backdrop-filter: blur(10px);
-}
+        }
 
 .btn-close-mobile:hover {
     background: rgba(239, 68, 68, 0.3);
@@ -191,7 +191,7 @@ body {
 
 .btn-close-mobile:active {
     transform: translateY(-50%) scale(0.95);
-}
+        }
 
 /* Sidebar overlay for mobile */
 .sidebar-overlay {
@@ -202,16 +202,16 @@ body {
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 998;
-    opacity: 0;
+        opacity: 0;
     visibility: hidden;
     transition: all var(--transition-speed);
     backdrop-filter: blur(4px);
-}
+    }
 
 .sidebar-overlay.active {
     opacity: 1;
     visibility: visible;
-}
+        }
 
 /* Admin Profile */
 .admin-profile {
@@ -259,16 +259,16 @@ body {
 .admin-info h2 {
     font-size: 1.1rem;
     margin: 0 0 5px 0;
-    white-space: nowrap;
+        white-space: nowrap;
     font-weight: 600;
-}
+    }
 
-.admin-info p {
+    .admin-info p {
     font-size: 0.85rem;
-    margin: 0;
+        margin: 0;
     opacity: 0.8;
-    white-space: nowrap;
-}
+        white-space: nowrap;
+    }
 
 #sidebar.active .admin-info {
     opacity: 0;
@@ -503,9 +503,9 @@ body {
     background: var(--light);
 }
 
-#content.active {
-    width: calc(100% - var(--sidebar-collapsed-width));
-}
+    #content.active {
+        width: calc(100% - var(--sidebar-collapsed-width));
+    }
 
 /* Modern Navbar */
 .navbar {
@@ -544,7 +544,7 @@ body {
     flex-shrink: 0;
 }
 
-#sidebarCollapse:hover {
+    #sidebarCollapse:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
     background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
@@ -552,7 +552,7 @@ body {
 
 #sidebarCollapse:active {
     transform: translateY(0);
-}
+    }
 
 /* Ripple Effect */
 .ripple {
@@ -584,7 +584,7 @@ body {
     overflow: hidden;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
+    }
 
 .btn:before {
     content: '';
@@ -616,7 +616,7 @@ body {
     background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
     color: var(--white);
     box-shadow: var(--shadow);
-}
+    }
 
 .btn-success:hover {
     transform: translateY(-2px);
@@ -700,10 +700,10 @@ body {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
 }
 
-.stat-card:hover {
+    .stat-card:hover {
     transform: translateY(-8px);
     box-shadow: var(--shadow-xl);
-}
+    }
 
 .stat-icon {
     width: 70px;
@@ -717,25 +717,25 @@ body {
     position: relative;
 }
 
-.stat-icon.primary {
+    .stat-icon.primary {
     background: linear-gradient(135deg, rgba(74, 144, 164, 0.1) 0%, rgba(90, 163, 184, 0.05) 100%);
-    color: var(--primary);
-}
+        color: var(--primary);
+    }
 
-.stat-icon.success {
+    .stat-icon.success {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
-    color: var(--success);
-}
+        color: var(--success);
+    }
 
-.stat-icon.warning {
+    .stat-icon.warning {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%);
-    color: var(--warning);
-}
+        color: var(--warning);
+    }
 
-.stat-icon.info {
+    .stat-icon.info {
     background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(8, 145, 178, 0.05) 100%);
-    color: var(--info);
-}
+        color: var(--info);
+    }
 
 .stat-content h3 {
     font-size: 2.5rem;
@@ -748,7 +748,7 @@ body {
     color: var(--gray-600);
     margin: 0;
     font-weight: 500;
-}
+    }
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
@@ -761,7 +761,7 @@ body {
         --gray-200: #374151;
         --gray-100: #4b5563;
     }
-}
+    }
 
 /* Badge Styles */
 .badge {
@@ -788,13 +788,13 @@ body {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: var(--white);
     box-shadow: 0 2px 4px rgba(74, 144, 164, 0.3);
-}
+    }
 
 .badge-secondary {
     background: linear-gradient(135deg, var(--secondary) 0%, var(--gray-600) 100%);
     color: var(--white);
     box-shadow: 0 2px 4px rgba(100, 116, 139, 0.3);
-}
+    }
 
 /* Cards */
 .card {
@@ -809,18 +809,18 @@ body {
 .card:hover {
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
-}
+    }
 
 .card-header {
     background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
     border-bottom: 1px solid var(--gray-200);
     padding: 20px;
     font-weight: 600;
-}
+    }
 
 .card-body {
     padding: 25px;
-}
+    }
 
 /* Responsive Design */
 @media (max-width: 992px) {
@@ -833,7 +833,7 @@ body {
         transform: translateX(0);
         width: var(--sidebar-width);
     }
-    
+
     /* Show close button on mobile when sidebar is active */
     #sidebar.active .btn-close-mobile {
         display: block;
@@ -842,23 +842,23 @@ body {
     /* Always show full menu items on mobile */
     #sidebar .sidebar-header h1 {
         display: block !important;
-    }
-    
-    #sidebar .sidebar-header strong {
+        }
+
+        #sidebar .sidebar-header strong {
         display: none !important;
-    }
-    
-    #sidebar ul li a span {
+        }
+
+        #sidebar ul li a span {
         opacity: 1 !important;
         display: inline !important;
-    }
-    
+        }
+
     .admin-info {
         opacity: 1 !important;
         width: auto !important;
         display: flex !important;
     }
-    
+
     #content {
         width: 100%;
         margin-left: 0;
@@ -882,7 +882,7 @@ body {
         visibility: hidden;
         transition: all var(--transition-speed);
     }
-    
+
     body.sidebar-open::after {
         opacity: 1;
         visibility: visible;
@@ -912,8 +912,8 @@ body {
         width: 100%;
         transform: translateX(-100%);
     }
-    
-    #sidebar.active {
+
+        #sidebar.active {
         transform: translateX(0);
         width: 100%;
     }
@@ -921,15 +921,15 @@ body {
     /* Show close button on mobile */
     #sidebar.active .btn-close-mobile {
         display: block;
-    }
-    
+        }
+
     #content {
         width: 100%;
     }
-    
-    #content.active {
-        width: 100%;
-    }
+
+        #content.active {
+            width: 100%;
+        }
 }
 
 /* Animation Classes */
@@ -961,7 +961,7 @@ body {
 
 .animate-slide-in-left {
     animation: slideInLeft 0.6s ease-out;
-}
+    }
 
 /* Loading States */
 .loading-skeleton {
@@ -991,7 +991,7 @@ body {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-}
+    }
 
 .hover-lift:hover {
     transform: translateY(-4px);

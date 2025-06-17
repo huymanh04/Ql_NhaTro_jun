@@ -52,7 +52,7 @@
                 <table class="motels-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>STT</th>
                             <th>Tên nhà trọ</th>
                             <th>Địa chỉ</th>
                             <th>Tỉnh/Thành</th>
@@ -78,6 +78,17 @@
         <div class="pagination-container">
             <div class="pagination-info">
                 <span id="paginationInfo">Hiển thị 0 - 0 của 0 nhà trọ</span>
+                <div class="items-per-page">
+                    <label for="itemsPerPage">Hiển thị:</label>
+                    <select id="itemsPerPage">
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span>nhà trọ/trang</span>
+                </div>
             </div>
             <div class="pagination-controls">
                 <button class="btn btn-outline" id="prevPageBtn" disabled>
@@ -277,6 +288,59 @@
         .modal-body {
             max-height: calc(95vh - 140px) !important;
             overflow-y: auto !important;
+        }
+    }
+</style>
+
+<style>
+    /* Pagination styles */
+    .pagination-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .items-per-page {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+    
+    .items-per-page label {
+        margin: 0;
+        font-weight: 500;
+        color: #6b7280;
+    }
+    
+    .items-per-page select {
+        padding: 4px 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: white;
+        font-size: 14px;
+        min-width: 60px;
+    }
+    
+    .items-per-page select:focus {
+        outline: none;
+        border-color: #4a90a4;
+        box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
+    }
+    
+    .items-per-page span {
+        color: #6b7280;
+    }
+    
+    @@media (max-width: 768px) {
+        .pagination-info {
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .items-per-page {
+            font-size: 13px;
         }
     }
 </style>

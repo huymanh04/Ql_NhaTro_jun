@@ -134,20 +134,7 @@
                             </h3>
                             <p class="chart-subtitle">Phân tích doanh thu theo thời gian với tỷ lệ tăng trưởng</p>
                         </div>
-                        <div class="chart-controls">
-                            <div class="control-group">
-                                <label>Thời gian:</label>
-                                <select id="revenueTimeframe" class="form-control">
-                                    <option value="day">Theo Ngày</option>
-                                    <option value="week">Theo Tuần</option>
-                                    <option value="month" selected>Theo Tháng</option>
-                                    <option value="year">Theo Năm</option>
-                                </select>
-                            </div>
-                            <button class="btn btn-sm btn-outline" onclick="toggleRevenueView()">
-                                <i class="fas fa-exchange-alt"></i>
-                            </button>
-                        </div>
+                      
                     </div>
                     <div class="chart-body">
                         <div class="revenue-summary">
@@ -157,9 +144,19 @@
                                 <span class="change positive" id="todayChange">+0%</span>
                             </div>
                             <div class="summary-item">
+                                <span class="label">Tuần này:</span>
+                                <span class="value" id="tuannay">0 VNĐ</span>
+                                <span class="change positive" id="tuannayChange">+0%</span>
+                            </div>
+                            <div class="summary-item">
                                 <span class="label">Tháng này:</span>
                                 <span class="value" id="revenueMonth">0 VNĐ</span>
                                 <span class="change positive" id="monthChange">+0%</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Năm này:</span>
+                                <span class="value" id="namnay">0 VNĐ</span>
+                                <span class="change positive" id="namnayChange">+0%</span>
                             </div>
                         </div>
                         <canvas id="revenueChart"></canvas>
@@ -521,8 +518,12 @@
 
             // Update revenue summary
             document.getElementById('revenueToday').textContent = formatCurrency(dashboardData.homNay);
+            document.getElementById('namnay').textContent = formatCurrency(dashboardData.namNay);
+            document.getElementById('tuannay').textContent = formatCurrency(dashboardData.tuanNay);
             document.getElementById('revenueMonth').textContent = formatCurrency(dashboardData.thangNay);
             document.getElementById('todayChange').textContent = formatPercent(dashboardData.tyLeThayDoiHomNay);
+            document.getElementById('tuannayChange').textContent = formatPercent(dashboardData.tyLeThayDoiTuanNay);
+            document.getElementById('namnayChange').textContent = formatPercent(dashboardData.tyLeThayDoiNamNay);
             document.getElementById('monthChange').textContent = formatPercent(dashboardData.tyLeThayDoiThangNay);
 
             // Update utility totals

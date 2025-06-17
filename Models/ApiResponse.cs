@@ -5,7 +5,6 @@
         public bool Success { get; set; }
         public string Message { get; set; }
         public T Data { get; set; }
-
         public string Error { get; set; }
 
         public static ApiResponse<(T1, T2)> CreateSuccess<T1, T2>(string message, T1 data1, T2 data2)
@@ -26,7 +25,6 @@
                 Data = data
             };
         }
-
 
         public static ApiResponse<T> CreateError(string message, string error = null)
         {

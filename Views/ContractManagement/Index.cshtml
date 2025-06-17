@@ -1,18 +1,18 @@
 @{
-    ViewData["Title"] = "Quản lý Loại Phòng";
+    ViewData["Title"] = "Quản lý Hợp Đồng";
     Layout = "~/Views/Shared/_Layoutadmin.cshtml";
 }
 
-<div class="roomtype-management">
+<div class="contract-management">
     <div class="page-header">
         <div class="header-content">
             <div class="header-left">
-                <h1><i class="fas fa-home"></i> Quản lý Loại Phòng</h1>
-                <p>Thêm, sửa, xóa và quản lý các loại phòng trọ</p>
+                <h1><i class="fas fa-handshake"></i> Quản lý Hợp Đồng</h1>
+                <p>Thêm, sửa, xóa và quản lý các hợp đồng thuê trọ với thông tin chi tiết</p>
             </div>
             <div class="header-right">
-                <button class="btn btn-primary" id="addRoomTypeBtn">
-                    <i class="fas fa-plus"></i> Thêm loại phòng
+                <button class="btn btn-primary" id="addContractBtn">
+                    <i class="fas fa-plus"></i> Thêm hợp đồng
                 </button>
             </div>
         </div>
@@ -23,10 +23,20 @@
         <div class="filters-container">
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên loại phòng...">
+                <input type="text" id="searchInput" placeholder="Tìm kiếm theo ID hợp đồng, phòng, nhà trọ, loại phòng...">
             </div>
             
             <div class="filter-group">
+                <select id="roomFilter">
+                    <option value="">Tất cả phòng</option>
+                </select>
+                
+                <select id="statusFilter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="false">Đang hiệu lực</option>
+                    <option value="true">Đã kết thúc</option>
+                </select>
+                
                 <button class="btn btn-secondary" id="clearFiltersBtn">
                     <i class="fas fa-times"></i> Xóa bộ lọc
                 </button>
@@ -37,23 +47,25 @@
     <!-- Alert Messages -->
     <div id="alertContainer"></div>
 
-    <!-- Room Types Table -->
+    <!-- Contracts Table -->
     <div class="table-section">
         <div class="table-container">
             <div class="table-responsive">
-                <table class="roomtypes-table">
+                <table class="contracts-table">
                     <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Hình ảnh</th>
-                            <th>Tên loại phòng</th>
-                            <th>Mô tả</th>
-                            <th>Số phòng</th>
-                            <th>URL chuyển hướng</th>
+                            <th>Phòng & Nhà trọ</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Ngày kết thúc</th>
+                            <th>Người & Xe</th>
+                            <th>Tiền đặt cọc</th>
+                            <th>Khách thuê</th>
+                            <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
-                    <tbody id="roomTypesTableBody">
+                    <tbody id="contractsTableBody">
                         <!-- Data will be loaded here -->
                     </tbody>
                 </table>
@@ -61,14 +73,14 @@
         </div>
 
         <!-- Mobile Cards -->
-        <div class="mobile-cards" id="mobileRoomTypeCards">
+        <div class="mobile-cards" id="mobileContractCards">
             <!-- Mobile cards will be loaded here -->
         </div>
 
         <!-- Pagination -->
         <div class="pagination-container">
             <div class="pagination-info">
-                <span id="paginationInfo">Hiển thị 0 - 0 của 0 loại phòng</span>
+                <span id="paginationInfo">Hiển thị 0 - 0 của 0 hợp đồng</span>
                 <div class="items-per-page">
                     <label for="itemsPerPage">Hiển thị:</label>
                     <select id="itemsPerPage">
@@ -78,7 +90,7 @@
                         <option value="25">25</option>
                         <option value="50">50</option>
                     </select>
-                    <span>loại phòng/trang</span>
+                    <span>hợp đồng/trang</span>
                 </div>
             </div>
             <div class="pagination-controls">
@@ -94,56 +106,88 @@
     </div>
 </div>
 
-<!-- Add/Edit Room Type Modal -->
-<div class="modal" id="roomTypeModal">
+<!-- Add/Edit Contract Modal -->
+<div class="modal" id="contractModal">
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modalTitle">
-                <i class="fas fa-home"></i> 
-                <span id="modalTitleText">Thêm loại phòng</span>
+                <i class="fas fa-handshake"></i> 
+                <span id="modalTitleText">Thêm hợp đồng</span>
             </h2>
             <button class="modal-close" id="closeModalBtn">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         
-        <form id="roomTypeForm" class="modal-body" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="tenTheLoai">Tên loại phòng <span class="required">*</span></label>
-                <input type="text" id="tenTheLoai" name="tenTheLoai" required 
-                       placeholder="Nhập tên loại phòng">
-                <div class="error-message" id="tenTheLoaiError"></div>
-            </div>
-            
-            <div class="form-group">
-                <label for="moTa">Mô tả</label>
-                <textarea id="moTa" name="moTa" rows="4" 
-                         placeholder="Nhập mô tả về loại phòng (tùy chọn)"></textarea>
-                <div class="error-message" id="moTaError"></div>
-            </div>
-            
-            <div class="form-group">
-                <label for="imageFile">Hình ảnh</label>
-                <input type="file" id="imageFile" name="imageFile" accept="image/*">
-                <div class="file-info">
-                    <small>Chấp nhận: JPG, PNG, GIF. Tối đa 5MB</small>
+        <form id="contractForm" class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="roomId">Phòng <span class="required">*</span></label>
+                    <select id="roomId" name="roomId" required>
+                        <option value="">Chọn phòng</option>
+                    </select>
+                    <div class="error-message" id="roomIdError"></div>
                 </div>
-                <div class="error-message" id="imageFileError"></div>
                 
-                <!-- Image Preview -->
-                <div id="imagePreview" class="image-preview" style="display: none;">
-                    <img id="previewImg" src="" alt="Preview">
-                    <button type="button" id="removeImageBtn" class="remove-image-btn">
-                        <i class="fas fa-times"></i>
-                    </button>
+                <div class="form-group">
+                    <label for="numberOfTenants">Số người ở <span class="required">*</span></label>
+                    <input type="number" id="numberOfTenants" name="numberOfTenants" required min="1" max="10"
+                           placeholder="Nhập số người ở">
+                    <div class="error-message" id="numberOfTenantsError"></div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="startDate">Ngày bắt đầu <span class="required">*</span></label>
+                    <input type="date" id="startDate" name="startDate" required>
+                    <div class="error-message" id="startDateError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endDate">Ngày kết thúc <span class="required">*</span></label>
+                    <input type="date" id="endDate" name="endDate" required>
+                    <div class="error-message" id="endDateError"></div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="soxe">Số xe</label>
+                    <input type="number" id="soxe" name="soxe" min="0" max="10"
+                           placeholder="Nhập số xe (tùy chọn)">
+                    <div class="error-message" id="soxeError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="depositAmount">Tiền đặt cọc (VNĐ) <span class="required">*</span></label>
+                    <input type="number" id="depositAmount" name="depositAmount" required min="0" step="1000"
+                           placeholder="Nhập tiền đặt cọc">
+                    <div class="error-message" id="depositAmountError"></div>
                 </div>
             </div>
             
             <div class="form-group">
-                <label for="redirectUrl">URL chuyển hướng</label>
-                <input type="url" id="redirectUrl" name="redirectUrl" 
-                       placeholder="https://example.com (tùy chọn)">
-                <div class="error-message" id="redirectUrlError"></div>
+                <label for="tenantIds">Khách thuê <span class="required">*</span></label>
+                <select id="tenantIds" name="tenantIds" multiple required>
+                    <!-- Tenants will be loaded here -->
+                </select>
+                <div class="file-info">
+                    <small>Giữ Ctrl (hoặc Cmd) để chọn nhiều khách thuê</small>
+                    <small id="tenantSelectionInfo" style="color: #0066cc; display: block; margin-top: 5px;">
+                        📋 Khi thêm hợp đồng mới: chỉ hiển thị khách hàng chưa thuê phòng
+                    </small>
+                </div>
+                <div class="error-message" id="tenantIdsError"></div>
+            </div>
+            
+            <div class="form-group" id="statusGroup" style="display: none;">
+                <label for="isCompleted">Trạng thái hợp đồng</label>
+                <select id="isCompleted" name="isCompleted">
+                    <option value="false">Đang hiệu lực</option>
+                    <option value="true">Đã kết thúc</option>
+                </select>
+                <div class="error-message" id="isCompletedError"></div>
             </div>
         </form>
         
@@ -151,7 +195,7 @@
             <button type="button" class="btn btn-secondary" id="cancelModalBtn">
                 <i class="fas fa-times"></i> Hủy
             </button>
-            <button type="button" class="btn btn-primary" id="saveRoomTypeBtn">
+            <button type="button" class="btn btn-primary" id="saveContractBtn">
                 <i class="fas fa-save"></i> <span id="saveBtnText">Lưu</span>
             </button>
         </div>
@@ -169,8 +213,8 @@
         </div>
         
         <div class="modal-body">
-            <p>Bạn có chắc chắn muốn xóa loại phòng <strong id="deleteRoomTypeName"></strong> không?</p>
-            <p class="text-danger"><i class="fas fa-warning"></i> Hành động này không thể hoàn tác!</p>
+            <p>Bạn có chắc chắn muốn xóa hợp đồng <strong id="deleteContractId"></strong> không?</p>
+            <p class="text-danger"><i class="fas fa-warning"></i> Hành động này sẽ xóa tất cả dữ liệu liên quan (hóa đơn, lịch sử thanh toán, đền bù) và không thể hoàn tác!</p>
         </div>
         
         <div class="modal-footer">
@@ -193,6 +237,75 @@
 </div>
 
 <style>
+    /* Enhanced table for better information display */
+    .contracts-table th:nth-child(2),
+    .contracts-table td:nth-child(2) {
+        min-width: 200px;
+    }
+    
+    .contracts-table th:nth-child(7),
+    .contracts-table td:nth-child(7) {
+        min-width: 150px;
+    }
+    
+    .tenant-info {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+    
+    .room-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .room-main {
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .room-details {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+    
+    .text-muted {
+        color: #6b7280 !important;
+        font-size: 0.875rem;
+    }
+    
+    .people-vehicles {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .people-vehicles span {
+        font-size: 13px;
+    }
+    
+    .tenant-list {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        color: #4a90a4;
+        cursor: help;
+    }
+    
+    .tenant-list:hover {
+        overflow: visible;
+        white-space: normal;
+        background: #f8fafc;
+        padding: 4px 8px;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        position: relative;
+        z-index: 10;
+    }
+
     /* Ensure modal is properly displayed */
     .modal {
         z-index: 99999 !important;
@@ -241,7 +354,7 @@
         }
         
         .modal-content {
-            width: 600px !important;
+            width: 700px !important;
             max-width: 90vw !important;
             max-height: 75vh !important;
             margin: 0 auto 50px auto !important;
@@ -306,38 +419,43 @@
         }
     }
     
-    .image-preview {
-        position: relative;
-        margin-top: 15px;
-        border-radius: 8px;
-    }
-    
-    .image-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 8px;
-    }
-    
-    .remove-image-btn {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        width: 24px;
-        height: 24px;
-        background: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 50%;
+    /* Form row layout */
+    .form-row {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 12px;
+        gap: 20px;
+        margin-bottom: 20px;
     }
     
-    .remove-image-btn:hover {
-        background: #dc2626;
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    @@media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .form-row .form-group {
+            margin-bottom: 20px;
+        }
+    }
+    
+    /* Multi-select styling */
+    select[multiple] {
+        height: 120px !important;
+        resize: vertical;
+    }
+    
+    select[multiple] option {
+        padding: 8px 12px;
+        margin: 2px 0;
+    }
+    
+    select[multiple] option:checked {
+        background: #4a90a4 !important;
+        color: white !important;
     }
     
     /* Pagination styles */
@@ -392,5 +510,5 @@
     }
 </style>
 
-<link href="~/css/roomtype-management.css?@DateTime.Now" rel="stylesheet">
-<script src="~/js/roomtype-management.js?@DateTime.Now"></script> 
+<link href="~/css/contract-management.css?@DateTime.Now" rel="stylesheet">
+<script src="~/js/contract-management.js?@DateTime.Now"></script> 

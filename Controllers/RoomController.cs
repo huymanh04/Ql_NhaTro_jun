@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
 using Ql_NhaTro_jun.Models;
+using System.ComponentModel.DataAnnotations;
 using static Ql_NhaTro_jun.Controllers.LocationController;
 using static RoomTypeController;
 
@@ -403,7 +404,7 @@ namespace Ql_NhaTro_jun.Controllers
                     "Đã xảy ra lỗi khi thêm loại phòng"));
             }
         }
-        // PUT api/<ValuesController>/5
+        // PUT api/<ValuesControlle r>/5
        [HttpPut("edit-room/{id}")]
        public async Task<IActionResult> EditRoomType(int id, [FromForm] UpdatePhongTroDTO updateDto)
         {
@@ -614,17 +615,29 @@ namespace Ql_NhaTro_jun.Controllers
         public float DienTich { get; set; }
         public bool ConTrong { get; set; }
         public string MoTa { get; set; }
-        public List<IFormFile> Images { get; set; }
+        public List<IFormFile>? Images { get; set; }
     }
 
     public class UpdatePhongTroDTO
     {
+        [Required(ErrorMessage = "Tên phòng không được để trống")]
         public string TenPhong { get; set; }
+        
+        [Required(ErrorMessage = "Giá thuê không được để trống")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Giá thuê phải lớn hơn 0")]
         public decimal Gia { get; set; }
+        
+        [Required(ErrorMessage = "Diện tích không được để trống")]
+        [Range(0.1, float.MaxValue, ErrorMessage = "Diện tích phải lớn hơn 0")]
         public float DienTich { get; set; }
+        
+        [Required(ErrorMessage = "Trạng thái không được để trống")]
         public bool ConTrong { get; set; }
+        
         public string MoTa { get; set; }
-        public List<IFormFile> Images { get; set; }
+        
+        // Images is optional for updates - only used when user wants to change images
+        public List<IFormFile>? Images { get; set; }
     }
     #endregion
 }

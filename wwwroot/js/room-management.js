@@ -72,6 +72,22 @@ class RoomManagement {
             this.clearFilters();
         });
 
+        // Items per page change
+        document.getElementById('itemsPerPage').addEventListener('change', (e) => {
+            console.log('=== ITEMS PER PAGE CHANGE EVENT ===');
+            console.log('Old itemsPerPage:', this.itemsPerPage);
+            console.log('New value from dropdown:', e.target.value);
+            
+            this.itemsPerPage = parseInt(e.target.value);
+            this.currentPage = 1; // Reset to first page
+            
+            console.log('Updated itemsPerPage:', this.itemsPerPage);
+            console.log('Current page reset to:', this.currentPage);
+            
+            this.renderTable();
+            this.renderPagination();
+        });
+
         // Image upload
         document.getElementById('images').addEventListener('change', (e) => {
             this.handleImageUpload(e);
@@ -291,15 +307,31 @@ class RoomManagement {
         const endIndex = startIndex + this.itemsPerPage;
         const pageRooms = this.filteredRooms.slice(startIndex, endIndex);
 
+        // Clear any existing content first
+        tbody.innerHTML = '';
+        mobileCards.innerHTML = '';
+
+        // Debug logging (temporary - can be removed later)
+        console.log('=== ROOM PAGINATION DEBUG ===');
+        console.log('Current page:', this.currentPage);
+        console.log('Items per page:', this.itemsPerPage);
+        console.log('Total filtered rooms:', this.filteredRooms.length);
+        console.log('Start index:', startIndex);
+        console.log('End index:', endIndex);
+        console.log('Page rooms length (should be ≤ itemsPerPage):', pageRooms.length);
+
         // Render desktop table
-        tbody.innerHTML = pageRooms.map(room => {
+        tbody.innerHTML = pageRooms.map((room, index) => {
             const nhaTro = this.nhaTros.find(nt => nt.maNhaTro === room.maNhaTro);
             const theLoai = this.theLoais.find(tl => tl.maTheLoai === room.maTheLoai);
             const roomImage = this.roomImages?.find(img => img.maPhong === room.maPhong && img.isMain);
             
+            // Calculate STT (số thứ tự)
+            const stt = (this.currentPage - 1) * this.itemsPerPage + index + 1;
+            
             return `
                 <tr>
-                    <td>${room.maPhong}</td>
+                    <td><strong>${stt}</strong></td>
                     <td>
                         ${roomImage ? 
                             `<img src="data:image/jpeg;base64,${roomImage.duongDanHinhBase64}" alt="${room.tenPhong}" class="room-image">` :
@@ -331,10 +363,13 @@ class RoomManagement {
         }).join('');
 
         // Render mobile cards
-        mobileCards.innerHTML = pageRooms.map(room => {
+        mobileCards.innerHTML = pageRooms.map((room, index) => {
             const nhaTro = this.nhaTros.find(nt => nt.maNhaTro === room.maNhaTro);
             const theLoai = this.theLoais.find(tl => tl.maTheLoai === room.maTheLoai);
             const roomImage = this.roomImages?.find(img => img.maPhong === room.maPhong && img.isMain);
+            
+            // Calculate STT (số thứ tự)
+            const stt = (this.currentPage - 1) * this.itemsPerPage + index + 1;
             
             return `
                 <div class="mobile-card">
@@ -345,7 +380,7 @@ class RoomManagement {
                         }
                         <div class="mobile-card-info">
                             <h3>${room.tenPhong}</h3>
-                            <p>ID: ${room.maPhong}</p>
+                            <p>STT: ${stt}</p>
                         </div>
                     </div>
                     <div class="mobile-card-details">
@@ -387,6 +422,11 @@ class RoomManagement {
                 </div>
             `;
         }).join('');
+
+        console.log('✅ RENDERED:');
+        console.log('  - Table rows:', tbody.children.length);
+        console.log('  - Mobile cards:', mobileCards.children.length);
+        console.log('  - Both should equal pageRooms.length:', pageRooms.length);
 
         this.updatePaginationInfo();
     }
@@ -444,6 +484,15 @@ class RoomManagement {
         document.getElementById('modalTitleText').textContent = 'Thêm phòng trọ';
         document.getElementById('saveBtnText').textContent = 'Thêm';
         document.getElementById('imageUpdateNote').style.display = 'none';
+        
+        // Enable all fields for add mode
+        document.getElementById('maNhaTro').disabled = false;
+        document.getElementById('maTheLoai').disabled = false;
+        
+        // Reset visual styling
+        document.getElementById('maNhaTro').style.backgroundColor = '';
+        document.getElementById('maTheLoai').style.backgroundColor = '';
+        
         this.resetForm();
         this.showModal();
         this.scrollToModal();
@@ -470,6 +519,14 @@ class RoomManagement {
         document.getElementById('dienTich').value = room.dienTich;
         document.getElementById('conTrong').value = room.conTrong.toString();
         document.getElementById('moTa').value = room.moTa || '';
+        
+        // Disable maNhaTro and maTheLoai fields during edit
+        document.getElementById('maNhaTro').disabled = true;
+        document.getElementById('maTheLoai').disabled = true;
+        
+        // Add visual indication that these fields are read-only
+        document.getElementById('maNhaTro').style.backgroundColor = '#f3f4f6';
+        document.getElementById('maTheLoai').style.backgroundColor = '#f3f4f6';
         
         this.showModal();
         this.scrollToModal();
@@ -524,6 +581,13 @@ class RoomManagement {
     resetForm() {
         document.getElementById('roomForm').reset();
         document.getElementById('imageUpdateNote').style.display = 'none';
+        
+        // Reset field states
+        document.getElementById('maNhaTro').disabled = false;
+        document.getElementById('maTheLoai').disabled = false;
+        document.getElementById('maNhaTro').style.backgroundColor = '';
+        document.getElementById('maTheLoai').style.backgroundColor = '';
+        
         this.clearErrors();
         this.clearImagePreview();
         this.selectedImages = [];
@@ -629,14 +693,17 @@ class RoomManagement {
             isValid = false;
         }
 
-        if (!maNhaTro) {
-            this.showError('maNhaTroError', 'Vui lòng chọn nhà trọ');
-            isValid = false;
-        }
+        // Only validate maNhaTro and maTheLoai for new rooms (add operation)
+        if (!this.editingRoomId) {
+            if (!maNhaTro) {
+                this.showError('maNhaTroError', 'Vui lòng chọn nhà trọ');
+                isValid = false;
+            }
 
-        if (!maTheLoai) {
-            this.showError('maTheLoaiError', 'Vui lòng chọn loại phòng');
-            isValid = false;
+            if (!maTheLoai) {
+                this.showError('maTheLoaiError', 'Vui lòng chọn loại phòng');
+                isValid = false;
+            }
         }
 
         if (!gia || parseFloat(gia) <= 0) {
@@ -671,18 +738,36 @@ class RoomManagement {
         }
 
         const formData = new FormData();
+        
+        // Common fields for both add and edit
         formData.append('tenPhong', document.getElementById('tenPhong').value.trim());
-        formData.append('maNhaTro', document.getElementById('maNhaTro').value);
-        formData.append('maTheLoai', document.getElementById('maTheLoai').value);
         formData.append('gia', document.getElementById('gia').value);
         formData.append('dienTich', document.getElementById('dienTich').value);
         formData.append('conTrong', document.getElementById('conTrong').value === 'true');
         formData.append('moTa', document.getElementById('moTa').value.trim());
 
-        // Add images
-        this.selectedImages.forEach((file, index) => {
-            formData.append('images', file);
-        });
+        // Only add maNhaTro and maTheLoai for new rooms (add operation)
+        if (!this.editingRoomId) {
+            formData.append('maNhaTro', document.getElementById('maNhaTro').value);
+            formData.append('maTheLoai', document.getElementById('maTheLoai').value);
+        }
+
+        // Handle images - different logic for add vs edit
+        if (!this.editingRoomId) {
+            // For add operation: include all selected images
+            this.selectedImages.forEach((file, index) => {
+                formData.append('images', file);
+            });
+        } else {
+            // For edit operation: only include images if user selected new ones
+            if (this.selectedImages && this.selectedImages.length > 0) {
+                this.selectedImages.forEach((file, index) => {
+                    formData.append('images', file);
+                });
+            }
+            // If no new images selected, don't append images field at all
+            // The controller will handle this case and keep existing images
+        }
 
         this.showLoading();
 
@@ -697,6 +782,12 @@ class RoomManagement {
                 method: method,
                 body: formData
             });
+
+            if (!response.ok) {
+                const responseText = await response.text();
+                console.error('Response error:', responseText);
+                throw new Error(`HTTP ${response.status}: ${responseText}`);
+            }
 
             const result = await response.json();
 
@@ -713,7 +804,7 @@ class RoomManagement {
             }
         } catch (error) {
             console.error('Error saving room:', error);
-            this.showAlert('Có lỗi xảy ra khi lưu phòng trọ', 'error');
+            this.showAlert(`Có lỗi xảy ra khi lưu phòng trọ: ${error.message}`, 'error');
         } finally {
             this.hideLoading();
         }

@@ -76,13 +76,13 @@
             <div class="menu-scroll-container">
                 <ul class="list-unstyled components" role="menu">
                     <li role="none">
-                        <a href="@Url.Action("Dashborad", "Users")" role="menuitem">
+                        <a href="@Url.Action("Dashborad", "Nguoidungs")" role="menuitem">
                             <div class="menu-icon-wrapper">
                                 <i class="fas fa-chart-line" aria-hidden="true"></i>
                             </div>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
                     
                     <li role="none">
                         <a href="@Url.Action("Index", "NguoiDungs")" role="menuitem">
@@ -131,14 +131,6 @@
                             </a>
                         </li>
                         <li role="none">
-                            <a href="@Url.Action("Index", "Vouchers")" role="menuitem">
-                                <div class="menu-icon-wrapper">
-                                    <i class="fas fa-door-open" aria-hidden="true"></i>
-                                </div>
-                                <span>Quản lý Phòng</span>
-                            </a>
-                        </li>
-                        <li role="none">
                             <a href="@Url.Action("Index", "MotelManagement")" role="menuitem">
                                 <div class="menu-icon-wrapper">
                                     <i class="fas fa-building" aria-hidden="true"></i>
@@ -167,11 +159,19 @@
                             <span class="menu-section-title">Tài chính & Hợp đồng</span>
                         </li>
                         <li role="none">
-                            <a href="@Url.Action("Index", "Vouchers")" role="menuitem">
+                            <a href="@Url.Action("Index", "ContractManagement")" role="menuitem">
                                 <div class="menu-icon-wrapper">
                                     <i class="fas fa-handshake" aria-hidden="true"></i>
                                 </div>
                                 <span>Quản lý Hợp Đồng</span>
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="@Url.Action("Index", "HoaDon")" role="menuitem">
+                                <div class="menu-icon-wrapper">
+                                    <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i>
+                                </div>
+                                <span>Quản lý Hóa Đơn</span>
                             </a>
                         </li>
                         <li role="none">

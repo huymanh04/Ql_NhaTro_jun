@@ -35,6 +35,14 @@ class RoomTypeManagement {
         document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
         document.getElementById('clearFiltersBtn').addEventListener('click', () => this.clearFilters());
         
+        // Items per page change
+        document.getElementById('itemsPerPage').addEventListener('change', (e) => {
+            this.itemsPerPage = parseInt(e.target.value);
+            this.currentPage = 1; // Reset to first page
+            this.renderRoomTypes();
+            this.updatePagination();
+        });
+        
         // Pagination
         document.getElementById('prevPageBtn').addEventListener('click', () => this.previousPage());
         document.getElementById('nextPageBtn').addEventListener('click', () => this.nextPage());
@@ -102,8 +110,11 @@ class RoomTypeManagement {
             return;
         }
 
-        pageRoomTypes.forEach(roomType => {
+        pageRoomTypes.forEach((roomType, index) => {
             const row = document.createElement('tr');
+            
+            // Calculate STT (số thứ tự)
+            const stt = (this.currentPage - 1) * this.itemsPerPage + index + 1;
             
             const imageHtml = roomType.imageBase64 
                 ? `<img src="data:image/jpeg;base64,${roomType.imageBase64}" class="room-image" alt="${roomType.tenTheLoai}">`
@@ -118,7 +129,7 @@ class RoomTypeManagement {
                 : 'Không có';
 
             row.innerHTML = `
-                <td><strong>#${roomType.maTheLoai}</strong></td>
+                <td><strong>${stt}</strong></td>
                 <td>${imageHtml}</td>
                 <td><strong>${roomType.tenTheLoai}</strong></td>
                 <td title="${roomType.moTa || ''}">${description}</td>
