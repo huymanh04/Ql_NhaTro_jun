@@ -18,18 +18,20 @@ namespace Ql_NhaTro_jun.Controllers
         {
             _logger = logger; _context = cc;
         }
+        
         [HttpGet("get-denbu")]
         public async Task<IActionResult> GetDenbu()
         {
             try
             {
-                var denbus = await _context.DenBus
+                var denbus = await _context.DenBus.Include(d => d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation)
       .Select(d => new CompensationDto
       {
           MaDenBu = d.MaDenBu,
           MaHopDong = d.MaHopDong ?? 0,
           NoiDung = d.NoiDung,
           SoTien = d.SoTien ?? 0,
+          Nhatro=d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
           NgayTao = d.NgayTao ?? default(DateTime) 
       })
       .ToListAsync();
@@ -198,6 +200,7 @@ namespace Ql_NhaTro_jun.Controllers
             public string NoiDung { get; set; }              // NoiDung
             public decimal SoTien { get; set; }              // SoTien
             public DateTime NgayTao { get; set; }        // NgayTao
+            public string Nhatro { get; set; } // NhaTro
         }
 
     }

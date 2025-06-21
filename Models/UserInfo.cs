@@ -10,15 +10,17 @@ namespace Ql_NhaTro_jun.Models
     public class UserInfo
     {
         private readonly RequestDelegate _next;
-        QlNhatroContext _context = new QlNhatroContext();
+
 
         public UserInfo(RequestDelegate next)
         {
             _next = next;
+
         }
 
         public async Task Invoke(HttpContext context)
         {
+            var _context = context.RequestServices.GetRequiredService<QlNhatroContext>();
             var path = context.Request.Path;
             var request = context.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -31,7 +33,7 @@ namespace Ql_NhaTro_jun.Models
                     UseCookies = true,
                     CookieContainer = new CookieContainer()
                 };
-
+               
                 foreach (var cookie in context.Request.Cookies)
                 {
                     handler.CookieContainer.Add(new Uri(baseUrl), new System.Net.Cookie(cookie.Key, cookie.Value));
@@ -50,14 +52,18 @@ namespace Ql_NhaTro_jun.Models
                         var Email = Regex.Match(json, @"""email"":""(.*?)""").Groups[1].Value;
                         context.Items["CurrentUser"] = user;
                         context.Items["Email"] = Email;
-                        var manh = await _context.NguoiDungs.FirstOrDefaultAsync(t=>t.Email==   Email);
-                        context.Items["role"] = manh.VaiTro;
-                        context.Items["id"] = manh.MaNguoiDung;
-                        JunTech.id= manh.MaNguoiDung; 
-                        JunTech.nguoiDung=manh;
 
+                        var manh = await _context.NguoiDungs.FirstOrDefaultAsync(t => t.Email == Email);
+                        if (manh != null)
+                        {
+                            context.Items["role"] = manh.VaiTro;
+                            context.Items["id"] = manh.MaNguoiDung;
+                            JunTech.id = manh.MaNguoiDung;
+                            JunTech.nguoiDung = manh;
+                        }
                     }
-                   
+
+
                 }
                 catch
                 {
@@ -66,7 +72,7 @@ namespace Ql_NhaTro_jun.Models
 
           
             }
-
+            JunTech.caidat = await _context.CaiDatHeThongs.FirstOrDefaultAsync();
             await _next(context);
         }
     }

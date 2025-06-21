@@ -1,0 +1,589 @@
+@{
+    ViewData["Title"] = "Quản lý Banner";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+<link href="~/css/banner.css?v=@DateTime.Now" rel="stylesheet" />
+
+@section Modals {
+    <!-- Add/Edit Modal -->
+    <div class="modal" id="bannerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">
+                    <i class="fas fa-image"></i> 
+                    <span id="modalTitleText">Thêm banner</span>
+                </h2>
+                <button class="modal-close" id="closeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="bannerForm" class="modal-body" enctype="multipart/form-data">
+                <input type="hidden" id="bannerId" name="bannerId">
+                
+                <div class="form-group">
+                    <label for="title">Tiêu đề <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" required placeholder="Nhập tiêu đề banner">
+                    <div class="error-message" id="titleError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Nội dung</label>
+                    <textarea id="content" name="content" rows="3" placeholder="Nhập nội dung banner"></textarea>
+                    <div class="error-message" id="contentError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="text">Văn bản</label>
+                    <input type="text" id="text" name="text" placeholder="Nhập văn bản banner">
+                    <div class="error-message" id="textError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="imageFile">Hình ảnh</label>
+                    <input type="file" id="imageFile" name="imageFile" accept="image/*">
+                    <div class="error-message" id="imageFileError"></div>
+                    <div id="currentImage" style="display: none; margin-top: 10px;">
+                        <img id="previewImage" style="max-width: 200px; max-height: 150px; border-radius: 8px;" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="redirectUrl">URL chuyển hướng</label>
+                    <input type="url" id="redirectUrl" name="redirectUrl" placeholder="https://example.com">
+                    <div class="error-message" id="redirectUrlError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="isActive">Trạng thái</label>
+                    <select id="isActive" name="isActive">
+                        <option value="true">Hoạt động</option>
+                        <option value="false">Không hoạt động</option>
+                    </select>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelModalBtn">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
+                <button type="button" class="btn btn-primary" id="saveBtn">
+                    <i class="fas fa-save"></i> <span id="saveBtnText">Lưu</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Modal -->
+    <div class="modal" id="viewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-info-circle"></i> Chi tiết banner</h2>
+                <button class="modal-close" id="closeViewModalBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="viewModalBody">
+                <!-- Details will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="okViewModalBtn">
+                    <i class="fas fa-check"></i> OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content delete-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-exclamation-triangle text-danger"></i> Xác nhận xóa</h2>
+                <button class="modal-close" id="closeDeleteModalBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa banner <strong id="deleteBannerTitle"></strong> không?</p>
+                <p class="text-danger"><i class="fas fa-warning"></i> Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteBtn"><i class="fas fa-times"></i> Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="fas fa-trash"></i> Xóa</button>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="banner-management">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-image"></i> Quản lý Banner</h1>
+                <p>Thêm, sửa, xóa và quản lý các banner hiển thị trên website</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="addBtn">
+                    <i class="fas fa-plus"></i> Thêm banner
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filters-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tiêu đề, nội dung...">
+            </div>
+            
+            <div class="filter-group">
+                <select id="statusFilter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="true">Hoạt động</option>
+                    <option value="false">Không hoạt động</option>
+                </select>
+                <button class="btn btn-secondary" id="clearFiltersBtn">
+                    <i class="fas fa-times"></i> Xóa bộ lọc
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alertContainer"></div>
+
+    <!-- Table Section -->
+    <div class="table-section">
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Hình ảnh</th>
+                            <th>Tiêu đề</th>
+                            <th>Nội dung</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile Cards -->
+        <div class="mobile-cards" id="mobileCards">
+            <!-- Mobile cards will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span id="paginationInfo"></span>
+                <div class="items-per-page">
+                    <label for="itemsPerPage">Hiển thị:</label>
+                    <select id="itemsPerPage">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                    </select>
+                    <span>mục/trang</span>
+                </div>
+            </div>
+            <div class="pagination-controls">
+                <button class="btn btn-outline" id="prevPageBtn" disabled><i class="fas fa-chevron-left"></i> Trước</button>
+                <div class="page-numbers" id="pageNumbers"></div>
+                <button class="btn btn-outline" id="nextPageBtn" disabled>Sau <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // --- STATE MANAGEMENT ---
+    let allBanners = [];
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let currentEditId = null;
+
+    // --- DOM ELEMENTS ---
+    const $loadingOverlay = $('#loadingOverlay');
+    const $tableBody = $('#tableBody');
+    const $paginationInfo = $('#paginationInfo');
+    const $pageNumbers = $('#pageNumbers');
+    const $prevPageBtn = $('#prevPageBtn');
+    const $nextPageBtn = $('#nextPageBtn');
+    const $searchInput = $('#searchInput');
+    const $statusFilter = $('#statusFilter');
+    const $itemsPerPageSelect = $('#itemsPerPage');
+
+    // Modals
+    const $bannerModal = $('#bannerModal');
+    const $deleteModal = $('#deleteModal');
+    const $viewModal = $('#viewModal');
+    const $modalTitleText = $('#modalTitleText');
+    const $saveBtnText = $('#saveBtnText');
+    const $bannerForm = $('#bannerForm');
+
+    // --- DATA FETCHING ---
+    function showLoading() { $loadingOverlay.show(); }
+    function hideLoading() { $loadingOverlay.hide(); }
+
+    async function fetchData() {
+        showLoading();
+        try {
+            const response = await fetch('/api/Banner/get-banner');
+            const result = await response.json();
+            
+            if (result.success) {
+                allBanners = result.data;
+                render();
+            } else {
+                console.error("Failed to load banners:", result.message);
+                showAlert('Không thể tải danh sách banner.', 'danger');
+            }
+        } catch (error) {
+            console.error('Failed to fetch data:', error);
+            showAlert('Không thể tải dữ liệu. Vui lòng thử lại.', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // --- RENDERING ---
+    function render() {
+        const filteredData = getFilteredData();
+        renderTable(filteredData);
+        renderMobileCards(filteredData);
+        renderPagination(filteredData.length);
+    }
+
+    function getFilteredData() {
+        const statusFilter = $statusFilter.val();
+        const searchTerm = $searchInput.val().toLowerCase();
+
+        return allBanners.filter(item => {
+            const matchesSearch = searchTerm === '' ||
+                item.title?.toLowerCase().includes(searchTerm) ||
+                item.content?.toLowerCase().includes(searchTerm) ||
+                item.text?.toLowerCase().includes(searchTerm);
+            
+            const matchesStatus = statusFilter === '' || item.isActive?.toString() === statusFilter;
+
+            return matchesSearch && matchesStatus;
+        });
+    }
+
+    function renderTable(data) {
+        $tableBody.empty();
+        if (data.length === 0) {
+            $tableBody.html('<tr><td colspan="7" class="text-center">Không tìm thấy dữ liệu phù hợp.</td></tr>');
+            return;
+        }
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageData = data.slice(startIndex, endIndex);
+
+        pageData.forEach((item, index) => {
+            const imageHtml = item.imageBase64 ? 
+                `<img src="data:image/jpeg;base64,${item.imageBase64}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px;" alt="Banner">` :
+                '<span class="text-muted">Không có ảnh</span>';
+
+            const statusBadge = item.isActive ? 
+                '<span class="badge bg-success">Hoạt động</span>' : 
+                '<span class="badge bg-secondary">Không hoạt động</span>';
+
+            const row = `
+                <tr>
+                    <td>${startIndex + index + 1}</td>
+                    <td>${imageHtml}</td>
+                    <td><strong>${item.title || 'N/A'}</strong></td>
+                    <td>${item.content || 'N/A'}</td>
+                    <td>${statusBadge}</td>
+                    <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'N/A'}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-info btn-sm" onclick="window.viewItem(${item.bannerId})" title="Xem"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-primary btn-sm" onclick="window.editItem(${item.bannerId})" title="Sửa"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="window.deleteItem(${item.bannerId})" title="Xóa"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            $tableBody.append(row);
+        });
+    }
+
+    function renderMobileCards(data) {
+        const $mobileCardsContainer = $('#mobileCards');
+        $mobileCardsContainer.empty();
+        if (data.length === 0) {
+            return;
+        }
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageData = data.slice(startIndex, endIndex);
+
+        pageData.forEach(item => {
+            const imageHtml = item.imageBase64 ? 
+                `<img src="data:image/jpeg;base64,${item.imageBase64}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;" alt="Banner">` :
+                '<div style="width: 100%; height: 150px; background-color: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; color: #6c757d;">Không có ảnh</div>';
+
+            const statusBadge = item.isActive ? 
+                '<span class="badge bg-success">Hoạt động</span>' : 
+                '<span class="badge bg-secondary">Không hoạt động</span>';
+
+            const card = `
+                <div class="banner-card">
+                    <div class="card-header">
+                        <strong>${item.title || 'N/A'}</strong>
+                        <div class="card-actions">
+                            <button class="btn btn-info btn-sm" onclick="window.viewItem(${item.bannerId})" title="Xem"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-primary btn-sm" onclick="window.editItem(${item.bannerId})" title="Sửa"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="window.deleteItem(${item.bannerId})" title="Xóa"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${imageHtml}
+                        <p><strong>Nội dung:</strong> ${item.content || 'N/A'}</p>
+                        <p><strong>Trạng thái:</strong> ${statusBadge}</p>
+                        <p><strong>Ngày tạo:</strong> ${item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                    </div>
+                </div>
+            `;
+            $mobileCardsContainer.append(card);
+        });
+    }
+
+    function renderPagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        
+        $paginationInfo.text(`Hiển thị ${totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - ${Math.min(currentPage * itemsPerPage, totalItems)} của ${totalItems} mục`);
+        
+        $pageNumbers.empty();
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = `<button class="btn btn-outline page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+            $pageNumbers.append(btn);
+        }
+
+        $prevPageBtn.prop('disabled', currentPage === 1);
+        $nextPageBtn.prop('disabled', currentPage === totalPages || totalPages === 0);
+    }
+
+    // --- EVENT HANDLERS ---
+    $searchInput.on('input', () => { currentPage = 1; render(); });
+    $statusFilter.on('change', () => { currentPage = 1; render(); });
+    $itemsPerPageSelect.on('change', function() {
+        itemsPerPage = parseInt($(this).val());
+        currentPage = 1;
+        render();
+    });
+
+    $('#clearFiltersBtn').on('click', () => {
+        $searchInput.val('');
+        $statusFilter.val('');
+        currentPage = 1;
+        render();
+    });
+
+    $(document).on('click', '.page-btn', function() {
+        currentPage = parseInt($(this).data('page'));
+        render();
+    });
+
+    $prevPageBtn.on('click', () => { if (currentPage > 1) { currentPage--; render(); } });
+    $nextPageBtn.on('click', () => {
+        const totalPages = Math.ceil(getFilteredData().length / itemsPerPage);
+        if (currentPage < totalPages) { currentPage++; render(); }
+    });
+
+    // --- MODAL & CRUD ACTIONS ---
+    function openModal(isEdit = false) {
+        $bannerForm[0].reset();
+        $('.error-message').text('');
+        $('#currentImage').hide();
+        
+        if (isEdit) {
+            $modalTitleText.text('Sửa banner');
+            $saveBtnText.text('Cập nhật');
+        } else {
+            $modalTitleText.text('Thêm banner');
+            $saveBtnText.text('Lưu');
+            currentEditId = null;
+        }
+        $bannerModal.fadeIn();
+    }
+
+    function closeModal($modal) {
+        $modal.fadeOut();
+    }
+
+    $('#addBtn').on('click', () => openModal(false));
+    $('#closeModalBtn, #cancelModalBtn').on('click', () => closeModal($bannerModal));
+    
+    window.editItem = function(id) {
+        const item = allBanners.find(b => b.bannerId == id);
+        if (!item) return;
+
+        openModal(true);
+        currentEditId = id;
+        
+        // Populate form fields
+        $('#bannerId').val(item.bannerId);
+        $('#title').val(item.title);
+        $('#content').val(item.content);
+        $('#text').val(item.text);
+        $('#redirectUrl').val(item.redirectUrl);
+        $('#isActive').val(item.isActive?.toString());
+
+        // Show current image if exists
+        if (item.imageBase64) {
+            $('#previewImage').attr('src', `data:image/jpeg;base64,${item.imageBase64}`);
+            $('#currentImage').show();
+        }
+    };
+
+    window.viewItem = function(id) {
+        const item = allBanners.find(b => b.bannerId == id);
+        if (item) {
+            const imageHtml = item.imageBase64 ? 
+                `<img src="data:image/jpeg;base64,${item.imageBase64}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 15px;" alt="Banner">` :
+                '<p class="text-muted">Không có hình ảnh</p>';
+
+            const statusText = item.isActive ? 'Hoạt động' : 'Không hoạt động';
+            const statusClass = item.isActive ? 'text-success' : 'text-secondary';
+
+            const detailsHtml = `
+                ${imageHtml}
+                <p><strong>Mã banner:</strong> ${item.bannerId}</p>
+                <p><strong>Tiêu đề:</strong> ${item.title || 'N/A'}</p>
+                <p><strong>Nội dung:</strong> ${item.content || 'N/A'}</p>
+                <p><strong>Văn bản:</strong> ${item.text || 'N/A'}</p>
+                <p><strong>URL chuyển hướng:</strong> ${item.redirectUrl || 'N/A'}</p>
+                <p><strong>Trạng thái:</strong> <span class="${statusClass}">${statusText}</span></p>
+                <p><strong>Ngày tạo:</strong> ${item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'N/A'}</p>
+            `;
+            $('#viewModalBody').html(detailsHtml);
+            $viewModal.fadeIn();
+        }
+    };
+    $('#closeViewModalBtn, #okViewModalBtn').on('click', () => closeModal($viewModal));
+
+    window.deleteItem = function(id) {
+        const item = allBanners.find(b => b.bannerId == id);
+        if (!item) return;
+        
+        $('#deleteBannerTitle').text(item.title || `#${id}`);
+        $deleteModal.fadeIn();
+        $('#confirmDeleteBtn').off('click').on('click', async function() {
+            showLoading();
+            try {
+                const response = await fetch(`/api/Banner/delete-banner/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('Xóa banner thành công.', 'success');
+                    fetchData(); // Refetch all data
+                } else {
+                    showAlert(result.message || 'Có lỗi xảy ra khi xóa.', 'danger');
+                }
+            } catch (error) {
+                showAlert('Không thể kết nối đến máy chủ.', 'danger');
+            } finally {
+                hideLoading();
+                closeModal($deleteModal);
+            }
+        });
+    };
+    $('#closeDeleteModalBtn, #cancelDeleteBtn').on('click', () => closeModal($deleteModal));
+
+    // Image preview
+    $('#imageFile').on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#previewImage').attr('src', e.target.result);
+                $('#currentImage').show();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            $('#currentImage').hide();
+        }
+    });
+
+    $('#saveBtn').on('click', async function() {
+        // Simple validation
+        let isValid = true;
+        if (!$('#title').val().trim()) {
+            $('#titleError').text('Vui lòng nhập tiêu đề.'); isValid = false;
+        } else { $('#titleError').text(''); }
+
+        if (!isValid) return;
+
+        const formData = new FormData();
+        formData.append('title', $('#title').val().trim());
+        formData.append('content', $('#content').val().trim());
+        formData.append('text', $('#text').val().trim());
+        formData.append('redirectUrl', $('#redirectUrl').val().trim());
+        formData.append('isActive', $('#isActive').val());
+
+        const imageFile = $('#imageFile')[0].files[0];
+        if (imageFile) {
+            formData.append('imageFile', imageFile);
+        }
+
+        const isEdit = !!currentEditId;
+        const url = isEdit ? `/api/Banner/edit-banner/${currentEditId}` : '/api/Banner/add-banner';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        showLoading();
+        try {
+            const response = await fetch(url, {
+                method: method,
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                showAlert(isEdit ? 'Cập nhật thành công.' : 'Thêm mới thành công.', 'success');
+                closeModal($bannerModal);
+                fetchData(); // Refetch all data
+            } else {
+                showAlert(result.message || 'Có lỗi xảy ra.', 'danger');
+            }
+        } catch (error) {
+            showAlert('Không thể kết nối đến máy chủ.', 'danger');
+        } finally {
+            hideLoading();
+        }
+    });
+
+    function showAlert(message, type = 'success') {
+        const alert = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`);
+        $('#alertContainer').append(alert);
+        setTimeout(() => alert.fadeOut('slow', () => alert.remove()), 5000);
+    }
+    
+    // --- INITIALIZATION ---
+    fetchData();
+});
+</script>
+} 

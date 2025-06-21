@@ -32,5 +32,7 @@ public partial class HoaDonTienIch
 
     public bool? DaThanhToan { get; set; }
 
+
+
     public virtual PhongTro? MaPhongNavigation { get; set; }
 }

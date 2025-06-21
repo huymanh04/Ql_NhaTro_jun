@@ -1,8 +1,11 @@
-﻿@{
+﻿
+@{
     ViewData["Title"] = "Liên Hệ - Hỗ Trợ Tìm Phòng Trọ 24/7";
     ViewData["Description"] = "Liên hệ với chúng tôi để được tư vấn và hỗ trợ tìm phòng trọ phù hợp. Đội ngũ chuyên viên sẵn sàng hỗ trợ 24/7 qua điện thoại, email và chat trực tuyến.";
     ViewData["Keywords"] = "liên hệ, hỗ trợ khách hàng, tư vấn thuê phòng, hotline, email, địa chỉ liên hệ";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var iframeString = JunTech.caidat.GoogleMapEmbed.Replace("\"", "\\\"");
+    var rm = "";
 }
 
 <!-- Hero Section -->
@@ -47,7 +50,7 @@
                         </div>
                         <h4 class="card-title fw-bold mb-3">Hotline 24/7</h4>
                         <p class="text-muted mb-3">Gọi ngay để được tư vấn miễn phí</p>
-                        <a href="tel:1900123456" class="btn btn-primary">1900-123-456</a>
+                        <a href="tel:@JunTech.caidat.SoDienThoai" class="btn btn-primary">@JunTech.caidat.SoDienThoai</a>
                         <div class="mt-3">
                             <small class="text-muted">Miễn phí cuộc gọi</small>
                         </div>
@@ -64,7 +67,7 @@
                         </div>
                         <h4 class="card-title fw-bold mb-3">Email Hỗ Trợ</h4>
                         <p class="text-muted mb-3">Gửi câu hỏi, chúng tôi phản hồi trong 2h</p>
-                        <a href="mailto:support@example.com" class="btn btn-accent">support@example.com</a>
+                        <a href="mailto:manhcansa04@gmail.com" class="btn btn-accent">manhcansa04@gmail.com</a>
                         <div class="mt-3">
                             <small class="text-muted">Phản hồi trong 2 giờ</small>
                         </div>
@@ -171,7 +174,7 @@
                             <h5 class="fw-semibold">Văn Phòng Chính</h5>
                             <p class="mb-2">
                                 <i class="fas fa-map-marker-alt me-2 text-danger"></i>
-                                123 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh
+                                @JunTech.caidat.DiaChi
                             </p>
                             <p class="mb-2">
                                 <i class="fas fa-clock me-2 text-info"></i>
@@ -184,7 +187,7 @@
                         </div>
                         
                         <div class="map-responsive">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.631122536757!2d106.61737551012794!3d10.839515557983246!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752a2d03fafe3b%3A0x127d6979bfdc6907!2zNzhBIMSQw7RuZyBIxrBuZyBUaHXhuq1uIDUsIMSQw7RuZyBIxrBuZyBUaHXhuq1uLCBRdeG6rW4gMTIsIEjhu5MgQ2jDrSBNaW5oLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1749552031852!5m2!1svi!2s" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                           
                         </div>
                     </div>
                 </div>
@@ -354,8 +357,16 @@
     }
 }
 </style>
+<script>
+    const iframeHTML = `@Html.Raw(JunTech.caidat.GoogleMapEmbed)`;
+
+    console.assert(iframeHTML, "Google Map embed code is not set correctly.");
+
+    document.querySelector('.map-responsive').innerHTML = iframeHTML;
+</script>
 
 <script>// Thêm function validate email
+
 export function validateEmailBasic(email) {
   const re = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
   return re.test(email);

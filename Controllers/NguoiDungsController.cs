@@ -41,7 +41,14 @@ namespace Ql_NhaTro_jun.Controllers
 
             return View(nguoiDung);
         }
-
+        public async Task<IActionResult> Denbu()
+        {
+            return View();
+        }
+        public async Task<IActionResult> Banner()
+        {
+            return View();
+        }
         // POST: NguoiDungs/UpdateProfile - Update personal profile
         [HttpPost]
         [ValidateAntiForgeryToken]

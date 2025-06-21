@@ -112,6 +112,50 @@ namespace Ql_NhaTro_jun.Controllers
                 return StatusCode(500, ApiResponse<object>.CreateError("Đã xảy ra lỗi khi lấy danh sách phòng theo nhà trọ"));
             }
         }
+        [HttpGet("get-room-trong-by-nha-tro/{id}")]
+        public async Task<IActionResult> GetRoomByNhaTroa(int id)
+        {
+            try
+            {
+                var phongTros = await _context.PhongTros
+                    .Where(p => p.MaNhaTro == id&&p.ConTrong==false)
+                    .Select(p => new PhongTroDTO
+                    {
+                        MaPhong = p.MaPhong,
+                        MaNhaTro = (int)p.MaNhaTro,
+                        MaTheLoai = p.MaTheLoai,
+                        TenPhong = p.TenPhong,
+                        Gia = (decimal)p.Gia,
+                        DienTich = (float)p.DienTich,
+                        ConTrong = (bool)p.ConTrong,
+                        MoTa = p.MoTa
+                    })
+                    .ToListAsync();
+
+                var img = await _context.HinhAnhPhongTros
+          .Where(i => i.MaPhong == id)
+          .Select(i => new HinhAnhPhongDto
+          {
+              MaHinhAnh = i.MaHinhAnh,
+              MaPhong = i.MaPhong,
+              DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
+              IsMain = (bool)i.IsMain
+          })
+          .ToListAsync();
+                var result = new PhongVaHinhDtoo
+                {
+                    Phong = phongTros,
+                    HinhAnh = img
+                };
+
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy thành công", result));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách phòng theo nhà trọ");
+                return StatusCode(500, ApiResponse<object>.CreateError("Đã xảy ra lỗi khi lấy danh sách phòng theo nhà trọ"));
+            }
+        }
         [HttpGet("get-room-by-the-loai/{id}")]
         public async Task<IActionResult> GetRoomByTheLoai(int id)
         {

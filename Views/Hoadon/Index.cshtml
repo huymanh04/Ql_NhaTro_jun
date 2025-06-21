@@ -1,383 +1,508 @@
-﻿@{
-    ViewData["Title"] = "Quản lý hóa đơn";
+@{
+    ViewData["Title"] = "Quản lý hóa đơn tiện ích";
     Layout = "~/Views/Shared/_Layoutadmin.cshtml";
 }
-
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Quản lý hóa đơn</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/Admin">Dashboard</a></li>
-        <li class="breadcrumb-item active">Hóa đơn</li>
-    </ol>
-
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-                <i class="fas fa-table me-1"></i>
-                Danh sách hóa đơn
+<link href="~/css/hoadon.css?v=@DateTime.Now" rel="stylesheet" />
+<div class="utility-bill-management">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-file-invoice-dollar"></i> Quản lý hóa đơn tiện ích</h1>
+                <p>Thêm, sửa, xóa và quản lý các hóa đơn tiện ích của phòng trọ</p>
             </div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBillModal">
-                <i class="fas fa-plus"></i> Thêm hóa đơn mới
-            </button>
+            <div class="header-right">
+                <button class="btn btn-primary" id="addBillBtn">
+                    <i class="fas fa-plus"></i> Thêm hóa đơn mới
+                </button>
+            </div>
         </div>
-        <div class="card-body">
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <div class="filters-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm theo mã hóa đơn, phòng, tháng/năm...">
+            </div>
+            
+            <div class="filter-group">
+                <select id="roomFilter">
+                    <option value="">Tất cả phòng</option>
+                </select>
+                
+                <select id="statusFilter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="true">Đã thanh toán</option>
+                    <option value="false">Chưa thanh toán</option>
+                </select>
+                
+                <button class="btn btn-secondary" id="clearFiltersBtn">
+                    <i class="fas fa-times"></i> Xóa bộ lọc
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alertContainer"></div>
+
+    <!-- Bills Table -->
+    <div class="table-section">
+        <div class="table-container">
             <div class="table-responsive">
-                <table class="table table-bordered table-hover" id="utilityBillTable">
-                    <thead class="table-light">
+                <table class="bills-table">
+                    <thead>
                         <tr>
-                            <th>Mã hóa đơn</th>
+                            <th>Mã HĐ</th>
                             <th>Phòng</th>
                             <th>Tháng/Năm</th>
-                            <th>Số điện</th>
-                            <th>Số nước</th>
+                            <th>Điện (kWh)</th>
+                            <th>Nước (m³)</th>
                             <th>Phí DV</th>
-                            <th>Số xe</th>
+                            <th>Phí dữ xe</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>
-                            <th width="150">Thao tác</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="billsTableBody">
+                        <!-- Data will be loaded here -->
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Add Bill Modal -->
-<div class="modal fade" id="addBillModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Thêm hóa đơn mới</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <!-- Mobile Cards -->
+        <div class="mobile-cards" id="mobileBillCards">
+            <!-- Mobile cards will be loaded here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span id="paginationInfo">Hiển thị 0 - 0 của 0 hóa đơn</span>
+                <div class="items-per-page">
+                    <label for="itemsPerPage">Hiển thị:</label>
+                    <select id="itemsPerPage">
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span>hóa đơn/trang</span>
+                </div>
             </div>
-            <div class="modal-body">
-                <form id="addBillForm">
-                    <div class="mb-3">
-                        <label class="form-label">Phòng</label>
-                        <select class="form-select" id="maPhong" required>
-                            <option value="">Chọn phòng</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Số điện (kWh)</label>
-                        <input type="number" class="form-control" id="soDien" required min="0" step="0.1">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Số nước (m³)</label>
-                        <input type="number" class="form-control" id="soNuoc" required min="0" step="0.1">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Ghi chú</label>
-                        <textarea class="form-control" id="note" rows="3"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="saveBillBtn">Lưu</button>
+            <div class="pagination-controls">
+                <button class="btn btn-outline" id="prevPageBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Trước
+                </button>
+                <div class="page-numbers" id="pageNumbers"></div>
+                <button class="btn btn-outline" id="nextPageBtn" disabled>
+                    Sau <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Edit Bill Modal -->
-<div class="modal fade" id="editBillModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Sửa hóa đơn</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<!-- Add/Edit Bill Modal -->
+<div class="modal" id="billModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">
+                <i class="fas fa-file-invoice-dollar"></i> 
+                <span id="modalTitleText">Thêm hóa đơn mới</span>
+            </h2>
+            <button class="modal-close" id="closeModalBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="billForm" class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="maPhong">Phòng <span class="required">*</span></label>
+                    <select id="maPhong" name="maPhong" required>
+                        <option value="">Chọn phòng</option>
+                    </select>
+                    <div class="error-message" id="maPhongError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="soDien">Số điện (kWh) <span class="required">*</span></label>
+                    <input type="number" id="soDien" name="soDien" required min="0" step="0.1"
+                           placeholder="Nhập số điện">
+                    <div class="error-message" id="soDienError"></div>
+                </div>
             </div>
-            <div class="modal-body">
-                <form id="editBillForm">
-                    <input type="hidden" id="editMaHoaDon">
-                    <div class="mb-3">
-                        <label class="form-label">Phòng</label>
-                        <input type="text" class="form-control" id="editTenPhong" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Số điện (kWh)</label>
-                        <input type="number" class="form-control" id="editSoDien" required min="0" step="0.1">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Số nước (m³)</label>
-                        <input type="number" class="form-control" id="editSoNuoc" required min="0" step="0.1">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Ghi chú</label>
-                        <textarea class="form-control" id="editNote" rows="3"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="editDaThanhToan">
-                            <label class="form-check-label">Đã thanh toán</label>
-                        </div>
-                    </div>
-                </form>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="soNuoc">Số nước (m³) <span class="required">*</span></label>
+                    <input type="number" id="soNuoc" name="soNuoc" required min="0" step="0.1"
+                           placeholder="Nhập số nước">
+                    <div class="error-message" id="soNuocError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="note">Ghi chú</label>
+                    <textarea id="note" name="note" rows="3" 
+                              placeholder="Nhập ghi chú (nếu có)"></textarea>
+                    <div class="error-message" id="noteError"></div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="updateBillBtn">Cập nhật</button>
+            
+            <div class="form-group" id="statusGroup" style="display: none;">
+                <label for="daThanhToan">Trạng thái thanh toán</label>
+                <select id="daThanhToan" name="daThanhToan">
+                    <option value="false">Chưa thanh toán</option>
+                    <option value="true">Đã thanh toán</option>
+                </select>
+                <div class="error-message" id="daThanhToanError"></div>
             </div>
+        </form>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelModalBtn">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn btn-primary" id="saveBillBtn">
+                <i class="fas fa-save"></i> <span id="saveBtnText">Lưu</span>
+            </button>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            // Load danh sách phòng
-            function loadPhongList() {
-                $.get('/api/UtilityBill/get-all-phong', function (response) {
-                    if (response.success) {
-                        const phongSelect = $('#maPhong');
-                        phongSelect.empty().append('<option value="">Chọn phòng</option>');
-                        response.data.forEach(phong => {
-                            phongSelect.append(`<option value="${phong.maPhong}">${phong.tenPhong}</option>`);
-                        });
-                    }
-                });
-            }
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content delete-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-exclamation-triangle text-danger"></i> Xác nhận xóa</h2>
+            <button class="modal-close" id="closeDeleteModalBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <p>Bạn có chắc chắn muốn xóa hóa đơn <strong id="deleteBillId"></strong> không?</p>
+            <p class="text-danger"><i class="fas fa-warning"></i> Hành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác!</p>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                <i class="fas fa-trash"></i> Xóa
+            </button>
+        </div>
+    </div>
+</div>
 
-            // Load danh sách hóa đơn
-            function loadUtilityBills() {
-                $.get('/api/UtilityBill/get-all-hoa-don', function (response) {
-                    if (response.success) {
-                        const tbody = $('#utilityBillTable tbody');
-                        tbody.empty();
-                        response.data.forEach(bill => {
-                            tbody.append(`
-                                        <tr>
-                                            <td>${bill.maHoaDon}</td>
-                                            <td>${bill.tenPhong}</td>
-                                            <td>${bill.thang}/${bill.nam}</td>
-                                            <td>${bill.soDien}</td>
-                                            <td>${bill.soNuoc}</td>
-                                            <td>${bill.phidv?.toLocaleString('vi-VN')} VNĐ</td>
-                                            <td>${bill.soxe}</td>
-                                            <td>${bill.tongTien?.toLocaleString('vi-VN')} VNĐ</td>
-                                            <td>
-                                                <span class="badge ${bill.daThanhToan ? 'bg-success' : 'bg-warning'}">
-                                                    ${bill.daThanhToan ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-info btn-sm" onclick="viewBill(${bill.maHoaDon})" title="Xem chi tiết">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-primary btn-sm" onclick="editBill(${bill.maHoaDon})" title="Sửa">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteBill(${bill.maHoaDon})" title="Xóa">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `);
-                        });
-                    }
-                });
-            }
+<!-- Print Bill Modal -->
+<div class="modal" id="printModal">
+    <div class="modal-content print-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-print"></i> Xem hóa đơn</h2>
+            <button class="modal-close" id="closePrintModalBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body" id="printModalBody">
+            <!-- Bill content will be loaded here -->
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelPrintBtn">
+                <i class="fas fa-times"></i> Đóng
+            </button>
+            <button type="button" class="btn btn-primary" id="printBillBtn">
+                <i class="fas fa-print"></i> In hóa đơn
+            </button>
+        </div>
+    </div>
+</div>
 
-            // Thêm hóa đơn mới
-            $('#saveBillBtn').click(function () {
-                const data = {
-                    maPhong: $('#maPhong').val(),
-                    soDien: $('#soDien').val(),
-                    soNuoc: $('#soNuoc').val(),
-                    note: $('#note').val()
-                };
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+    </div>
+</div>
 
-                if (!data.maPhong) {
-                    toastr.error('Vui lòng chọn phòng');
-                    return;
-                }
+<style>
+    /* Enhanced table for better information display */
+    .bills-table th:nth-child(2),
+    .bills-table td:nth-child(2) {
+        min-width: 150px;
+    }
+    
+    .bills-table th:nth-child(8),
+    .bills-table td:nth-child(8) {
+        min-width: 120px;
+    }
+    
+    .bills-table th:nth-child(9),
+    .bills-table td:nth-child(9) {
+        min-width: 120px;
+    }
+    
+    .room-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .room-main {
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .room-details {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+    
+    .text-muted {
+        color: #6b7280 !important;
+        font-size: 0.875rem;
+    }
+    
+    .utility-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .utility-info span {
+        font-size: 13px;
+    }
+    
+    .amount-info {
+        font-weight: 600;
+        color: #059669;
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        text-align: center;
+        min-width: 80px;
+    }
+    
+    .status-paid {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+    
+    .status-unpaid {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
 
-                $.ajax({
-                    url: '/api/UtilityBill/add-hoadon-tien-ich',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                    success: function (response) {
-                        if (response.success) {
-                            $('#addBillModal').modal('hide');
-                            $('#addBillForm')[0].reset();
-                            loadUtilityBills();
-                            toastr.success('Thêm hóa đơn thành công');
-                        } else {
-                            toastr.error(response.message || 'Có lỗi xảy ra');
-                        }
-                    },
-                    error: function () {
-                        toastr.error('Có lỗi xảy ra khi thêm hóa đơn');
-                    }
-                });
-            });
-
-            // Xem chi tiết hóa đơn
-            window.viewBill = function (id) {
-                $.get(`/api/UtilityBill/print-hoa-don/${id}`, function (response) {
-                    if (response.success) {
-                        const bill = response.data;
-                        Swal.fire({
-                            title: 'Chi tiết hóa đơn',
-                            html: `
-                                        <div class="text-start">
-                                            <div class="row mb-3">
-                                                <div class="col-6">
-                                                    <p><strong>Mã hóa đơn:</strong> ${bill.maHoaDon}</p>
-                                                    <p><strong>Phòng:</strong> ${bill.tenPhong}</p>
-                                                    <p><strong>Tháng/Năm:</strong> ${bill.thangNam}</p>
-                                                    <p><strong>Ngày xuất:</strong> ${bill.ngayXuat}</p>
-                                                </div>
-                                                <div class="col-6">
-                                                    <p><strong>Khách hàng:</strong> ${bill.khachHang}</p>
-                                                    <p><strong>Trạng thái:</strong> ${bill.daThanhToan}</p>
-                                                </div>
-                                            </div>
-                                            <hr>
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <h6 class="mb-3">Chi tiết thanh toán</h6>
-                                                    <table class="table table-sm">
-                                                        <tr>
-                                                            <td>Số điện:</td>
-                                                            <td>${bill.soDien} kWh</td>
-                                                            <td>Đơn giá:</td>
-                                                            <td>${bill.donGiaDien?.toLocaleString('vi-VN')} VNĐ/kWh</td>
-                                                            <td>Thành tiền:</td>
-                                                            <td>${bill.thanhTienDien?.toLocaleString('vi-VN')} VNĐ</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Số nước:</td>
-                                                            <td>${bill.soNuoc} m³</td>
-                                                            <td>Đơn giá:</td>
-                                                            <td>${bill.donGiaNuoc?.toLocaleString('vi-VN')} VNĐ/m³</td>
-                                                            <td>Thành tiền:</td>
-                                                            <td>${bill.thanhTienNuoc?.toLocaleString('vi-VN')} VNĐ</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Tiền phòng:</td>
-                                                            <td colspan="5">${bill.tienPhong?.toLocaleString('vi-VN')} VNĐ</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Phí dịch vụ:</td>
-                                                            <td colspan="5">${bill.phidv?.toLocaleString('vi-VN')} VNĐ</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>Số xe:</td>
-                                                            <td colspan="5">${bill.soxe}</td>
-                                                        </tr>
-                                                        <tr class="table-primary">
-                                                            <td colspan="4"><strong>Tổng tiền:</strong></td>
-                                                            <td colspan="2"><strong>${bill.tongTien?.toLocaleString('vi-VN')} VNĐ</strong></td>
-                                                        </tr>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `,
-                            width: '800px',
-                            confirmButtonText: 'Đóng',
-                            confirmButtonColor: '#3085d6'
-                        });
-                    }
-                });
-            };
-
-            // Sửa hóa đơn
-            window.editBill = function (id) {
-                $.get(`/api/UtilityBill/get-hoa-don-chi-tiet/${id}`, function (response) {
-                    if (response.success) {
-                        const bill = response.data;
-                        $('#editMaHoaDon').val(bill.maHoaDon);
-                        $('#editTenPhong').val(bill.tenPhong);
-                        $('#editSoDien').val(bill.soDien);
-                        $('#editSoNuoc').val(bill.soNuoc);
-                        $('#editDaThanhToan').prop('checked', bill.daThanhToan);
-                        $('#editBillModal').modal('show');
-                    }
-                });
-            };
-
-            // Cập nhật hóa đơn
-            $('#updateBillBtn').click(function () {
-                const id = $('#editMaHoaDon').val();
-                const data = {
-                    maPhong: $('#editMaPhong').val(),
-                    soDien: $('#editSoDien').val(),
-                    soNuoc: $('#editSoNuoc').val(),
-                    note: $('#editNote').val()
-                };
-
-                $.ajax({
-                    url: `/api/UtilityBill/edit-hoadon-tien-ich/${id}`,
-                    type: 'PUT',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                    success: function (response) {
-                        if (response.success) {
-                            $('#editBillModal').modal('hide');
-                            loadUtilityBills();
-                            toastr.success('Cập nhật hóa đơn thành công');
-                        } else {
-                            toastr.error(response.message || 'Có lỗi xảy ra');
-                        }
-                    },
-                    error: function () {
-                        toastr.error('Có lỗi xảy ra khi cập nhật hóa đơn');
-                    }
-                });
-            });
-
-            // Xóa hóa đơn
-            window.deleteBill = function (id) {
-                Swal.fire({
-                    title: 'Xác nhận xóa?',
-                    text: "Bạn có chắc chắn muốn xóa hóa đơn này?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Xóa',
-                    cancelButtonText: 'Hủy'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: `/api/UtilityBill/delete-hoadon-tienich/${id}`,
-                            type: 'DELETE',
-                            success: function (response) {
-                                if (response.success) {
-                                    loadUtilityBills();
-                                    toastr.success('Xóa hóa đơn thành công');
-                                } else {
-                                    toastr.error(response.message || 'Có lỗi xảy ra');
-                                }
-                            },
-                            error: function () {
-                                toastr.error('Có lỗi xảy ra khi xóa hóa đơn');
-                            }
-                        });
-                    }
-                });
-            };
-
-            // Initial load
-            loadPhongList();
-            loadUtilityBills();
-
-            // Configure toastr
-            toastr.options = {
-                "closeButton": true,
-                "progressBar": true,
-                "positionClass": "toast-top-right",
-                "timeOut": "3000"
-            };
-        });
-    </script>
-} 
+    /* Ensure modal is properly displayed */
+    .modal {
+        z-index: 99999 !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding: 20px !important;
+        padding-top: 10px !important;
+        padding-bottom: 60px !important;
+        overflow-y: auto !important;
+    }
+    
+    .modal-content {
+        max-height: 80vh !important;
+        overflow: visible !important;
+        margin: 0 auto 50px auto !important;
+        position: relative !important;
+        top: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    .modal-body {
+        max-height: calc(80vh - 160px) !important;
+        overflow-y: auto !important;
+        flex: 1 !important;
+    }
+    
+    .modal-footer {
+        position: sticky !important;
+        bottom: 0 !important;
+        background: #f8fafc !important;
+        border-top: 1px solid #e5e7eb !important;
+        z-index: 100 !important;
+        flex-shrink: 0 !important;
+        margin-top: auto !important;
+    }
+    
+    /* Desktop specific */
+    @@media (min-width: 769px) {
+        .modal {
+            align-items: flex-start !important;
+            justify-content: center !important;
+            padding: 30px !important;
+            padding-top: 20px !important;
+            padding-bottom: 80px !important;
+        }
+        
+        .modal-content {
+            width: 700px !important;
+            max-width: 90vw !important;
+            max-height: 75vh !important;
+            margin: 0 auto 50px auto !important;
+        }
+        
+        .modal-body {
+            max-height: calc(75vh - 160px) !important;
+        }
+    }
+    
+    /* Mobile specific fixes */
+    @@media (max-width: 768px) {
+        .modal {
+            align-items: flex-start !important;
+            justify-content: center !important;
+            padding: 15px !important;
+            padding-top: 10px !important;
+            padding-bottom: 50px !important;
+        }
+        
+        .modal-content {
+            margin: 0 auto !important;
+            width: 100% !important;
+            max-width: none !important;
+            max-height: 82vh !important;
+        }
+        
+        .modal-body {
+            max-height: calc(82vh - 160px) !important;
+        }
+        
+        .modal-footer {
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+        
+        .modal-footer .btn {
+            width: 100% !important;
+            min-height: 50px !important;
+            font-size: 16px !important;
+        }
+    }
+    
+    @@media (max-width: 480px) {
+        .modal {
+            padding: 10px !important;
+            padding-top: 5px !important;
+            padding-bottom: 40px !important;
+        }
+        
+        .modal-content {
+            max-height: 85vh !important;
+        }
+        
+        .modal-body {
+            max-height: calc(85vh - 140px) !important;
+        }
+        
+        .modal-footer .btn {
+            min-height: 52px !important;
+            font-weight: 700 !important;
+        }
+    }
+    
+    /* Form row layout */
+    .form-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    @@media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .form-row .form-group {
+            margin-bottom: 20px;
+        }
+    }
+    
+    /* Print modal specific styles */
+    .print-modal .modal-content {
+        width: 800px !important;
+        max-width: 95vw !important;
+    }
+    
+    .print-modal .modal-body {
+        padding: 20px;
+        background: white;
+    }
+    
+    /* Pagination styles */
+    .pagination-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .items-per-page {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+    
+    .items-per-page label {
+        margin: 0;
+        font-weight: 500;
+        color: #6b7280;
+    }
+    
+    .items-per-page select {
+        padding: 4px 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: white;
+        font-size: 14px;
+        min-width: 60px;
+    }
+    
+    .items-per-page select:focus {
+        outline: none;
+        border-color: #4a90a4;
+        box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
+    }
+    
+    .items-per-page span {
+        color: #6b7280;
+    }
+    
+    @@media (max-width: 768px) {
+        .pagination-info {
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .items-per-page {
+            font-size: 13px;
+        }
+    }
+</style>
+<script src="~/js/hoadon.js?v=@DateTime.Now"></script>

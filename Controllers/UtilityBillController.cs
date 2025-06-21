@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Ql_NhaTro_jun.Models;
 using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Text;
 
 namespace Ql_NhaTro_jun.Controllers
 {
@@ -11,12 +14,13 @@ namespace Ql_NhaTro_jun.Controllers
     [ApiController]
     public class UtilityBillController : ControllerBase
     {
-
+        private readonly QlNhatroContext _context;
         private readonly ILogger<UtilityBillController> _logger;
-        QlNhatroContext _context;
-        public UtilityBillController(ILogger<UtilityBillController> logger, QlNhatroContext cc)
+
+        public UtilityBillController(QlNhatroContext context, ILogger<UtilityBillController> logger)
         {
-            _logger = logger; _context = cc;
+            _context = context;
+            _logger = logger;
         }
 
         [HttpGet("get-hoa-don-chi-tiet/{id}")]
@@ -114,6 +118,7 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+
         [HttpPut("edit-hoadon-tien-ich/{id}")]
         public async Task<IActionResult> UpdateHoaDonTienIch(int id, [FromBody] HoaDonTienIchDTO model, bool DaThanhToan = false)
         {
@@ -125,7 +130,13 @@ namespace Ql_NhaTro_jun.Controllers
                 var hoaDon = await _context.HoaDonTienIches.FindAsync(id);
                 if (hoaDon == null)
                     return NotFound(ApiResponse<object>.CreateError("Hóa đơn tiện ích không tồn tại"));
-                var hoadowntong = await _context.HoaDonTongs.FirstOrDefaultAsync(h => h.MaHopDong == hoaDon.MaHoaDon);
+                var hopDong = await _context.HopDongs.FirstOrDefaultAsync(h => h.MaPhong == hoaDon.MaPhong && h.DaKetThuc == false);
+
+                var hoadowntong = await _context.HoaDonTongs
+           .Where(h => h.MaHopDong == hopDong.MaHopDong)
+           .Where(h => h.NgayXuat.Value.Month == hoaDon.Thang)
+           .Where(h => h.NgayXuat.Value.Year == hoaDon.Nam)
+           .FirstOrDefaultAsync();
                 hoaDon.SoDien = model.SoDien;
                 hoaDon.SoNuoc = model.SoNuoc;
                 if (DaThanhToan)
@@ -150,8 +161,6 @@ namespace Ql_NhaTro_jun.Controllers
                     hoadowntong.TongTien = tong;
                 }
 
-
-
                 if (model.note != string.Empty && model.note != null)
                 {
                     hoadowntong.GhiChu = model.note;
@@ -173,8 +182,43 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
-        [HttpDelete("delete-hoadon-tienich/{id}")]
+
+        [HttpPut("update-payment-status/{id}")]
         public async Task<IActionResult> delete(int id)
+        {
+            try
+            {
+                var hoaDon = await _context.HoaDonTienIches.FindAsync(id);
+                if (hoaDon == null)
+                    return NotFound(ApiResponse<object>.CreateError("Hóa đơn tiện ích không tồn tại"));
+
+                // Tìm và xóa hóa đơn tổng liên quan
+                var hoaDonTong = await _context.HoaDonTongs
+                    .FirstOrDefaultAsync(h => h.MaHopDong == hoaDon.MaHoaDon);
+
+                if (hoaDonTong != null)
+                {
+                    _context.HoaDonTongs.Remove(hoaDonTong);
+                }
+
+                _context.HoaDonTienIches.Remove(hoaDon);
+                await _context.SaveChangesAsync();
+
+                return Ok(ApiResponse<object>.CreateSuccess(
+                    "Xóa hóa đơn thành công",
+                    null
+                ));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi xóa hóa đơn");
+                return StatusCode(500, ApiResponse<object>.CreateError(
+                    "Đã xảy ra lỗi khi xóa hóa đơn"
+                ));
+            }
+        }
+        [HttpDelete("delete-hoadon-tienich/{id}")]
+        public async Task<IActionResult> DeleteHoaDonTienIch(int id)
         {
             try
             {
@@ -207,6 +251,7 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+
         [HttpGet("get-all-phong")]
         public async Task<IActionResult> GetAllPhong()
         {
@@ -237,42 +282,58 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+
         [HttpGet("get-all-hoa-don")]
         public async Task<IActionResult> GetAllHoaDon()
         {
             try
             {
+                // Lấy cài đặt hệ thống
+                var caiDat = await _context.CaiDatHeThongs.FirstOrDefaultAsync();
+
                 var hoaDons = await _context.HoaDonTienIches
                     .Include(h => h.MaPhongNavigation)
+                    .ThenInclude(p => p.HopDongs)
                     .Select(h => new
                     {
                         h.MaHoaDon,
                         h.MaPhong,
-                        TenPhong = h.MaPhongNavigation.TenPhong,
+                        tenPhong = h.MaPhongNavigation.TenPhong,
+                        giaphong=h.MaPhongNavigation.Gia,
                         h.Thang,
                         h.Nam,
                         h.SoDien,
                         h.SoNuoc,
-                        h.DonGiaDien,
-                        h.DonGiaNuoc,
                         h.TongTien,
                         h.DaThanhToan,
-                        h.Phidv,
-                        h.Soxe
+                        phidv = caiDat.Phidv ?? 0,
+                        soxe = h.MaPhongNavigation.HopDongs
+                            .Where(hd => hd.DaKetThuc == false)
+                            .Select(hd => hd.SoXe)
+                            .FirstOrDefault(),
+                        phiGiuXe = caiDat.PhiGiuXe ?? 0,
+                        donGiaDien = caiDat.TienDien ?? 0,
+                        donGiaNuoc = caiDat.TienNuoc ?? 0,
+                        dongiaxe=caiDat.PhiGiuXe ?? 0
                     })
                     .ToListAsync();
 
-                return Ok(ApiResponse<object>.CreateSuccess(
-                    "Lấy danh sách hóa đơn thành công",
-                    hoaDons
-                ));
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Lấy danh sách hóa đơn thành công",
+                    Data = hoaDons
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi lấy danh sách hóa đơn");
-                return StatusCode(500, ApiResponse<object>.CreateError(
-                    "Đã xảy ra lỗi khi lấy danh sách hóa đơn"
-                ));
+                return StatusCode(500, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Lỗi khi lấy danh sách hóa đơn",
+                    Data = null
+                });
             }
         }
         [HttpGet("get-hoa-don-by-phong/{maPhong}")]
@@ -287,13 +348,11 @@ namespace Ql_NhaTro_jun.Controllers
                     {
                         h.MaHoaDon,
                         h.MaPhong,
-                        TenPhong = h.MaPhongNavigation.TenPhong,
+                        tenPhong = h.MaPhongNavigation.TenPhong,
                         h.Thang,
                         h.Nam,
                         h.SoDien,
                         h.SoNuoc,
-                        h.DonGiaDien,
-                        h.DonGiaNuoc,
                         h.TongTien,
                         h.DaThanhToan,
                         h.Phidv,
@@ -301,19 +360,25 @@ namespace Ql_NhaTro_jun.Controllers
                     })
                     .ToListAsync();
 
-                return Ok(ApiResponse<object>.CreateSuccess(
-                    "Lấy danh sách hóa đơn theo phòng thành công",
-                    hoaDons
-                ));
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Lấy danh sách hóa đơn theo phòng thành công",
+                    Data = hoaDons
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi khi lấy danh sách hóa đơn theo phòng");
-                return StatusCode(500, ApiResponse<object>.CreateError(
-                    "Đã xảy ra lỗi khi lấy danh sách hóa đơn theo phòng"
-                ));
+                return StatusCode(500, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Lỗi khi lấy danh sách hóa đơn theo phòng",
+                    Data = null
+                });
             }
         }
+
         [HttpGet("get-hoa-don-by-khach-hang/{maKhachHang}")]
         public async Task<IActionResult> GetHoaDonByKhachHang(int maKhachHang)
         {
@@ -361,6 +426,7 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+
         [HttpGet("print-hoa-don/{id}")]
         public async Task<IActionResult> PrintHoaDon(int id)
         {
@@ -413,6 +479,121 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+
+        [HttpGet("print-hoa-don-beautiful/{id}")]
+        public async Task<IActionResult> PrintHoaDonBeautiful(int id)
+        {
+            try
+            {
+                var hoaDon = await _context.HoaDonTienIches
+                    .Include(h => h.MaPhongNavigation)
+                   .Include(d=>d.MaPhongNavigation)
+                    .ThenInclude(p => p.HopDongs)
+                    .ThenInclude(h => h.HopDongNguoiThues)
+                
+                    .ThenInclude(h => h.MaKhachThueNavigation)
+                    .FirstOrDefaultAsync(h => h.MaHoaDon == id);
+
+                if (hoaDon == null)
+                    return NotFound(ApiResponse<object>.CreateError("Hóa đơn không tồn tại"));
+
+                // Lấy thông tin khách hàng
+                var khachHang = hoaDon.MaPhongNavigation.HopDongs
+                    .FirstOrDefault()?.HopDongNguoiThues
+                    .Select(h => h.MaKhachThueNavigation)
+                    .FirstOrDefault();
+
+                // Lấy cài đặt hệ thống
+                var caiDat = await _context.CaiDatHeThongs.FirstOrDefaultAsync();
+                var nhatro = await _context.NhaTros.Include(t => t.PhongTros).Include(a => a.MaChuTroNavigation).FirstOrDefaultAsync(id=>id.MaNhaTro==hoaDon.MaPhongNavigation.MaNhaTro);
+                var request = HttpContext.Request;
+                var currentUrl = $"{request.Scheme}://{request.Host}";
+               
+                var use=await _context.NguoiDungs.Where(m=>m.MaNguoiDung== JunTech.id).FirstOrDefaultAsync();
+                // Tạo dữ liệu cho hóa đơn đẹp
+
+                var hopdong = hoaDon.MaPhongNavigation.HopDongs.FirstOrDefault(r => r.MaPhong == hoaDon.MaPhongNavigation.MaPhong);
+                var data = new
+                {
+                    // Thông tin hóa đơn
+                    MaHoaDon = hoaDon.MaHoaDon,
+                    NgayXuat = DateTime.Now.ToString("dd/MM/yyyy"),
+                    ThangNam = $"{hoaDon.Thang}/{hoaDon.Nam}",
+                    
+                    // Thông tin phòng
+                    TenPhong = hoaDon.MaPhongNavigation.TenPhong,
+                    MaPhong = hoaDon.MaPhong,
+                    GiaPhong = hoaDon.MaPhongNavigation.Gia ?? 0,
+                    
+                    // Thông tin khách hàng
+                    TenKhachHang = khachHang?.HoTen ?? "N/A",
+                    SoDienThoai = khachHang?.SoDienThoai ?? "N/A",
+                    
+                    // Chi tiết tiện ích
+                    SoDien = hoaDon.SoDien ?? 0,
+                    DonGiaDien = hoaDon.DonGiaDien ?? 0,
+                    ThanhTienDien = (decimal)(hoaDon.SoDien ?? 0) * (hoaDon.DonGiaDien ?? 0),
+                    
+                    SoNuoc = hoaDon.SoNuoc ?? 0,
+                    DonGiaNuoc = hoaDon.DonGiaNuoc ?? 0,
+                    ThanhTienNuoc = (decimal)(hoaDon.SoNuoc ?? 0) * (hoaDon.DonGiaNuoc ?? 0),
+                    
+                    // Chi phí khác
+                    Phidv = caiDat.Phidv,
+                    Soxe = hopdong.SoXe,
+                    PhiGiuXe = (decimal)(hopdong.SoXe) * (caiDat != null && caiDat.PhiGiuXe.HasValue ? caiDat.PhiGiuXe.Value : 50000),
+                    
+                    // Tổng tiền
+                    TongTien = hoaDon.TongTien ?? 0,
+                    DaThanhToan = (hoaDon.DaThanhToan ?? false) ? "Đã thanh toán" : "Chưa thanh toán",
+                    
+                    // Thông tin công ty
+                    TenCongTy = nhatro.TenNhaTro,
+                    DiaChiCongTy = nhatro.DiaChi,
+                    SoDienThoaiCongTy = nhatro.MaChuTroNavigation.SoDienThoai,
+                    EmailCongTy = nhatro.MaChuTroNavigation.Email,
+                    Website = currentUrl,
+                    nguoilaphoadon= ChuyenKhongDau(nhatro.MaChuTroNavigation.HoTen) +"\r\n"+nhatro.MaChuTroNavigation.HoTen,
+                };
+
+                return Ok(ApiResponse<object>.CreateSuccess(
+                    "Lấy thông tin hóa đơn thành công",
+                    data
+                ));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy thông tin hóa đơn");
+                return StatusCode(500, ApiResponse<object>.CreateError(
+                    "Đã xảy ra lỗi khi lấy thông tin hóa đơn"
+                ));
+            }
+        }
+        public static string ChuyenKhongDau(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
+            // Bỏ dấu
+            string normalized = input.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+            foreach (var c in normalized)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                    sb.Append(c);
+            }
+
+            string khongDau = sb.ToString().Normalize(NormalizationForm.FormC);
+
+            // Bỏ khoảng trắng và ký tự đặc biệt
+            khongDau = Regex.Replace(khongDau, @"\s+", ""); // bỏ khoảng trắng
+            khongDau = Regex.Replace(khongDau, @"[^a-zA-Z0-9]", ""); // bỏ ký tự đặc biệt nếu cần
+
+            // Chuyển về chữ thường
+            return khongDau.ToLower();
+        }
+
         public class HoaDonTienIchDTO
         {
             public int MaPhong { get; set; }
