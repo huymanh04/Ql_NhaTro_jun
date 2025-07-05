@@ -976,4 +976,213 @@
 
 .pulse {
     animation: pulse 2s infinite;
+}
+
+/* Customer Dashboard Specific Styles */
+.info-section {
+    margin-top: 30px;
+}
+
+.info-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.info-header h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-header i {
+    color: #4a90a4;
+    font-size: 1.3rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    background: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.info-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #4a90a4 0%, #2c5f6f 100%);
+    color: white;
+    font-size: 1.2rem;
+}
+
+.info-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 5px 0;
+}
+
+.info-content p {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.utility-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.utility-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.color-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.color-indicator.primary {
+    background: #4a90a4;
+}
+
+.color-indicator.success {
+    background: #f59e0b;
+}
+
+.color-indicator.info {
+    background: #06b6d4;
+}
+
+.color-indicator.warning {
+    background: #f97316;
+}
+
+.utility-item span {
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.utility-item strong {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+/* Chart specific styles for customer dashboard */
+#comparisonChart, #yearComparisonChart {
+    max-height: 300px;
+}
+
+/* Responsive adjustments for customer dashboard */
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .utility-stats {
+        margin-top: 15px;
+    }
+    
+    .info-item {
+        padding: 15px;
+    }
+    
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
+/* No contract message styles */
+.no-contract-message {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 20px;
+}
+
+.no-contract-message .btn {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.no-contract-message .btn-primary {
+    background: linear-gradient(135deg, #4a90a4 0%, #2c5f6f 100%);
+    color: white;
+}
+
+.no-contract-message .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(74, 144, 164, 0.3);
+}
+
+.no-contract-message .btn-secondary {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.no-contract-message .btn-secondary:hover {
+    background: #cbd5e1;
+    transform: translateY(-2px);
 } 

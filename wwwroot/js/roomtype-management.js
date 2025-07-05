@@ -6,7 +6,7 @@ class RoomTypeManagement {
         this.itemsPerPage = 10;
         this.editingRoomTypeId = null;
         this.deletingRoomTypeId = null;
-        
+
         this.init();
     }
 
@@ -18,23 +18,23 @@ class RoomTypeManagement {
     bindEvents() {
         // Add room type button
         document.getElementById('addRoomTypeBtn').addEventListener('click', () => this.showAddModal());
-        
+
         // Modal close buttons
         document.getElementById('closeModalBtn').addEventListener('click', () => this.hideModal());
         document.getElementById('cancelModalBtn').addEventListener('click', () => this.hideModal());
         document.getElementById('closeDeleteModalBtn').addEventListener('click', () => this.hideDeleteModal());
         document.getElementById('cancelDeleteBtn').addEventListener('click', () => this.hideDeleteModal());
-        
+
         // Save button
         document.getElementById('saveRoomTypeBtn').addEventListener('click', () => this.saveRoomType());
-        
+
         // Delete confirmation
         document.getElementById('confirmDeleteBtn').addEventListener('click', () => this.confirmDelete());
-        
+
         // Search
         document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
         document.getElementById('clearFiltersBtn').addEventListener('click', () => this.clearFilters());
-        
+
         // Items per page change
         document.getElementById('itemsPerPage').addEventListener('change', (e) => {
             this.itemsPerPage = parseInt(e.target.value);
@@ -42,11 +42,11 @@ class RoomTypeManagement {
             this.renderRoomTypes();
             this.updatePagination();
         });
-        
+
         // Pagination
         document.getElementById('prevPageBtn').addEventListener('click', () => this.previousPage());
         document.getElementById('nextPageBtn').addEventListener('click', () => this.nextPage());
-        
+
         // Modal backdrop click
         document.getElementById('roomTypeModal').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) this.hideModal();
@@ -54,10 +54,10 @@ class RoomTypeManagement {
         document.getElementById('deleteModal').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) this.hideDeleteModal();
         });
-        
+
         // Form validation
         document.getElementById('roomTypeForm').addEventListener('input', () => this.clearFieldErrors());
-        
+
         // Image file handling
         document.getElementById('imageFile').addEventListener('change', (e) => this.handleImagePreview(e));
         document.getElementById('removeImageBtn').addEventListener('click', () => this.removeImagePreview());
@@ -68,7 +68,7 @@ class RoomTypeManagement {
         try {
             const response = await fetch('/api/RoomType/get-type-room');
             const result = await response.json();
-            
+
             if (response.ok && result.success) {
                 this.roomTypes = result.data;
                 this.filteredRoomTypes = [...this.roomTypes];
@@ -112,19 +112,19 @@ class RoomTypeManagement {
 
         pageRoomTypes.forEach((roomType, index) => {
             const row = document.createElement('tr');
-            
+
             // Calculate STT (số thứ tự)
             const stt = (this.currentPage - 1) * this.itemsPerPage + index + 1;
-            
-            const imageHtml = roomType.imageBase64 
+
+            const imageHtml = roomType.imageBase64
                 ? `<img src="data:image/jpeg;base64,${roomType.imageBase64}" class="room-image" alt="${roomType.tenTheLoai}">`
                 : `<div class="no-image">Không có ảnh</div>`;
-            
-            const description = roomType.moTa 
+
+            const description = roomType.moTa
                 ? (roomType.moTa.length > 50 ? roomType.moTa.substring(0, 50) + '...' : roomType.moTa)
                 : 'Không có mô tả';
-            
-            const redirectUrl = roomType.redirectUrl 
+
+            const redirectUrl = roomType.redirectUrl
                 ? `<a href="${roomType.redirectUrl}" target="_blank" class="text-blue-600 hover:underline">${roomType.redirectUrl.length > 30 ? roomType.redirectUrl.substring(0, 30) + '...' : roomType.redirectUrl}</a>`
                 : 'Không có';
 
@@ -144,21 +144,21 @@ class RoomTypeManagement {
                     </button>
                 </td>
             `;
-            
+
             // Add event listeners to buttons
             const editBtn = row.querySelector('[data-action="edit"]');
             const deleteBtn = row.querySelector('[data-action="delete"]');
-            
+
             editBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.showEditModal(roomType.maTheLoai);
             });
-            
+
             deleteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.showDeleteModal(roomType.maTheLoai, roomType.tenTheLoai);
             });
-            
+
             tbody.appendChild(row);
         });
     }
@@ -184,8 +184,8 @@ class RoomTypeManagement {
         pageRoomTypes.forEach(roomType => {
             const card = document.createElement('div');
             card.className = 'roomtype-card';
-            
-            const imageHtml = roomType.imageBase64 
+
+            const imageHtml = roomType.imageBase64
                 ? `<img src="data:image/jpeg;base64,${roomType.imageBase64}" class="roomtype-card-image" alt="${roomType.tenTheLoai}">`
                 : '';
 
@@ -223,21 +223,21 @@ class RoomTypeManagement {
                     </button>
                 </div>
             `;
-            
+
             // Add event listeners to buttons
             const editBtn = card.querySelector('[data-action="edit"]');
             const deleteBtn = card.querySelector('[data-action="delete"]');
-            
+
             editBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.showEditModal(roomType.maTheLoai);
             });
-            
+
             deleteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.showDeleteModal(roomType.maTheLoai, roomType.tenTheLoai);
             });
-            
+
             container.appendChild(card);
         });
     }
@@ -246,7 +246,7 @@ class RoomTypeManagement {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
 
         this.filteredRoomTypes = this.roomTypes.filter(roomType => {
-            const matchesSearch = !searchTerm || 
+            const matchesSearch = !searchTerm ||
                 roomType.tenTheLoai.toLowerCase().includes(searchTerm) ||
                 (roomType.moTa && roomType.moTa.toLowerCase().includes(searchTerm));
 
@@ -278,17 +278,17 @@ class RoomTypeManagement {
         this.editingRoomTypeId = roomTypeId;
         document.getElementById('modalTitleText').textContent = 'Sửa loại phòng';
         document.getElementById('saveBtnText').textContent = 'Cập nhật';
-        
+
         // Populate form
         document.getElementById('tenTheLoai').value = roomType.tenTheLoai || '';
         document.getElementById('moTa').value = roomType.moTa || '';
         document.getElementById('redirectUrl').value = roomType.redirectUrl || '';
-        
+
         // Show existing image if available
         if (roomType.imageBase64) {
             this.showImagePreview(`data:image/jpeg;base64,${roomType.imageBase64}`);
         }
-        
+
         this.showModal();
     }
 
@@ -302,7 +302,7 @@ class RoomTypeManagement {
         const modal = document.getElementById('roomTypeModal');
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
-        
+
         // Scroll to top of page to ensure modal is fully visible
         setTimeout(() => {
             window.scrollTo({
@@ -310,7 +310,7 @@ class RoomTypeManagement {
                 behavior: 'smooth'
             });
         }, 100);
-        
+
         // Focus on first input after modal is shown and scroll is complete
         setTimeout(() => {
             document.getElementById('tenTheLoai').focus();
@@ -321,7 +321,7 @@ class RoomTypeManagement {
         const modal = document.getElementById('roomTypeModal');
         modal.classList.remove('show');
         document.body.style.overflow = '';
-        
+
         this.clearForm();
         this.clearFieldErrors();
     }
@@ -330,7 +330,7 @@ class RoomTypeManagement {
         const modal = document.getElementById('deleteModal');
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
-        
+
         // Scroll to top of page to ensure modal is fully visible
         setTimeout(() => {
             window.scrollTo({
@@ -344,7 +344,7 @@ class RoomTypeManagement {
         const modal = document.getElementById('deleteModal');
         modal.classList.remove('show');
         document.body.style.overflow = '';
-        
+
         this.deletingRoomTypeId = null;
     }
 
@@ -431,16 +431,16 @@ class RoomTypeManagement {
 
     getFormData() {
         const formData = new FormData();
-        
+
         formData.append('tenTheLoai', document.getElementById('tenTheLoai').value.trim());
         formData.append('moTa', document.getElementById('moTa').value.trim());
         formData.append('redirectUrl', document.getElementById('redirectUrl').value.trim());
-        
+
         const imageFile = document.getElementById('imageFile').files[0];
         if (imageFile) {
             formData.append('imageFile', imageFile);
         }
-        
+
         return formData;
     }
 
@@ -463,7 +463,7 @@ class RoomTypeManagement {
         if (imageFile) {
             const maxSize = 5 * 1024 * 1024; // 5MB
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-            
+
             if (imageFile.size > maxSize) {
                 this.showFieldError('imageFile', 'Kích thước ảnh không được vượt quá 5MB');
                 isValid = false;
@@ -493,7 +493,7 @@ class RoomTypeManagement {
     showFieldError(fieldName, message) {
         const field = document.getElementById(fieldName);
         const errorElement = document.getElementById(fieldName + 'Error');
-        
+
         if (field && errorElement) {
             field.parentElement.classList.add('error');
             errorElement.textContent = message;
@@ -525,7 +525,7 @@ class RoomTypeManagement {
     showImagePreview(src) {
         const preview = document.getElementById('imagePreview');
         const img = document.getElementById('previewImg');
-        
+
         img.src = src;
         preview.style.display = 'block';
     }
@@ -534,7 +534,7 @@ class RoomTypeManagement {
         const preview = document.getElementById('imagePreview');
         const img = document.getElementById('previewImg');
         const fileInput = document.getElementById('imageFile');
-        
+
         preview.style.display = 'none';
         img.src = '';
         fileInput.value = '';
@@ -547,7 +547,7 @@ class RoomTypeManagement {
         const endIndex = Math.min(this.currentPage * this.itemsPerPage, totalItems);
 
         // Update info text
-        document.getElementById('paginationInfo').textContent = 
+        document.getElementById('paginationInfo').textContent =
             `Hiển thị ${totalItems > 0 ? startIndex : 0} - ${endIndex} của ${totalItems} loại phòng`;
 
         // Update navigation buttons
@@ -607,16 +607,16 @@ class RoomTypeManagement {
     showAlert(message, type) {
         const container = document.getElementById('alertContainer');
         const alertId = 'alert-' + Date.now();
-        
+
         const alertHtml = `
             <div id="${alertId}" class="alert alert-${type}">
                 <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
                 ${message}
             </div>
         `;
-        
+
         container.insertAdjacentHTML('beforeend', alertHtml);
-        
+
         // Auto remove after 5 seconds
         setTimeout(() => {
             const alertEl = document.getElementById(alertId);

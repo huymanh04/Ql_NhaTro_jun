@@ -1,0 +1,160 @@
+@{
+    ViewData["Title"] = "Xem Hợp Đồng";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+    .contract-card {
+        max-width: 520px;
+        margin: 48px auto;
+        background: #f8fafc;
+        border-radius: 18px;
+        box-shadow: 0 4px 24px #0002;
+        padding: 0 0 32px 0;
+        overflow: hidden;
+        border: 1px solid #e3e6ea;
+        animation: fadeIn 0.7s;
+    }
+    .contract-header {
+        background: linear-gradient(90deg, #4f8cff 0%, #6ed6ff 100%);
+        color: #fff;
+        padding: 32px 24px 20px 24px;
+        text-align: center;
+    }
+    .contract-header i {
+        font-size: 2.5rem;
+        margin-bottom: 8px;
+    }
+    .contract-header h2 {
+        margin: 0;
+        font-size: 1.7rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    .contract-table {
+        width: 100%;
+        background: #fff;
+        border-radius: 12px;
+        margin: 24px 0 0 0;
+        box-shadow: 0 2px 8px #0001;
+        overflow: hidden;
+        font-size: 1.08rem;
+    }
+    .contract-table th, .contract-table td {
+        padding: 13px 18px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+    .contract-table th {
+        background: #f6f8fa;
+        font-weight: 500;
+        width: 38%;
+        color: #4f8cff;
+        text-align: left;
+    }
+    .contract-table td {
+        color: #222;
+    }
+    .contract-table tr:last-child th, .contract-table tr:last-child td {
+        border-bottom: none;
+    }
+    .contract-row-icon {
+        margin-right: 8px;
+        color: #4f8cff;
+        min-width: 22px;
+        text-align: center;
+    }
+    .contract-status {
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+    .contract-status.active {
+        background: #e6f7e6;
+        color: #1aaf1a;
+    }
+    .contract-status.ended {
+        background: #ffeaea;
+        color: #e74c3c;
+    }
+    .contract-back {
+        display: flex;
+        justify-content: center;
+        margin-top: 28px;
+    }
+    .contract-back .btn {
+        min-width: 160px;
+        font-size: 1.08rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px #0001;
+    }
+    /* Keyframes for fadeIn animation */
+    @@-webkit-keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="contract-card animate-fade-in-up">
+    <div class="contract-header">
+        <i class="fas fa-file-contract"></i>
+        <h2>Thông Tin Hợp Đồng</h2>
+    </div>
+    <div id="contractInfo">
+        <div style="text-align:center;color:#aaa;padding:32px 0;">Đang tải hợp đồng...</div>
+    </div>
+    <div class="contract-back">
+        <a href="/Users/Dashborad" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại Dashboard</a>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    // Lấy roomId từ query string hoặc gán cứng để test
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('roomId') || 1; // Thay 1 bằng id phòng thực tế
+
+    function iconHtml(icon) {
+        return `<span class=\"contract-row-icon\"><i class=\"${icon}\"></i></span>`;
+    }
+
+    async function loadContract() {
+        const infoDiv = document.getElementById('contractInfo');
+        infoDiv.innerHTML = '<div style="text-align:center;color:#aaa;padding:32px 0;">Đang tải hợp đồng...</div>';
+        try {
+            const res = await fetch(`/api/Contract/get-contract-by-room-id/${roomId}`);
+            const result = await res.json();
+            if (result.success && result.data) {
+                const c = result.data;
+                infoDiv.innerHTML = `
+                    <table class=\"contract-table\">
+                        <tr><th>${iconHtml('fas fa-hashtag')} Mã hợp đồng</th><td>${c.contractId ?? ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-door-open')} Phòng</th><td>${c.room?.tenPhong ?? ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-building')} Nhà trọ</th><td>${c.room?.nhaTro?.tenNhaTro ?? ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-calendar-alt')} Ngày bắt đầu</th><td>${c.startDate ? new Date(c.startDate).toLocaleDateString('vi-VN') : ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-calendar-check')} Ngày kết thúc</th><td>${c.endDate ? new Date(c.endDate).toLocaleDateString('vi-VN') : ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-users')} Số người ở</th><td>${c.numberOfTenants ?? ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-motorcycle')} Số xe</th><td>${c.soxe ?? ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-coins')} Tiền đặt cọc</th><td>${c.depositAmount ? c.depositAmount.toLocaleString('vi-VN') + ' đ' : ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-info-circle')} Trạng thái</th><td>${c.isCompleted ? '<span class=\"contract-status ended\">Đã kết thúc</span>' : '<span class=\"contract-status active\">Còn hiệu lực</span>'}</td></tr>
+                        <tr><th>${iconHtml('fas fa-user-friends')} Khách thuê</th><td>${(c.tenants && c.tenants.length > 0) ? c.tenants.map(t => t.hoTen).join(', ') : ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-sticky-note')} Ghi chú</th><td>${c.room?.moTa ?? ''}</td></tr>
+                    </table>
+                `;
+            } else {
+                infoDiv.innerHTML = `<div style=\"color:red;text-align:center;padding:32px 0;\">Không tìm thấy hợp đồng cho phòng này!</div>`;
+            }
+        } catch (e) {
+            infoDiv.innerHTML = `<div style=\"color:red;text-align:center;padding:32px 0;\">Lỗi khi tải hợp đồng!</div>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadContract);
+</script>
+} 

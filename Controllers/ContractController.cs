@@ -31,20 +31,20 @@ namespace Ql_NhaTro_jun.Controllers
                     .Include(c => c.HopDongNguoiThues)
                         .ThenInclude(hn => hn.MaKhachThueNavigation)
                     .Select(c => new ContractDetailDto
-     {
-         ContractId = c.MaHopDong,
-         RoomId = c.MaPhong ?? 0,
-         StartDate = c.NgayBatDau.HasValue
+                    {
+                        ContractId = c.MaHopDong,
+                        RoomId = c.MaPhong ?? 0,
+                        StartDate = c.NgayBatDau.HasValue
              ? c.NgayBatDau.Value.ToDateTime(TimeOnly.MinValue)
              : default(DateTime),
-         EndDate = c.NgayKetThuc.HasValue
+                        EndDate = c.NgayKetThuc.HasValue
              ? c.NgayKetThuc.Value.ToDateTime(TimeOnly.MinValue)
              : default(DateTime),
-         NumberOfTenants = c.SoNguoiO ?? 0,
+                        NumberOfTenants = c.SoNguoiO ?? 0,
                         Soxe = c.SoXe,
                         DepositAmount = c.TienDatCoc ?? 0,
                         IsCompleted = c.DaKetThuc ?? false,
-                        
+
                         // Room Information
                         Room = c.MaPhongNavigation != null ? new RoomInfoDto
                         {
@@ -54,7 +54,7 @@ namespace Ql_NhaTro_jun.Controllers
                             DienTich = c.MaPhongNavigation.DienTich ?? 0,
                             ConTrong = c.MaPhongNavigation.ConTrong ?? false,
                             MoTa = c.MaPhongNavigation.MoTa,
-                            
+
                             // Motel Information
                             NhaTro = c.MaPhongNavigation.MaNhaTroNavigation != null ? new MotelInfoDto
                             {
@@ -62,7 +62,7 @@ namespace Ql_NhaTro_jun.Controllers
                                 TenNhaTro = c.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
                                 DiaChi = c.MaPhongNavigation.MaNhaTroNavigation.DiaChi
                             } : null,
-                            
+
                             // Room Type Information
                             TheLoaiPhong = c.MaPhongNavigation.MaTheLoaiNavigation != null ? new RoomTypeInfoDto
                             {
@@ -71,7 +71,7 @@ namespace Ql_NhaTro_jun.Controllers
                                 MoTa = c.MaPhongNavigation.MaTheLoaiNavigation.MoTa
                             } : null
                         } : null,
-                        
+
                         // Tenant Information
                         Tenants = c.HopDongNguoiThues.Select(hn => new TenantInfoDto
                         {
@@ -80,9 +80,9 @@ namespace Ql_NhaTro_jun.Controllers
                             SoDienThoai = hn.MaKhachThueNavigation.SoDienThoai,
                             Email = hn.MaKhachThueNavigation.Email
                         }).ToList(),
-                        
+
                         TenantIds = c.HopDongNguoiThues.Select(hn => hn.MaKhachThue).ToList()
-     })
+                    })
      .ToListAsync();
 
                 return Ok(ApiResponse<List<ContractDetailDto>>.CreateSuccess(
@@ -127,7 +127,7 @@ namespace Ql_NhaTro_jun.Controllers
                         Soxe = c.SoXe,
                         DepositAmount = c.TienDatCoc ?? 0,
                         IsCompleted = c.DaKetThuc ?? false,
-                        
+
                         // Room Information
                         Room = c.MaPhongNavigation != null ? new RoomInfoDto
                         {
@@ -137,7 +137,7 @@ namespace Ql_NhaTro_jun.Controllers
                             DienTich = c.MaPhongNavigation.DienTich ?? 0,
                             ConTrong = c.MaPhongNavigation.ConTrong ?? false,
                             MoTa = c.MaPhongNavigation.MoTa,
-                            
+
                             // Motel Information
                             NhaTro = c.MaPhongNavigation.MaNhaTroNavigation != null ? new MotelInfoDto
                             {
@@ -145,7 +145,7 @@ namespace Ql_NhaTro_jun.Controllers
                                 TenNhaTro = c.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
                                 DiaChi = c.MaPhongNavigation.MaNhaTroNavigation.DiaChi
                             } : null,
-                            
+
                             // Room Type Information
                             TheLoaiPhong = c.MaPhongNavigation.MaTheLoaiNavigation != null ? new RoomTypeInfoDto
                             {
@@ -154,7 +154,7 @@ namespace Ql_NhaTro_jun.Controllers
                                 MoTa = c.MaPhongNavigation.MaTheLoaiNavigation.MoTa
                             } : null
                         } : null,
-                        
+
                         // Tenant Information
                         Tenants = c.HopDongNguoiThues.Select(hn => new TenantInfoDto
                         {
@@ -163,7 +163,7 @@ namespace Ql_NhaTro_jun.Controllers
                             SoDienThoai = hn.MaKhachThueNavigation.SoDienThoai,
                             Email = hn.MaKhachThueNavigation.Email
                         }).ToList(),
-                        
+
                         // Bills Information
                         HoaDonTongs = c.HoaDonTongs.Select(hd => new BillInfoDto
                         {
@@ -172,7 +172,7 @@ namespace Ql_NhaTro_jun.Controllers
                             TongTien = hd.TongTien ?? 0,
                             GhiChu = hd.GhiChu
                         }).ToList(),
-                        
+
                         TenantIds = c.HopDongNguoiThues.Select(hn => hn.MaKhachThue).ToList()
                     })
                     .FirstOrDefaultAsync();
@@ -221,7 +221,7 @@ namespace Ql_NhaTro_jun.Controllers
                         Soxe = c.SoXe,
                         DepositAmount = c.TienDatCoc ?? 0,
                         IsCompleted = c.DaKetThuc ?? false,
-                        
+
                         // Room Information
                         Room = c.MaPhongNavigation != null ? new RoomInfoDto
                         {
@@ -231,7 +231,7 @@ namespace Ql_NhaTro_jun.Controllers
                             DienTich = c.MaPhongNavigation.DienTich ?? 0,
                             ConTrong = c.MaPhongNavigation.ConTrong ?? false,
                             MoTa = c.MaPhongNavigation.MoTa,
-                            
+
                             // Motel Information
                             NhaTro = c.MaPhongNavigation.MaNhaTroNavigation != null ? new MotelInfoDto
                             {
@@ -239,7 +239,7 @@ namespace Ql_NhaTro_jun.Controllers
                                 TenNhaTro = c.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
                                 DiaChi = c.MaPhongNavigation.MaNhaTroNavigation.DiaChi
                             } : null,
-                            
+
                             // Room Type Information
                             TheLoaiPhong = c.MaPhongNavigation.MaTheLoaiNavigation != null ? new RoomTypeInfoDto
                             {
@@ -248,7 +248,7 @@ namespace Ql_NhaTro_jun.Controllers
                                 MoTa = c.MaPhongNavigation.MaTheLoaiNavigation.MoTa
                             } : null
                         } : null,
-                        
+
                         // Tenant Information
                         Tenants = c.HopDongNguoiThues.Select(hn => new TenantInfoDto
                         {
@@ -257,7 +257,7 @@ namespace Ql_NhaTro_jun.Controllers
                             SoDienThoai = hn.MaKhachThueNavigation.SoDienThoai,
                             Email = hn.MaKhachThueNavigation.Email
                         }).ToList(),
-                        
+
                         TenantIds = c.HopDongNguoiThues.Select(hn => hn.MaKhachThue).ToList()
                     })
                     .FirstOrDefaultAsync();
@@ -350,7 +350,7 @@ namespace Ql_NhaTro_jun.Controllers
                     SoNuoc = 0,
                     DonGiaDien = tienDien,
                     DonGiaNuoc = tienNuoc,
-                    TongTien = 0,
+                    TongTien = model.DepositAmount,
                     DaThanhToan = true
                 };
                 _context.HoaDonTienIches.Add(hoaDonTienIch);
@@ -361,7 +361,7 @@ namespace Ql_NhaTro_jun.Controllers
                 {
                     MaHopDong = contract.MaHopDong,  // FK đến hợp đồng vừa tạo
                     NgayXuat = DateOnly.FromDateTime(DateTime.Today),
-                    TongTien = tienPhong,
+                    TongTien = model.DepositAmount,
                     GhiChu = "Đóng tiền cọc tháng đầu tiên. Chưa có hóa đơn tiện ích cụ thể. " +
                              "Hóa đơn tiện ích sẽ được tạo sau khi có số liệu điện nước.",
                 };
@@ -403,7 +403,7 @@ namespace Ql_NhaTro_jun.Controllers
                 var contract = await _context.HopDongs.FindAsync(id);
                 if (contract == null)
                     return NotFound(ApiResponse<object>.CreateError("Hợp đồng không tồn tại"));
-                
+
                 if (model != null && !xoangdung)
                 {
                     contract.NgayKetThuc = DateOnly.FromDateTime(model.EndDate);
@@ -576,7 +576,7 @@ namespace Ql_NhaTro_jun.Controllers
                     Soxe = c.SoXe,
                     DepositAmount = c.TienDatCoc ?? 0,
                     IsCompleted = c.DaKetThuc ?? false,
-                    
+
                     Room = c.MaPhongNavigation != null ? new RoomInfoDto
                     {
                         MaPhong = c.MaPhongNavigation.MaPhong,
@@ -585,14 +585,14 @@ namespace Ql_NhaTro_jun.Controllers
                         DienTich = c.MaPhongNavigation.DienTich ?? 0,
                         ConTrong = c.MaPhongNavigation.ConTrong ?? false,
                         MoTa = c.MaPhongNavigation.MoTa,
-                        
+
                         NhaTro = c.MaPhongNavigation.MaNhaTroNavigation != null ? new MotelInfoDto
                         {
                             MaNhaTro = c.MaPhongNavigation.MaNhaTroNavigation.MaNhaTro,
                             TenNhaTro = c.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
                             DiaChi = c.MaPhongNavigation.MaNhaTroNavigation.DiaChi
                         } : null,
-                        
+
                         TheLoaiPhong = c.MaPhongNavigation.MaTheLoaiNavigation != null ? new RoomTypeInfoDto
                         {
                             MaTheLoai = c.MaPhongNavigation.MaTheLoaiNavigation.MaTheLoai,
@@ -600,7 +600,7 @@ namespace Ql_NhaTro_jun.Controllers
                             MoTa = c.MaPhongNavigation.MaTheLoaiNavigation.MoTa
                         } : null
                     } : null,
-                    
+
                     Tenants = c.HopDongNguoiThues.Select(hn => new TenantInfoDto
                     {
                         MaKhachThue = hn.MaKhachThue,
@@ -608,7 +608,7 @@ namespace Ql_NhaTro_jun.Controllers
                         SoDienThoai = hn.MaKhachThueNavigation.SoDienThoai,
                         Email = hn.MaKhachThueNavigation.Email
                     }).ToList(),
-                    
+
                     HoaDonTongs = c.HoaDonTongs.Select(hd => new BillInfoDto
                     {
                         MaHoaDon = hd.MaHoaDon,
@@ -616,7 +616,7 @@ namespace Ql_NhaTro_jun.Controllers
                         TongTien = hd.TongTien ?? 0,
                         GhiChu = hd.GhiChu
                     }).ToList(),
-                    
+
                     TenantIds = c.HopDongNguoiThues.Select(hn => hn.MaKhachThue).ToList()
                 })
                 .FirstOrDefaultAsync();
@@ -634,7 +634,7 @@ namespace Ql_NhaTro_jun.Controllers
             public decimal DepositAmount { get; set; }       // TienDatCoc
             public bool IsCompleted { get; set; }            // DaKetThuc
             public List<int> TenantIds { get; set; } = new List<int>();
-            
+
             // Related Information
             public RoomInfoDto Room { get; set; }
             public List<TenantInfoDto> Tenants { get; set; } = new List<TenantInfoDto>();

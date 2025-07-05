@@ -533,10 +533,7 @@
     padding: 1.5rem;
     border-bottom: none;
     position: relative;
-    background: linear-gradient(135deg, 
-        #667eea 0%, 
-        #764ba2 50%, 
-        #f093fb 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: white;
     flex-shrink: 0;
     border-radius: 16px 16px 0 0;
@@ -862,7 +859,10 @@
     .account-management-container {
         padding: 2rem;
     }
-    
+    .modal-overlay.active .modal-content {
+        margin: auto;
+        margin-left: 0px;
+    }
     .page-header {
         padding: 2rem;
         border-radius: 20px;
@@ -921,7 +921,10 @@
     .page-title {
         font-size: 1.25rem;
     }
-    
+    .modal-content {
+        margin: auto;
+        margin-left: 0px;
+    }
     .header-content {
         flex-direction: column;
         align-items: flex-start;
@@ -970,7 +973,10 @@
     .account-management-container {
         padding: 0.75rem;
     }
-    
+    .modal-overlay.active .modal-content {
+        margin: auto;
+        margin-left: 0px;
+    }
     .page-header {
         padding: 1rem;
         border-radius: 12px;
@@ -1102,7 +1108,10 @@
     .account-management-container {
         padding: 0.5rem;
     }
-    
+    .modal-content {
+        margin: auto;
+        margin-left: 0px;
+    }
     .page-header {
         padding: 0.875rem;
         border-radius: 10px;
@@ -1366,7 +1375,10 @@
     .account-management-container {
         padding: 0.25rem;
     }
-    
+    .modal-overlay.active .modal-content {
+        margin: auto;
+        margin-left: 0px;
+    }
     .page-header,
     .filters-section,
     .table-container,
@@ -1440,7 +1452,10 @@
     .modal-content {
         max-height: calc(100vh - 1rem) !important;
     }
-    
+    .modal-overlay.active .modal-content {
+        margin: auto;
+        margin-left:0px;
+    }
     .modal-body {
         max-height: none !important;
         overflow-y: auto !important;

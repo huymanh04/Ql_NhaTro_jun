@@ -72,6 +72,38 @@ namespace Ql_NhaTro_jun.Models
 
           
             }
+            var homNay = DateOnly.FromDateTime(DateTime.Today);
+
+            // Lấy toàn bộ hợp đồng 1 lần
+            var hopDongs = await _context.HopDongs.ToListAsync();
+
+            // Cập nhật trạng thái kết thúc cho từng hợp đồng
+            foreach (var hd in hopDongs)
+            {
+                hd.DaKetThuc = hd.NgayKetThuc < homNay;
+            }
+
+            // Cập nhật danh sách phòng có hợp đồng còn hiệu lực
+            var danhSachPhongCoHopDongConHieuLuc = hopDongs
+                .Where(h => (bool)!h.DaKetThuc) // Còn hiệu lực
+                .Select(h => h.MaPhong)
+                .Distinct()
+                .ToHashSet();
+
+            // Lấy toàn bộ phòng
+            var tatCaPhong = await _context.PhongTros.ToListAsync();
+
+            foreach (var phong in tatCaPhong)
+            {
+                phong.ConTrong = !danhSachPhongCoHopDongConHieuLuc.Contains(phong.MaPhong);
+            }
+
+            // Cập nhật và lưu thay đổi
+            _context.HopDongs.UpdateRange(hopDongs);
+            _context.PhongTros.UpdateRange(tatCaPhong);
+
+            await _context.SaveChangesAsync();
+
             JunTech.caidat = await _context.CaiDatHeThongs.FirstOrDefaultAsync();
             await _next(context);
         }

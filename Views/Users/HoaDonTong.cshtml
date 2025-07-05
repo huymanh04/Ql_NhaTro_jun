@@ -1,0 +1,825 @@
+@{
+    ViewData["Title"] = "Hóa Đơn Chi Tiết";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    /* Sử dụng màu chủ đạo của layout admin */
+    :root {
+        --primary: #4a90a4;
+        --primary-light: #5aa3b8;
+        --primary-dark: #2c5f6f;
+        --accent: #f59e0b;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --info: #06b6d4;
+        --light: #f8fafc;
+        --white: #ffffff;
+        --dark: #1e293b;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --border-radius: 12px;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+
+    .hoadon-container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .hoadon-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: var(--white);
+        padding: 40px 30px;
+        border-radius: var(--border-radius);
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: var(--shadow-xl);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hoadon-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        pointer-events: none;
+        opacity: 0.3;
+    }
+
+    .hoadon-header h2 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hoadon-header p {
+        margin: 15px 0 0 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hoadon-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        margin-bottom: 25px;
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+    }
+
+    .hoadon-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .hoadon-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .hoadon-table th {
+        background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+        color: var(--gray-700);
+        font-weight: 600;
+        padding: 18px 15px;
+        text-align: center;
+        border-bottom: 2px solid var(--gray-200);
+        font-size: 0.95rem;
+        position: relative;
+    }
+
+    .hoadon-table th::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+        transition: width 0.3s ease;
+    }
+
+    .hoadon-table th:hover::after {
+        width: 80%;
+    }
+
+    .hoadon-table td {
+        padding: 15px;
+        text-align: center;
+        border-bottom: 1px solid var(--gray-100);
+        vertical-align: middle;
+        transition: background-color 0.2s ease;
+    }
+
+    .hoadon-table tr:hover {
+        background-color: var(--gray-50);
+    }
+
+    .hoadon-table tr:hover td {
+        background-color: var(--gray-50);
+    }
+
+    .hoadon-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+        min-width: 120px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .status-paid {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: var(--white);
+    }
+
+    .status-unpaid {
+        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        color: var(--white);
+    }
+
+    .amount {
+        font-weight: 700;
+        color: var(--gray-800);
+        font-size: 1.05rem;
+    }
+
+    .room-info {
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+        padding: 25px;
+        border-radius: var(--border-radius);
+        margin-bottom: 25px;
+        text-align: center;
+        color: var(--white);
+        box-shadow: var(--shadow-lg);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .room-info::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        pointer-events: none;
+        opacity: 0.2;
+    }
+
+    .room-info h4 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .loading-container {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--gray-500);
+    }
+
+    .loading-spinner {
+        border: 4px solid var(--gray-200);
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 25px;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .error-container {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--danger);
+    }
+
+    .error-icon {
+        font-size: 4rem;
+        margin-bottom: 25px;
+        opacity: 0.7;
+    }
+
+    .empty-container {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--gray-500);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 25px;
+        opacity: 0.5;
+    }
+
+    .btn-print {
+        background: linear-gradient(135deg, var(--info) 0%, #0891b2 100%);
+        color: var(--white);
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-print:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+    }
+
+    .btn-print:active {
+        transform: translateY(0);
+    }
+    
+    /* Print Modal Styles */
+    .print-modal .modal-dialog {
+        max-width: 950px;
+        width: 100%;
+    }
+
+    .print-modal .modal-content {
+        min-height: unset;
+        height: auto;
+    }
+
+    .print-modal .modal-body {
+        overflow: visible !important;
+        padding: 0 !important;
+        background: #fff;
+    }
+
+    .print-header {
+        text-align: center;
+        border-bottom: 2px solid var(--gray-200);
+        padding-bottom: 25px;
+        margin-bottom: 25px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: var(--white);
+        padding: 30px;
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        margin: -1rem -1rem 25px -1rem;
+    }
+
+    .print-header h3 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .print-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+
+    .print-info-item {
+        background: var(--gray-50);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--gray-200);
+    }
+
+    .print-info-item h5 {
+        margin: 0 0 15px 0;
+        color: var(--gray-700);
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .print-info-item p {
+        margin: 0;
+        font-weight: 600;
+        color: var(--gray-800);
+        font-size: 1.05rem;
+    }
+
+    .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 25px;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .print-table th,
+    .print-table td {
+        border: 1px solid var(--gray-200);
+        padding: 12px;
+        text-align: center;
+    }
+
+    .print-table th {
+        background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+        font-weight: 600;
+        color: var(--gray-700);
+    }
+
+    .print-total {
+        text-align: right;
+        margin-top: 25px;
+        padding: 20px;
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+        border-radius: var(--border-radius);
+        color: var(--white);
+    }
+
+    .print-total h4 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .print-actions {
+        text-align: center;
+        margin-top: 25px;
+        padding-top: 25px;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .btn-print-modal {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: var(--white);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin: 0 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-print-modal:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+
+    .btn-close-modal {
+        background: linear-gradient(135deg, var(--gray-500) 0%, var(--gray-600) 100%);
+        color: var(--white);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin: 0 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-close-modal:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        background: linear-gradient(135deg, var(--gray-600) 0%, var(--gray-700) 100%);
+    }
+    
+    @@media (max-width: 768px) {
+        .hoadon-container {
+            padding: 0 5px;
+        }
+        .hoadon-header {
+            padding: 18px 5px;
+        }
+        .hoadon-header h2 {
+            font-size: 1.2rem;
+        }
+        .hoadon-table {
+            font-size: 0.85rem;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .hoadon-table th, .hoadon-table td {
+            padding: 7px 5px;
+        }
+        .room-info {
+            padding: 12px 5px;
+            font-size: 0.95rem;
+        }
+        .print-modal .modal-dialog {
+            max-width: 98vw;
+            margin: 0;
+        }
+        .print-header {
+            padding: 15px 5px;
+            font-size: 1rem;
+        }
+        .print-info {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .print-info-item {
+            padding: 10px 5px;
+            font-size: 0.95rem;
+        }
+        .print-table th, .print-table td {
+            padding: 7px 5px;
+            font-size: 0.9rem;
+        }
+        .print-total {
+            padding: 10px 5px;
+            font-size: 1rem;
+        }
+        .btn-print, .btn-print-modal, .btn-close-modal {
+            padding: 6px 10px;
+            font-size: 0.85rem;
+        }
+    }
+    
+    /* Ẩn hoàn toàn backdrop khi modal mở */
+    .modal-backdrop,
+    .modal-backdrop.show,
+    .modal-backdrop.fade {
+        opacity: 0 !important;
+        background: transparent !important;
+        z-index: 0 !important;
+        display: none !important;
+    }
+    .print-modal {
+        z-index: 9999 !important;
+    }
+    .print-modal .modal-dialog {
+        z-index: 10000 !important;
+    }
+    
+    @@media print {
+        body *:not(#mini-bill):not(#mini-bill *) {
+            display: none !important;
+        }
+        #mini-bill {
+            display: block !important;
+            margin: 0 auto !important;
+            box-shadow: none !important;
+            border: none !important;
+            width: 100% !important;
+            max-width: 320px !important;
+            font-size: 1.1rem !important;
+        }
+    }
+
+    /* Animation cho các element */
+    .animate-fade-in {
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .table-row-animate {
+        animation: slideInRight 0.5s ease-out;
+    }
+
+    @@keyframes slideInRight {
+        from { opacity: 0; transform: translateX(30px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .bill-print-beautiful {
+        max-width: 800px;
+        margin: 30px auto;
+        box-shadow: 0 0 16px #0002;
+        border: 2px solid #000;
+        background: #fff;
+    }
+    .bill-header-beautiful {
+        text-align: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+    .company-name {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0 0 10px 0;
+        color: #000;
+    }
+    .company-address, .company-contact, .company-website {
+        margin: 5px 0;
+        font-size: 14px;
+    }
+    .bill-title-beautiful h2 {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 15px 0 10px 0;
+        text-transform: uppercase;
+    }
+    .bill-number, .bill-date {
+        margin: 5px 0;
+        font-weight: bold;
+    }
+    .customer-info-beautiful {
+        margin-bottom: 20px;
+    }
+    .info-section {
+        margin-bottom: 15px;
+    }
+    .info-section h3 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #000;
+        padding-bottom: 5px;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+    }
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+    }
+    .label {
+        font-weight: bold;
+        min-width: 120px;
+    }
+    .bill-details-beautiful h3 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #000;
+        padding-bottom: 5px;
+    }
+    .bill-table-beautiful {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    .bill-table-beautiful th,
+    .bill-table-beautiful td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: center;
+    }
+    .bill-table-beautiful th {
+        background-color: #f0f0f0;
+        font-weight: bold;
+    }
+    .bill-table-beautiful td:first-child {
+        text-align: left;
+    }
+    .bill-total-beautiful {
+        text-align: right;
+        margin-bottom: 20px;
+    }
+    .total-row {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .total-amount {
+        font-size: 20px;
+        color: #000;
+    }
+    .payment-status {
+        margin-top: 10px;
+    }
+    .status-value.paid {
+        color: #28a745;
+        font-weight: bold;
+    }
+    .status-value.unpaid {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    .bill-footer-beautiful {
+        margin-top: 30px;
+    }
+    .signature-section {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .signature-box {
+        text-align: center;
+        width: 45%;
+    }
+    .signature-line {
+        border-top: 1px solid #000;
+        margin-top: 40px;
+    }
+    .note-section {
+        border-top: 1px solid #000;
+        padding-top: 15px;
+    }
+    .note-section ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+    .note-section li {
+        margin-bottom: 5px;
+    }
+    @@media print {
+        body *:not(.bill-print-beautiful):not(.bill-print-beautiful *) {
+            display: none !important;
+        }
+        .bill-print-beautiful {
+            display: block !important;
+            margin: 0 auto !important;
+            box-shadow: none !important;
+            border: 2px solid #000 !important;
+            width: 100% !important;
+            max-width: 800px !important;
+            font-size: 1.1rem !important;
+            background: #fff !important;
+        }
+    }
+</style>
+
+<div class="hoadon-container animate-fade-in">
+    <div class="hoadon-header">
+        <h2><i class="fas fa-file-invoice-dollar"></i> Hóa Đơn Chi Tiết</h2>
+        <p>Xem chi tiết các hóa đơn tiện ích của phòng</p>
+    </div>
+
+    <div id="loading-container" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Đang tải dữ liệu hóa đơn...</p>
+    </div>
+
+    <div id="content-container" style="display: none;">
+        <div id="room-info" class="room-info">
+            <h4><i class="fas fa-home"></i> <span id="room-name">Phòng</span></h4>
+        </div>
+        
+        <div class="hoadon-card">
+            <div class="table-responsive">
+                <table class="hoadon-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> Mã HĐ</th>
+                            <th><i class="fas fa-home"></i> Phòng</th>
+                            <th><i class="fas fa-calendar"></i> Tháng/Năm</th>
+                            <th><i class="fas fa-bolt"></i> TIền điện</th>
+                            <th><i class="fas fa-tint"></i> Tiền nước</th>
+                            <th><i class="fas fa-tools"></i> Phí DV</th>
+                            <th><i class="fas fa-motorcycle"></i> Tiền giữ xe</th>
+                            <th><i class="fas fa-money-bill-wave"></i> Tổng Tiền</th>
+                            <th><i class="fas fa-info-circle"></i> Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hoadon-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="error-container" class="error-container" style="display: none;">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h4>Không thể tải dữ liệu</h4>
+        <p id="error-message">Đã xảy ra lỗi khi tải hóa đơn</p>
+        <button class="btn btn-primary" onclick="loadHoaDon()">
+            <i class="fas fa-redo"></i> Thử lại
+        </button>
+    </div>
+
+    <div id="empty-container" class="empty-container" style="display: none;">
+        <div class="empty-icon">
+            <i class="fas fa-inbox"></i>
+        </div>
+        <h4>Chưa có hóa đơn nào</h4>
+        <p>Bạn chưa có hóa đơn tiện ích nào được tạo</p>
+    </div>
+</div>
+
+@section scripts {
+<script>
+// Khai báo biến JunTech với id từ backend
+var JunTech = { id: @(ViewBag.UserId ?? 0) };
+console.log('ViewBag.UserId:', @(ViewBag.UserId ?? 0));
+console.log('JunTech ID:', JunTech.id);
+console.log('JunTech object:', JunTech);
+
+let currentHoaDon = null;
+
+async function loadHoaDon() {
+    const loadingContainer = document.getElementById('loading-container');
+    const contentContainer = document.getElementById('content-container');
+    const errorContainer = document.getElementById('error-container');
+    const emptyContainer = document.getElementById('empty-container');
+    
+    // Hiển thị loading
+    loadingContainer.style.display = 'block';
+    contentContainer.style.display = 'none';
+    errorContainer.style.display = 'none';
+    emptyContainer.style.display = 'none';
+    
+    try {
+        // Sử dụng JunTech.id để lấy hóa đơn của khách hàng đang đăng nhập
+        const apiUrl = `/api/UtilityBill/get-hoa-don-by-khach-hang/${JunTech.id}`;
+        console.log('Calling API:', apiUrl);
+        const response = await fetch(apiUrl);
+        console.log('Response status:', response.status);
+        const result = await response.json();
+        console.log('API result:', result);
+        
+        if (result.success && result.data && result.data.length > 0) {
+            const hoaDons = result.data;
+            
+            // Cập nhật tên phòng (lấy từ hóa đơn đầu tiên)
+            const roomNames = [...new Set(hoaDons.map(hd => hd.tenPhong))];
+            document.getElementById('room-name').textContent = roomNames.join(', ');
+            
+            // Tạo bảng hóa đơn
+            const tbody = document.getElementById('hoadon-tbody');
+            tbody.innerHTML = hoaDons.map((hd, index) => `
+                <tr class="table-row-animate" style="animation-delay: ${index * 0.1}s;">
+                    <td><strong>#${hd.maHoaDon}</strong></td>
+                    <td>${hd.tenPhong}</td>
+                    <td>${hd.thang}/${hd.nam}</td>
+                    <td>${hd.soDien || 0}</td>
+                    <td>${hd.soNuoc || 0}</td>
+                    <td class="amount">${hd.phidv ? hd.phidv.toLocaleString('vi-VN') + ' đ' : '0 đ'}</td>
+                                       <td>
+                  ${Number(hd.soxe ?? 0) * Number(hd.DonGiaDien ?? 0)}
+        </td>
+
+                    <td class="amount">${hd.tongTien ? hd.tongTien.toLocaleString('vi-VN') + ' đ' : '0 đ'}</td>
+                    <td>
+                        <span class="status-badge ${hd.daThanhToan ? 'status-paid' : 'status-unpaid'}">
+                            ${hd.daThanhToan ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Hiển thị nội dung
+            loadingContainer.style.display = 'none';
+            contentContainer.style.display = 'block';
+            
+        } else {
+            // Hiển thị thông báo lỗi từ API
+            const errorMessage = result.message || 'Không có hóa đơn nào';
+            document.getElementById('error-message').textContent = errorMessage;
+            
+            loadingContainer.style.display = 'none';
+            errorContainer.style.display = 'block';
+        }
+        
+    } catch (error) {
+        console.error('Error loading hóa đơn:', error);
+        
+        loadingContainer.style.display = 'none';
+        errorContainer.style.display = 'block';
+        document.getElementById('error-message').textContent = 'Lỗi kết nối mạng';
+    }
+}
+
+// Tự động load khi trang được tải
+document.addEventListener('DOMContentLoaded', loadHoaDon);
+</script>
+}

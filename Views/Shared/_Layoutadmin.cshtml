@@ -37,7 +37,8 @@
     <link href="~/css/responsive-enhancements.css?@DateTime.Now" rel="stylesheet">
     <link href="~/css/admin.css?@DateTime.Now" rel="stylesheet">
     <link href="~/css/dashboard.css?@DateTime.Now" rel="stylesheet">
-    
+    @await RenderSectionAsync("Styles", required: false)
+    @RenderSection("head", required: false)
     <!-- Toastr & SweetAlert2 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -99,14 +100,14 @@
                         </a>
                     </li>
 
-                    @if (role == "0")
+                    @if (role.ToString() == "0")
                     {
                         <!-- Menu cho Khách hàng -->
                         <li class="menu-section">
                             <span class="menu-section-title">Khách hàng</span>
                         </li>
                         <li role="none">
-                            <a href="@Url.Action("add_monny", "addmony")" role="menuitem">
+                            <a href="@Url.Action("HoaDonTong", "Users")" role="menuitem">
                                 <div class="menu-icon-wrapper">
                                     <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i>
                                 </div>
@@ -114,15 +115,31 @@
                             </a>
                         </li>
                         <li role="none">
-                            <a href="@Url.Action("Index", "Banking")" role="menuitem">
+                            <a href="@Url.Action("Contract", "Users")" role="menuitem">
                                 <div class="menu-icon-wrapper">
                                     <i class="fas fa-file-contract" aria-hidden="true"></i>
                                 </div>
                                 <span>Xem Hợp Đồng</span>
                             </a>
                         </li>
+                        <li role="none">
+                            <a href="@Url.Action("Denbu", "Users")" role="menuitem">
+                                <div class="menu-icon-wrapper">
+                                    <i class="fas fa-hand-holding-usd" aria-hidden="true"></i>
+                                </div>
+                                <span>Đền bù của tôi</span>
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="@Url.Action("Chatbot", "Home")" role="menuitem">
+                                <div class="menu-icon-wrapper">
+                                    <i class="fas fa-comments" aria-hidden="true"></i>
+                                </div>
+                                <span>Hòm thư</span>
+                            </a>
+                        </li>
                     }
-                    @if (role != "0")
+                    @if (role.ToString() != "0")
                     {
                         <!-- Menu cho Admin/Quản lý -->
                         <li class="menu-section">
@@ -210,11 +227,19 @@
                             </a>
                         </li>
                         <li role="none">
-                            <a href="@Url.Action("Index", "Vouchers")" role="menuitem">
+                            <a href="@Url.Action("Banner", "NguoiDungs")" role="menuitem">
+                                <div class="menu-icon-wrapper">
+                                    <i class="fas fa-tag" aria-hidden="true"></i>
+                                </div>
+                                <span>Quản lý Banner</span>
+                            </a>
+                        </li>
+                        <li role="none">
+                            <a href="@Url.Action("Chatbot", "Home")" role="menuitem">
                                 <div class="menu-icon-wrapper">
                                     <i class="fas fa-comments" aria-hidden="true"></i>
                                 </div>
-                                <span>Quản lý Tin Nhắn</span>
+                                <span>Hòm thư</span>
                             </a>
                         </li>
                     }
@@ -242,7 +267,9 @@
         <main id="content" role="main">
             <!-- Top Navbar -->
             <nav class="navbar navbar-expand" role="navigation" aria-label="Top navigation">
-                <div class="container-fluid">
+                <div class="container-fluid" style="
+    margin-left: 0px;
+">
                     <button type="button" id="sidebarCollapse" class="btn" aria-label="Toggle sidebar" aria-expanded="false">
                         <i class="fas fa-bars" aria-hidden="true"></i>
                     </button>

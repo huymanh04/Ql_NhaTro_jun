@@ -186,6 +186,117 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+        [HttpGet("get-denbu-by-user/{userId}")]
+        public async Task<IActionResult> GetDenbuByUser(int userId)
+        {
+            try
+            {
+                // Lấy tất cả hợp đồng của người dùng
+                var hopDongIds = await _context.HopDongNguoiThues
+                    .Where(h => h.MaKhachThue == userId)
+                    .Select(h => h.MaHopDong)
+                    .ToListAsync();
+
+                if (!hopDongIds.Any())
+                {
+                    return Ok(ApiResponse<List<CompensationDto>>.CreateSuccess(
+                        "Người dùng chưa có hợp đồng thuê trọ",
+                        new List<CompensationDto>()
+                    ));
+                }
+
+                var denbus = await _context.DenBus
+                    .Include(d => d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation)
+                    .Where(d => hopDongIds.Contains(d.MaHopDong ?? 0))
+                    .Select(d => new CompensationDto
+                    {
+                        MaDenBu = d.MaDenBu,
+                        MaHopDong = d.MaHopDong ?? 0,
+                        NoiDung = d.NoiDung,
+                        SoTien = d.SoTien ?? 0,
+                        Nhatro = d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
+                        NgayTao = d.NgayTao ?? default(DateTime)
+                    })
+                    .OrderByDescending(d => d.NgayTao)
+                    .ToListAsync();
+
+                return Ok(ApiResponse<List<CompensationDto>>.CreateSuccess(
+                    "Lấy danh sách đền bù thành công",
+                    denbus
+                ));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách đền bù theo người dùng");
+                return StatusCode(500, ApiResponse<object>.CreateError(
+                    "Đã xảy ra lỗi khi lấy danh sách đền bù"
+                ));
+            }
+        }
+        [HttpGet("get-my-denbu")]
+        public async Task<IActionResult> GetMyDenbu()
+        {
+            try
+            {
+                // Lấy thông tin user hiện tại
+                var userName = User.Identity.Name;
+                if (userName == null)
+                {
+                    return Unauthorized(ApiResponse<object>.CreateError("Bạn chưa đăng nhập"));
+                }
+
+                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
+                if (user == null)
+                {
+                    user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
+                }
+                if (user == null)
+                {
+                    return Unauthorized(ApiResponse<object>.CreateError("Người dùng không tồn tại"));
+                }
+
+                // Lấy tất cả hợp đồng của người dùng
+                var hopDongIds = await _context.HopDongNguoiThues
+                    .Where(h => h.MaKhachThue == user.MaNguoiDung)
+                    .Select(h => h.MaHopDong)
+                    .ToListAsync();
+
+                if (!hopDongIds.Any())
+                {
+                    return Ok(ApiResponse<List<CompensationDto>>.CreateSuccess(
+                        "Bạn chưa có hợp đồng thuê trọ nào",
+                        new List<CompensationDto>()
+                    ));
+                }
+
+                var denbus = await _context.DenBus
+                    .Include(d => d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation)
+                    .Where(d => hopDongIds.Contains(d.MaHopDong ?? 0))
+                    .Select(d => new CompensationDto
+                    {
+                        MaDenBu = d.MaDenBu,
+                        MaHopDong = d.MaHopDong ?? 0,
+                        NoiDung = d.NoiDung,
+                        SoTien = d.SoTien ?? 0,
+                        Nhatro = d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
+                        NgayTao = d.NgayTao ?? default(DateTime)
+                    })
+                    .OrderByDescending(d => d.NgayTao)
+                    .ToListAsync();
+
+                return Ok(ApiResponse<List<CompensationDto>>.CreateSuccess(
+                    "Lấy danh sách đền bù thành công",
+                    denbus
+                ));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách đền bù của user hiện tại");
+                return StatusCode(500, ApiResponse<object>.CreateError(
+                    "Đã xảy ra lỗi khi lấy danh sách đền bù"
+                ));
+            }
+        }
         public class CompensationCreateDto
         {
             public int MaHopDong { get; set; }              // MaHopDong

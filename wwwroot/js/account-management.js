@@ -12,7 +12,7 @@ class AccountManager {
         this.currentUserForRole = null;
         this.currentUserForDelete = null;
         this.scrollPosition = 0;
-        
+
         this.init();
     }
 
@@ -87,7 +87,7 @@ class AccountManager {
                 const userId = button.getAttribute('data-user-id');
                 const userName = button.getAttribute('data-user-name');
                 const userRole = button.getAttribute('data-user-role');
-                
+
                 if (userId && userName) {
                     this.openRoleModal(parseInt(userId), userName, userRole);
                 }
@@ -95,7 +95,7 @@ class AccountManager {
                 const button = e.target.closest('.btn-delete');
                 const userId = button.getAttribute('data-user-id');
                 const userName = button.getAttribute('data-user-name');
-                
+
                 if (userId && userName) {
                     this.openDeleteModal(parseInt(userId), userName);
                 }
@@ -105,7 +105,7 @@ class AccountManager {
 
     async loadUsers() {
         this.showLoading(true);
-        
+
         try {
             const params = new URLSearchParams({
                 page: this.currentPage,
@@ -125,7 +125,7 @@ class AccountManager {
                 this.totalUsers = data.data.totalUsers;
                 this.totalPages = data.data.totalPages;
                 this.currentPage = data.data.currentPage;
-                
+
                 this.renderUsers();
                 this.renderPagination();
             } else {
@@ -143,7 +143,7 @@ class AccountManager {
         const tbody = document.getElementById('usersTableBody');
         const emptyState = document.getElementById('emptyState');
         const tableContainer = document.querySelector('.table-container');
-        
+
         if (!tbody || !tableContainer) return;
 
         if (this.users.length === 0) {
@@ -162,7 +162,7 @@ class AccountManager {
         tbody.innerHTML = this.users.map((user, index) => {
             // Calculate STT (số thứ tự)
             const stt = startIndex + index + 1;
-            
+
             return `
                 <tr>
                     <td data-label="STT"><strong>${stt}</strong></td>
@@ -211,10 +211,10 @@ class AccountManager {
 
         mobileContainer.innerHTML = this.users.map((user, index) => {
             const initials = user.hoTen.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-            
+
             // Calculate STT (số thứ tự)
             const stt = startIndex + index + 1;
-            
+
             return `
                 <div class="user-card">
                     <div class="user-card-header">
@@ -273,7 +273,7 @@ class AccountManager {
     renderPagination() {
         const paginationInfo = document.getElementById('paginationInfo');
         const paginationControls = document.getElementById('paginationControls');
-        
+
         if (!paginationInfo || !paginationControls) return;
 
         // Update info
@@ -283,7 +283,7 @@ class AccountManager {
 
         // Generate pagination buttons
         let paginationHTML = '';
-        
+
         // Previous button
         paginationHTML += `
             <button class="pagination-btn" ${this.currentPage === 1 ? 'disabled' : ''} 
@@ -296,7 +296,7 @@ class AccountManager {
         const maxVisiblePages = 5;
         let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-        
+
         if (endPage - startPage + 1 < maxVisiblePages) {
             startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
@@ -345,14 +345,14 @@ class AccountManager {
     openCreateModal() {
         this.currentUserId = null;
         this.resetForm();
-        
+
         document.getElementById('modalTitle').textContent = 'Tạo tài khoản mới';
         document.getElementById('passwordRequired').style.display = 'inline';
         document.getElementById('passwordHint').style.display = 'none';
         document.getElementById('matKhau').required = true;
-        
+
         this.showModal('userModal');
-        
+
         // Force show footer after modal is shown
         setTimeout(() => {
             const modal = document.getElementById('userModal');
@@ -372,9 +372,9 @@ class AccountManager {
             this.showToast('error', 'Lỗi', 'Không thể xác định người dùng cần chỉnh sửa');
             return;
         }
-        
+
         this.currentUserId = userId;
-        
+
         // Find user data
         const user = this.users.find(u => u.maNguoiDung === userId);
         if (!user) {
@@ -406,7 +406,7 @@ class AccountManager {
         if (passwordHintElement) passwordHintElement.style.display = 'block';
 
         this.showModal('userModal');
-        
+
         // Force show footer after modal is shown
         setTimeout(() => {
             const modal = document.getElementById('userModal');
@@ -423,41 +423,41 @@ class AccountManager {
 
     openRoleModal(userId, userName, currentRole) {
         console.log('openRoleModal called with:', { userId, userName, currentRole });
-        
+
         if (!userId || !userName) {
             console.error('Missing userId or userName:', { userId, userName });
             this.showToast('error', 'Lỗi', 'Không thể xác định người dùng cần thay đổi quyền');
             return;
         }
-        
+
         this.currentUserForRole = userId;
         console.log('Set currentUserForRole to:', this.currentUserForRole);
-        
+
         const roleUserNameElement = document.getElementById('roleUserName');
         const newRoleElement = document.getElementById('newRole');
-        
+
         if (roleUserNameElement) {
             roleUserNameElement.textContent = userName;
         }
         if (newRoleElement) {
             newRoleElement.value = currentRole || '0';
         }
-        
+
         this.showModal('roleModal');
     }
 
     openDeleteModal(userId, userName) {
         console.log('openDeleteModal called with:', { userId, userName });
-        
+
         if (!userId || !userName) {
             console.error('Missing userId or userName:', { userId, userName });
             this.showToast('error', 'Lỗi', 'Không thể xác định người dùng cần xóa');
             return;
         }
-        
+
         this.currentUserForDelete = userId;
         console.log('Set currentUserForDelete to:', this.currentUserForDelete);
-        
+
         const deleteUserNameElement = document.getElementById('deleteUserName');
         if (deleteUserNameElement) {
             deleteUserNameElement.textContent = userName;
@@ -523,7 +523,7 @@ class AccountManager {
 
     async confirmRoleChange() {
         console.log('confirmRoleChange called, currentUserForRole:', this.currentUserForRole);
-        
+
         if (!this.currentUserForRole) {
             console.error('No currentUserForRole set');
             this.showToast('error', 'Lỗi', 'Không có người dùng nào được chọn để thay đổi quyền');
@@ -548,20 +548,40 @@ class AccountManager {
             confirmButton.disabled = true;
             confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...';
         }
-        
+
         try {
-            const response = await fetch(`/api/Admin/SetUserRole/${this.currentUserForRole}`, {
-                method: 'PUT',
+            // Find the user to get current data
+            const user = this.users.find(u => u.maNguoiDung === this.currentUserForRole);
+            if (!user) {
+                throw new Error('Không tìm thấy thông tin người dùng');
+            }
+
+            // Update user with new role
+            const updateData = {
+                MaNguoiDung: this.currentUserForRole,
+                hoTen: user.hoTen,
+                email: user.email,
+                soDienThoai: user.soDienThoai,
+                vaiTro: newRole,
+                matKhau: '' // Keep password empty to not change it
+            };
+
+            const response = await fetch('/Update', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ vaiTro: newRole })
+                body: JSON.stringify(updateData)
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
 
             if (data.success) {
-                this.showToast('success', 'Thành công', data.message);
+                this.showToast('success', 'Thành công', 'Đã cập nhật quyền người dùng thành công');
                 this.closeRoleModal();
                 this.loadUsers();
             } else {
@@ -580,7 +600,7 @@ class AccountManager {
 
     async confirmDelete() {
         console.log('confirmDelete called, currentUserForDelete:', this.currentUserForDelete);
-        
+
         if (!this.currentUserForDelete) {
             console.error('No currentUserForDelete set');
             this.showToast('error', 'Lỗi', 'Không có người dùng nào được chọn để xóa');
@@ -702,7 +722,7 @@ class AccountManager {
 
     showModal(modalId) {
         console.log('showModal called for:', modalId);
-        
+
         // Hide only other modals, not the one we're showing
         const allModals = ['userModal', 'roleModal', 'deleteModal'];
         allModals.forEach(id => {
@@ -713,31 +733,31 @@ class AccountManager {
                 }
             }
         });
-        
+
         const modal = document.getElementById(modalId);
         if (modal) {
             // Save current scroll position
             this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-            
+
             // Show the modal using CSS classes
             modal.classList.add('active');
-            
+
             // Prevent background scroll
             document.body.classList.add('modal-open');
             document.body.style.overflow = 'hidden';
             document.body.style.position = 'fixed';
             document.body.style.top = `-${this.scrollPosition}px`;
             document.body.style.width = '100%';
-            
+
             // Force modal to center and show footer
             setTimeout(() => {
                 const modalContent = modal.querySelector('.modal-content');
                 const modalFooter = modal.querySelector('.modal-footer');
-                
+
                 if (modalContent) {
                     modalContent.scrollTop = 0;
                 }
-                
+
                 if (modalFooter) {
                     modalFooter.style.display = 'flex';
                     modalFooter.style.visibility = 'visible';
@@ -753,14 +773,14 @@ class AccountManager {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.remove('active');
-            
+
             // Restore scroll position
             document.body.classList.remove('modal-open');
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.top = '';
             document.body.style.width = '';
-            
+
             // Restore scroll position
             if (this.scrollPosition !== undefined) {
                 window.scrollTo(0, this.scrollPosition);
@@ -778,18 +798,18 @@ class AccountManager {
         console.log('closeRoleModal called, resetting currentUserForRole from:', this.currentUserForRole);
         this.hideModal('roleModal');
         this.currentUserForRole = null;
-        
+
         // Reset confirm button
         const confirmButton = document.querySelector('#roleModal .btn-primary');
         if (confirmButton) {
             confirmButton.disabled = false;
             confirmButton.innerHTML = '<i class="fas fa-check"></i> Xác nhận';
         }
-        
+
         // Clear user name and reset role
         const roleUserNameElement = document.getElementById('roleUserName');
         const newRoleElement = document.getElementById('newRole');
-        
+
         if (roleUserNameElement) {
             roleUserNameElement.textContent = '';
         }
@@ -801,14 +821,14 @@ class AccountManager {
     closeDeleteModal() {
         this.hideModal('deleteModal');
         this.currentUserForDelete = null;
-        
+
         // Reset delete button
         const deleteButton = document.querySelector('#deleteModal .btn-danger');
         if (deleteButton) {
             deleteButton.disabled = false;
             deleteButton.innerHTML = '<i class="fas fa-trash"></i> Xóa';
         }
-        
+
         // Clear user name
         const deleteUserNameElement = document.getElementById('deleteUserName');
         if (deleteUserNameElement) {
@@ -832,14 +852,14 @@ class AccountManager {
                 modal.classList.remove('active');
             }
         });
-        
+
         // Reset body state
         document.body.classList.remove('modal-open');
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
-        
+
         // Only reset variables if explicitly requested (like on init)
         if (resetVariables) {
             this.currentUserId = null;
@@ -863,7 +883,7 @@ class AccountManager {
     togglePassword() {
         const passwordInput = document.getElementById('matKhau');
         const passwordIcon = document.getElementById('passwordIcon');
-        
+
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
             passwordIcon.classList.remove('fa-eye');
@@ -966,7 +986,7 @@ function togglePassword() {
 }
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Force hide all modals immediately
     const modals = document.querySelectorAll('.modal-overlay');
     modals.forEach(modal => {
@@ -975,11 +995,11 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.style.opacity = '0';
         modal.style.visibility = 'hidden';
     });
-    
+
     // Reset body state
     document.body.classList.remove('modal-open');
     document.body.style.overflow = '';
-    
+
     // Initialize account manager
     window.accountManager = new AccountManager();
 });
@@ -998,4 +1018,3 @@ style.textContent = `
         }
     }
 `;
- 

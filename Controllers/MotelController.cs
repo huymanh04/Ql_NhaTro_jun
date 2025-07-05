@@ -4,6 +4,7 @@ using Ql_NhaTro_jun.Models;
 using static Ql_NhaTro_jun.Controllers.LocationController;
 using System.Globalization;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Ql_NhaTro_jun.Controllers
 {
@@ -190,6 +191,8 @@ namespace Ql_NhaTro_jun.Controllers
             }
         }
         #endregion
+       
+
         public class NhaTroDto
         {       
             [Required(ErrorMessage = "Tên nhà trọ là bắt buộc")]

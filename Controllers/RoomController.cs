@@ -44,6 +44,7 @@ namespace Ql_NhaTro_jun.Controllers
                      MoTa = p.MoTa
                  })
                  .ToListAsync();
+               
                 var img = await _context.HinhAnhPhongTros
 
                     .Select(i => new HinhAnhPhongDto
@@ -59,7 +60,7 @@ namespace Ql_NhaTro_jun.Controllers
                     Phong = tinhThanhs,
                     HinhAnh = img
                 };
-
+                await _context.SaveChangesAsync();
                 return Ok(ApiResponse<object>.CreateSuccess("Lấy thành công", result));
             }
             catch (Exception ex)

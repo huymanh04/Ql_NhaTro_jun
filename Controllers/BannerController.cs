@@ -57,12 +57,16 @@ namespace Ql_NhaTro_jun.Controllers
             if (model == null)
                 return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
 
+            // Debug logging
+            _logger.LogInformation("CreateBanner - Received data: Title={Title}, Content={Content}, Text={Text}, RedirectUrl={RedirectUrl}, IsActive={IsActive}", 
+                model.Title, model.Content, model.Text, model.RedirectUrl, model.IsActive);
+
             try
             {
                 var banner = new Banner
                 {
                     Title = model.Title,
-                    Content = model.Content,
+                    Content = model.Content ?? string.Empty,
                     Text = model.Text,
                     RedirectUrl = model.RedirectUrl,
                     IsActive = model.IsActive,
@@ -116,6 +120,10 @@ namespace Ql_NhaTro_jun.Controllers
             if (model == null)
                 return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
 
+            // Debug logging
+            _logger.LogInformation("UpdateBanner - ID={Id}, Received data: Title={Title}, Content={Content}, Text={Text}, RedirectUrl={RedirectUrl}, IsActive={IsActive}", 
+                id, model.Title, model.Content, model.Text, model.RedirectUrl, model.IsActive);
+
             try
             {
                 var banner = await _context.Banners.FindAsync(id);
@@ -124,7 +132,7 @@ namespace Ql_NhaTro_jun.Controllers
 
                 // Cập nhật thông tin
                 banner.Title = model.Title ?? banner.Title;
-                banner.Content = model.Content ?? banner.Content;
+                banner.Content = model.Content ?? string.Empty; // Allow empty content
                 banner.Text = model.Text ?? banner.Text;
                 banner.RedirectUrl = model.RedirectUrl ?? banner.RedirectUrl;
                 banner.IsActive = model.IsActive ?? banner.IsActive;

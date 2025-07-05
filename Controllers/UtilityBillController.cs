@@ -260,12 +260,25 @@ namespace Ql_NhaTro_jun.Controllers
                 var phongs = await _context.PhongTros
                     .Include(p => p.HopDongs)
                     .Where(p => p.HopDongs.Any(h => h.DaKetThuc == false))
-                    .Select(p => new
+                    .Select(p => new PhongWithHopDongDto
                     {
-                        p.MaPhong,
-                        p.TenPhong,
-                        p.Gia,
-                        HopDong = p.HopDongs.FirstOrDefault(h => h.DaKetThuc == false)
+                        MaPhong = p.MaPhong,
+                        TenPhong = p.TenPhong,
+                        Gia = (decimal)p.Gia,
+                        HopDong = p.HopDongs
+                            .Where(h => (bool)!h.DaKetThuc)
+                            .Select(h => new HopDongDto
+                            {
+                                Id = h.MaHopDong,
+                                NgayBatDau = (DateTime)(h.NgayBatDau.HasValue
+                                    ? h.NgayBatDau.Value.ToDateTime(TimeOnly.MinValue)
+                                    : (DateTime?)null),
+                                NgayKetThuc = h.NgayKetThuc.HasValue
+                                    ? h.NgayKetThuc.Value.ToDateTime(TimeOnly.MinValue)
+                                    : (DateTime?)null,
+                                DaKetThuc = (bool)h.DaKetThuc
+                            })
+                            .FirstOrDefault()
                     })
                     .ToListAsync();
 
@@ -282,6 +295,7 @@ namespace Ql_NhaTro_jun.Controllers
                 ));
             }
         }
+
 
         [HttpGet("get-all-hoa-don")]
         public async Task<IActionResult> GetAllHoaDon()
@@ -336,14 +350,28 @@ namespace Ql_NhaTro_jun.Controllers
                 });
             }
         }
-        [HttpGet("get-hoa-don-by-phong/{maPhong}")]
+        [HttpGet("get-hoa-don-by-hoa-don-tong/{maPhong}")]
         public async Task<IActionResult> GetHoaDonByPhong(int maPhong)
         {
             try
             {
+                var mkt=await _context.HopDongNguoiThues.FirstOrDefaultAsync(m=>m.MaKhachThue==JunTech.id);
+                if (mkt == null)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Khách hàng không có hợp đồng thuê phòng",
+                        Data = null
+                    });
+                }
+                   var hopdong = await _context.HopDongs
+                    .Where(h => h.MaHopDong == mkt.MaHopDong)
+                    .FirstOrDefaultAsync();
+
                 var hoaDons = await _context.HoaDonTienIches
                     .Include(h => h.MaPhongNavigation)
-                    .Where(h => h.MaPhong == maPhong)
+                    .Where(h => h.MaPhong == hopdong.MaPhong)
                     .Select(h => new
                     {
                         h.MaHoaDon,
@@ -355,8 +383,9 @@ namespace Ql_NhaTro_jun.Controllers
                         h.SoNuoc,
                         h.TongTien,
                         h.DaThanhToan,
-                        h.Phidv,
-                        h.Soxe
+                        Phidv = JunTech.caidat.Phidv ?? 0,
+                        Soxe = hopdong.SoXe,
+
                     })
                     .ToListAsync();
 
@@ -408,8 +437,8 @@ namespace Ql_NhaTro_jun.Controllers
                         h.DonGiaNuoc,
                         h.TongTien,
                         h.DaThanhToan,
-                        h.Phidv,
-                        h.Soxe
+                        Phidv = JunTech.caidat.Phidv ?? 0,
+                        Soxe = h.MaPhongNavigation.HopDongs.FirstOrDefault(g=>g.MaPhong==h.MaPhong).SoXe,
                     })
                     .ToListAsync();
 
@@ -601,5 +630,21 @@ namespace Ql_NhaTro_jun.Controllers
             public double SoNuoc { get; set; }
             public string note { get; set; }
         }
+        public class PhongWithHopDongDto
+        {
+            public int MaPhong { get; set; }
+            public string TenPhong { get; set; }
+            public decimal Gia { get; set; }
+            public HopDongDto HopDong { get; set; }
+        }
+
+        public class HopDongDto
+        {
+            public int Id { get; set; }
+            public DateTime NgayBatDau { get; set; }
+            public DateTime? NgayKetThuc { get; set; }
+            public bool DaKetThuc { get; set; }
+        }
+
     }
 }

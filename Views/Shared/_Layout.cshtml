@@ -45,7 +45,8 @@
     <link rel="stylesheet" href="~/css/global-dark-mode.css?v=@DateTime.Now.Ticks" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/responsive-enhancements.css?v=@DateTime.Now.Ticks" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css?v=@DateTime.Now.Ticks" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/dark-mode.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
 
     <!-- Schema Markup -->
     <script type="application/ld+json">

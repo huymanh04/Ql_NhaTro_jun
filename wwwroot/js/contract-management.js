@@ -210,7 +210,7 @@ class ContractManagement {
 
     async loadTenants() {
         try {
-            const response = await fetch('/api/NguoiDung/get-all-customer');
+            const response = await fetch('api/Auth/get-all-customer');
             const result = await response.json();
             
             if (result.success) {
@@ -271,7 +271,7 @@ class ContractManagement {
 
     async loadAvailableTenants() {
         try {
-            const response = await fetch('/api/NguoiDung/get-available-tenants');
+            const response = await fetch('api/Auth/get-available-tenants');
             const result = await response.json();
             
             if (result.success) {

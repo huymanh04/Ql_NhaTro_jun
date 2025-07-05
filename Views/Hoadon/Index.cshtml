@@ -26,18 +26,18 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Tìm kiếm theo mã hóa đơn, phòng, tháng/năm...">
             </div>
-            
+
             <div class="filter-group">
                 <select id="roomFilter">
                     <option value="">Tất cả phòng</option>
                 </select>
-                
+
                 <select id="statusFilter">
                     <option value="">Tất cả trạng thái</option>
                     <option value="true">Đã thanh toán</option>
                     <option value="false">Chưa thanh toán</option>
                 </select>
-                
+
                 <button class="btn btn-secondary" id="clearFiltersBtn">
                     <i class="fas fa-times"></i> Xóa bộ lọc
                 </button>
@@ -113,14 +113,14 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modalTitle">
-                <i class="fas fa-file-invoice-dollar"></i> 
+                <i class="fas fa-file-invoice-dollar"></i>
                 <span id="modalTitleText">Thêm hóa đơn mới</span>
             </h2>
             <button class="modal-close" id="closeModalBtn">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
+
         <form id="billForm" class="modal-body">
             <div class="form-row">
                 <div class="form-group">
@@ -130,7 +130,7 @@
                     </select>
                     <div class="error-message" id="maPhongError"></div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="soDien">Số điện (kWh) <span class="required">*</span></label>
                     <input type="number" id="soDien" name="soDien" required min="0" step="0.1"
@@ -138,7 +138,7 @@
                     <div class="error-message" id="soDienError"></div>
                 </div>
             </div>
-            
+
             <div class="form-row">
                 <div class="form-group">
                     <label for="soNuoc">Số nước (m³) <span class="required">*</span></label>
@@ -146,15 +146,15 @@
                            placeholder="Nhập số nước">
                     <div class="error-message" id="soNuocError"></div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="note">Ghi chú</label>
-                    <textarea id="note" name="note" rows="3" 
+                    <textarea id="note" name="note" rows="3"
                               placeholder="Nhập ghi chú (nếu có)"></textarea>
                     <div class="error-message" id="noteError"></div>
                 </div>
             </div>
-            
+
             <div class="form-group" id="statusGroup" style="display: none;">
                 <label for="daThanhToan">Trạng thái thanh toán</label>
                 <select id="daThanhToan" name="daThanhToan">
@@ -164,7 +164,7 @@
                 <div class="error-message" id="daThanhToanError"></div>
             </div>
         </form>
-        
+
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="cancelModalBtn">
                 <i class="fas fa-times"></i> Hủy
@@ -185,12 +185,12 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
+
         <div class="modal-body">
             <p>Bạn có chắc chắn muốn xóa hóa đơn <strong id="deleteBillId"></strong> không?</p>
             <p class="text-danger"><i class="fas fa-warning"></i> Hành động này sẽ xóa tất cả dữ liệu liên quan và không thể hoàn tác!</p>
         </div>
-        
+
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">
                 <i class="fas fa-times"></i> Hủy
@@ -211,11 +211,11 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
+
         <div class="modal-body" id="printModalBody">
             <!-- Bill content will be loaded here -->
         </div>
-        
+
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="cancelPrintBtn">
                 <i class="fas fa-times"></i> Đóng
@@ -241,53 +241,53 @@
     .bills-table td:nth-child(2) {
         min-width: 150px;
     }
-    
+
     .bills-table th:nth-child(8),
     .bills-table td:nth-child(8) {
         min-width: 120px;
     }
-    
+
     .bills-table th:nth-child(9),
     .bills-table td:nth-child(9) {
         min-width: 120px;
     }
-    
+
     .room-info {
         display: flex;
         flex-direction: column;
     }
-    
+
     .room-main {
         font-weight: 600;
         color: #1f2937;
     }
-    
+
     .room-details {
         font-size: 12px;
         color: #6b7280;
         margin-top: 2px;
     }
-    
+
     .text-muted {
         color: #6b7280 !important;
         font-size: 0.875rem;
     }
-    
+
     .utility-info {
         display: flex;
         flex-direction: column;
         gap: 2px;
     }
-    
-    .utility-info span {
-        font-size: 13px;
-    }
-    
+
+        .utility-info span {
+            font-size: 13px;
+        }
+
     .amount-info {
         font-weight: 600;
         color: #059669;
     }
-    
+
     .status-badge {
         padding: 4px 8px;
         border-radius: 12px;
@@ -296,164 +296,60 @@
         text-align: center;
         min-width: 80px;
     }
-    
+
     .status-paid {
         background-color: #dcfce7;
         color: #166534;
     }
-    
+
     .status-unpaid {
         background-color: #fef3c7;
         color: #92400e;
     }
 
-    /* Ensure modal is properly displayed */
-    .modal {
-        z-index: 99999 !important;
-        align-items: flex-start !important;
-        justify-content: center !important;
-        padding: 20px !important;
-        padding-top: 10px !important;
-        padding-bottom: 60px !important;
-        overflow-y: auto !important;
+    /* Print modal specific styling */
+    .print-modal .modal-content {
+        max-width: 850px !important;
     }
-    
-    .modal-content {
-        max-height: 80vh !important;
-        overflow: visible !important;
-        margin: 0 auto 50px auto !important;
-        position: relative !important;
-        top: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
+
+    .print-modal .modal-body {
+        padding: 30px;
     }
-    
-    .modal-body {
-        max-height: calc(80vh - 160px) !important;
-        overflow-y: auto !important;
-        flex: 1 !important;
-    }
-    
-    .modal-footer {
-        position: sticky !important;
-        bottom: 0 !important;
-        background: #f8fafc !important;
-        border-top: 1px solid #e5e7eb !important;
-        z-index: 100 !important;
-        flex-shrink: 0 !important;
-        margin-top: auto !important;
-    }
-    
-    /* Desktop specific */
-    @@media (min-width: 769px) {
-        .modal {
-            align-items: flex-start !important;
-            justify-content: center !important;
-            padding: 30px !important;
-            padding-top: 20px !important;
-            padding-bottom: 80px !important;
-        }
-        
-        .modal-content {
-            width: 700px !important;
-            max-width: 90vw !important;
-            max-height: 75vh !important;
-            margin: 0 auto 50px auto !important;
-        }
-        
-        .modal-body {
-            max-height: calc(75vh - 160px) !important;
-        }
-    }
-    
-    /* Mobile specific fixes */
-    @@media (max-width: 768px) {
-        .modal {
-            align-items: flex-start !important;
-            justify-content: center !important;
-            padding: 15px !important;
-            padding-top: 10px !important;
-            padding-bottom: 50px !important;
-        }
-        
-        .modal-content {
-            margin: 0 auto !important;
-            width: 100% !important;
-            max-width: none !important;
-            max-height: 82vh !important;
-        }
-        
-        .modal-body {
-            max-height: calc(82vh - 160px) !important;
-        }
-        
-        .modal-footer {
-            flex-direction: column !important;
-            gap: 10px !important;
-        }
-        
-        .modal-footer .btn {
-            width: 100% !important;
-            min-height: 50px !important;
-            font-size: 16px !important;
-        }
-    }
-    
-    @@media (max-width: 480px) {
-        .modal {
-            padding: 10px !important;
-            padding-top: 5px !important;
-            padding-bottom: 40px !important;
-        }
-        
-        .modal-content {
-            max-height: 85vh !important;
-        }
-        
-        .modal-body {
-            max-height: calc(85vh - 140px) !important;
-        }
-        
-        .modal-footer .btn {
-            min-height: 52px !important;
-            font-weight: 700 !important;
-        }
-    }
-    
+
     /* Form row layout */
     .form-row {
         display: flex;
         gap: 20px;
         margin-bottom: 20px;
     }
-    
-    .form-row .form-group {
-        flex: 1;
-        margin-bottom: 0;
-    }
-    
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
     @@media (max-width: 768px) {
         .form-row {
             flex-direction: column;
             gap: 0;
         }
-        
-        .form-row .form-group {
-            margin-bottom: 20px;
-        }
+
+            .form-row .form-group {
+                margin-bottom: 20px;
+            }
     }
-    
+
     /* Print modal specific styles */
     .print-modal .modal-content {
         width: 800px !important;
         max-width: 95vw !important;
     }
-    
+
     .print-modal .modal-body {
         padding: 20px;
         background: white;
     }
-    
+
     /* Pagination styles */
     .pagination-info {
         display: flex;
@@ -461,45 +357,45 @@
         gap: 20px;
         flex-wrap: wrap;
     }
-    
+
     .items-per-page {
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 14px;
     }
-    
-    .items-per-page label {
-        margin: 0;
-        font-weight: 500;
-        color: #6b7280;
-    }
-    
-    .items-per-page select {
-        padding: 4px 8px;
-        border: 1px solid #d1d5db;
-        border-radius: 4px;
-        background: white;
-        font-size: 14px;
-        min-width: 60px;
-    }
-    
-    .items-per-page select:focus {
-        outline: none;
-        border-color: #4a90a4;
-        box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
-    }
-    
-    .items-per-page span {
-        color: #6b7280;
-    }
-    
+
+        .items-per-page label {
+            margin: 0;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .items-per-page select {
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+            min-width: 60px;
+        }
+
+            .items-per-page select:focus {
+                outline: none;
+                border-color: #4a90a4;
+                box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
+            }
+
+        .items-per-page span {
+            color: #6b7280;
+        }
+
     @@media (max-width: 768px) {
         .pagination-info {
             justify-content: center;
             gap: 15px;
         }
-        
+
         .items-per-page {
             font-size: 13px;
         }

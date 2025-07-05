@@ -1,5 +1,6 @@
 @{
     ViewData["Title"] = "Quản lý tài khoản";
+
     Layout = "~/Views/Shared/_Layoutadmin.cshtml";
 }
 
@@ -223,7 +224,5 @@
 
 <!-- Toast Notifications -->
 <div class="toast-container" id="toastContainer"></div>
-
-<link rel="stylesheet" href="~/css/account-management.css">
-<script src="~/js/account-management.js"></script>
-<script src="~/js/dark-mode.js"></script> 
+<link href="~/css/account-management.css?v=@DateTime.Now" rel="stylesheet" />
+<script src="~/js/account-management.js?v=@DateTime.Now"></script>
