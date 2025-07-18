@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Chatbot - Nhắn tin";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/chatbot.css" />
+}
+<div class="chatbot-container">
+    <div class="chat-sidebar">
+        <div class="sidebar-header">
+            <h5>Hội thoại</h5>
+            <input type="text" id="searchConversation" class="form-control form-control-sm" placeholder="Tìm kiếm...">
+        </div>
+        <ul class="conversation-list" id="conversationList">
+            <li class="loading">Đang tải...</li>
+        </ul>
+    </div>
+    <div class="chat-main">
+        <div class="chat-header" id="chatHeader">
+            <span class="chat-partner">Chọn hội thoại để bắt đầu</span>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="empty-chat">Chưa có hội thoại nào được chọn.</div>
+        </div>
+        <div class="chat-input-area">
+            <form id="chatForm" autocomplete="off">
+                <input type="text" id="chatInput" class="form-control" placeholder="Nhập tin nhắn..." autocomplete="off">
+                <button type="submit" class="btn btn-primary" id="sendBtn">Gửi</button>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/chatbot.js"></script>
+} 

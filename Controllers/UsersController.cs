@@ -85,5 +85,14 @@ namespace Ql_NhaTro_jun.Controllers
             }
             return View();
         }
+        
+        public IActionResult Chatbot()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Users");
+            }
+            return View();
+        }
     }
 }

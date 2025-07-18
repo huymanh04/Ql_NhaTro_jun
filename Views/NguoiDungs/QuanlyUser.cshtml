@@ -1,150 +1,142 @@
 @{
     ViewData["Title"] = "Quản lý tài khoản";
-
     Layout = "~/Views/Shared/_Layoutadmin.cshtml";
 }
-
-<div class="account-management-container">
-    <!-- Page Header -->
+<link href="~/css/quanlyuser.css?v=@DateTime.Now" rel="stylesheet" />
+<div class="quanlyuser-container">
     <div class="page-header">
         <div class="header-content">
             <div class="header-left">
-                <h1 class="page-title">
-                    <i class="fas fa-users"></i>
-                    Quản lý tài khoản
-                </h1>
-                <nav class="breadcrumb">
-                    <a href="/NguoiDungs/Dashborad">Dashboard</a>
-                    <span class="separator">/</span>
-                    <span class="current">Quản lý tài khoản</span>
-                </nav>
+                <h1><i class="fas fa-users"></i> Quản lý tài khoản</h1>
+                <p>Thêm, sửa, xóa và quản lý tài khoản người dùng</p>
             </div>
-            <div class="header-actions">
-                <button class="btn btn-primary btn-create" onclick="openCreateModal()">
-                    <i class="fas fa-plus"></i>
-                    Tạo tài khoản mới
-                </button>
-                <button class="btn btn-secondary" onclick="refreshData()">
-                    <i class="fas fa-sync-alt"></i>
-                    Làm mới
+            <div class="header-right">
+                <button class="btn btn-primary" id="addUserBtn">
+                    <i class="fas fa-plus"></i> Tạo tài khoản mới
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Filters and Search -->
+    <!-- Filters -->
     <div class="filters-section">
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, email, số điện thoại...">
-        </div>
-        <div class="filter-options">
-            <select id="roleFilter" class="form-select">
-                <option value="">Tất cả vai trò</option>
-                <option value="2">Admin</option>
-                <option value="1">Quản lý</option>
-                <option value="0">Khách hàng</option>
-            </select>
-            <select id="pageSize" class="form-select">
-                <option value="10">10 / trang</option>
-                <option value="25">25 / trang</option>
-                <option value="50">50 / trang</option>
-            </select>
+        <div class="filters-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, email, số điện thoại...">
+            </div>
+            <div class="filter-group">
+                <select id="roleFilter" class="form-select">
+                    <option value="">Tất cả vai trò</option>
+                    <option value="2">Admin</option>
+                    <option value="1">Quản lý</option>
+                    <option value="0">Khách hàng</option>
+                </select>
+                <button class="btn btn-secondary" id="clearFiltersBtn">
+                    <i class="fas fa-times"></i> Xóa bộ lọc
+                </button>
+            </div>
         </div>
     </div>
+
+    <!-- Alert Messages -->
+    <div id="alertContainer" class="alert-container"></div>
+    
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- Users Table -->
-    <div class="table-container">
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="loading-spinner">
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Đang tải...</span>
+    <div class="table-section">
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Họ tên</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <table class="users-table" id="usersTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Họ tên</th>
-                    <th>Email</th>
-                    <th>Số điện thoại</th>
-                    <th>Vai trò</th>
-                    <th>Trạng thái</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody id="usersTableBody">
-                <!-- Data will be loaded here -->
-            </tbody>
-        </table>
-
-        <!-- Empty State -->
-        <div class="empty-state" id="emptyState" style="display: none;">
-            <i class="fas fa-users-slash"></i>
-            <h3>Không tìm thấy tài khoản</h3>
-            <p>Không có tài khoản nào phù hợp với tiêu chí tìm kiếm</p>
+        <!-- Mobile Cards -->
+        <div class="mobile-cards" id="mobileUserCards">
+            <!-- Mobile cards will be loaded here -->
         </div>
-    </div>
 
-    <!-- Mobile Cards Container -->
-    <div class="mobile-cards-container" id="mobileCardsContainer">
-        <!-- Mobile cards will be generated here -->
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination-container" id="paginationContainer">
-        <div class="pagination-info">
-            <span id="paginationInfo">Hiển thị 0 - 0 của 0 kết quả</span>
-        </div>
-        <div class="pagination-controls" id="paginationControls">
-            <!-- Pagination buttons will be generated here -->
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span id="paginationInfo">Hiển thị 0 - 0 của 0 tài khoản</span>
+                <div class="items-per-page">
+                    <label for="itemsPerPage">Hiển thị:</label>
+                    <select id="itemsPerPage">
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span>tài khoản/trang</span>
+                </div>
+            </div>
+            <div class="pagination-controls">
+                <button class="btn btn-outline" id="prevPageBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Trước
+                </button>
+                <div class="page-numbers" id="pageNumbers"></div>
+                <button class="btn btn-outline" id="nextPageBtn" disabled>
+                    Sau <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Create/Edit User Modal -->
-<div class="modal-overlay" id="userModal">
+<!-- Add/Edit User Modal -->
+<div class="modal" id="userModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="modalTitle">Tạo tài khoản mới</h3>
-            <button class="modal-close" onclick="closeUserModal()">
+            <h2 id="modalTitle">
+                <i class="fas fa-user"></i>
+                <span id="modalTitleText">Tạo tài khoản mới</span>
+            </h2>
+            <button class="modal-close" id="closeUserModalBtn">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <form id="userForm" class="modal-body">
             <input type="hidden" id="userId" value="">
-
             <div class="form-group">
                 <label for="hoTen">Họ tên <span class="required">*</span></label>
-                <input type="text" id="hoTen" name="hoTen" required>
+                <input type="text" id="hoTen" name="hoTen" required placeholder="Nhập họ tên">
                 <div class="error-message" id="hoTenError"></div>
             </div>
-
             <div class="form-group">
                 <label for="email">Email <span class="required">*</span></label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required placeholder="Nhập email">
                 <div class="error-message" id="emailError"></div>
             </div>
-
             <div class="form-group">
                 <label for="soDienThoai">Số điện thoại <span class="required">*</span></label>
-                <input type="tel" id="soDienThoai" name="soDienThoai" required>
+                <input type="tel" id="soDienThoai" name="soDienThoai" required placeholder="Nhập số điện thoại">
                 <div class="error-message" id="soDienThoaiError"></div>
             </div>
-
             <div class="form-group">
                 <label for="matKhau">Mật khẩu <span class="required" id="passwordRequired">*</span></label>
-                <div class="password-input">
-                    <input type="password" id="matKhau" name="matKhau">
-                    <button type="button" class="password-toggle" onclick="togglePassword()">
-                        <i class="fas fa-eye" id="passwordIcon"></i>
-                    </button>
-                </div>
+                <input type="password" id="matKhau" name="matKhau">
                 <div class="form-hint" id="passwordHint">Để trống nếu không muốn thay đổi mật khẩu</div>
                 <div class="error-message" id="matKhauError"></div>
             </div>
-
             <div class="form-group">
                 <label for="vaiTro">Vai trò <span class="required">*</span></label>
                 <select id="vaiTro" name="vaiTro" required>
@@ -157,21 +149,22 @@
             </div>
         </form>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Hủy</button>
-            <button type="button" class="btn btn-primary" onclick="saveUser()" id="saveButton">
-                <i class="fas fa-save"></i>
-                Lưu
+            <button type="button" class="btn btn-secondary" id="cancelUserModalBtn">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn btn-primary" id="saveUserBtn">
+                <i class="fas fa-save"></i> <span id="saveBtnText">Lưu</span>
             </button>
         </div>
     </div>
 </div>
 
 <!-- Role Change Modal -->
-<div class="modal-overlay" id="roleModal">
-    <div class="modal-content modal-sm">
+<div class="modal" id="roleModal">
+    <div class="modal-content">
         <div class="modal-header">
-            <h3>Thay đổi quyền</h3>
-            <button class="modal-close" onclick="closeRoleModal()">
+            <h2>Thay đổi quyền</h2>
+            <button class="modal-close" id="closeRoleModalBtn">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -187,42 +180,46 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeRoleModal()">Hủy</button>
-            <button type="button" class="btn btn-primary" onclick="confirmRoleChange()">
-                <i class="fas fa-check"></i>
-                Xác nhận
+            <button type="button" class="btn btn-secondary" id="cancelRoleModalBtn">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn btn-primary" id="confirmRoleChangeBtn" onclick="confirmRoleChange()">
+                <i class="fas fa-check"></i> Xác nhận
             </button>
         </div>
     </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div class="modal-overlay" id="deleteModal">
-    <div class="modal-content modal-sm">
+<div class="modal" id="deleteModal">
+    <div class="modal-content delete-modal">
         <div class="modal-header">
-            <h3>Xác nhận xóa</h3>
-            <button class="modal-close" onclick="closeDeleteModal()">
+            <h2><i class="fas fa-exclamation-triangle text-danger"></i> Xác nhận xóa</h2>
+            <button class="modal-close" id="closeDeleteModalBtn">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="modal-body">
-            <div class="delete-warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>Bạn có chắc chắn muốn xóa tài khoản: <strong id="deleteUserName"></strong>?</p>
-                <p class="warning-text">Hành động này không thể hoàn tác!</p>
-            </div>
+            <p>Bạn có chắc chắn muốn xóa tài khoản <strong id="deleteUserName"></strong> không?</p>
+            <p class="text-danger"><i class="fas fa-warning"></i> Hành động này không thể hoàn tác!</p>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
-            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
-                <i class="fas fa-trash"></i>
-                Xóa
+            <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">
+                <i class="fas fa-times"></i> Hủy
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                <i class="fas fa-trash"></i> Xóa
             </button>
         </div>
     </div>
 </div>
 
-<!-- Toast Notifications -->
-<div class="toast-container" id="toastContainer"></div>
-<link href="~/css/account-management.css?v=@DateTime.Now" rel="stylesheet" />
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Đang tải dữ liệu...</p>
+    </div>
+</div>
+
 <script src="~/js/account-management.js?v=@DateTime.Now"></script>

@@ -1,4 +1,4 @@
-// Account Management JavaScript
+﻿// Account Management JavaScript
 class AccountManager {
     constructor() {
         this.currentPage = 1;
@@ -57,6 +57,127 @@ class AccountManager {
             });
         }
 
+        // Add user button
+        const addUserBtn = document.getElementById('addUserBtn');
+        if (addUserBtn) {
+            addUserBtn.addEventListener('click', () => {
+                this.openCreateModal();
+            });
+        }
+
+        // Modal close buttons
+        const closeUserModalBtn = document.getElementById('closeUserModalBtn');
+        if (closeUserModalBtn) {
+            closeUserModalBtn.addEventListener('click', () => {
+                this.closeUserModal();
+            });
+        }
+
+        const closeRoleModalBtn = document.getElementById('closeRoleModalBtn');
+        if (closeRoleModalBtn) {
+            closeRoleModalBtn.addEventListener('click', () => {
+                this.closeRoleModal();
+            });
+        }
+
+        const closeDeleteModalBtn = document.getElementById('closeDeleteModalBtn');
+        if (closeDeleteModalBtn) {
+            closeDeleteModalBtn.addEventListener('click', () => {
+                this.closeDeleteModal();
+            });
+        }
+
+        // Modal cancel buttons
+        const cancelUserModalBtn = document.getElementById('cancelUserModalBtn');
+        if (cancelUserModalBtn) {
+            cancelUserModalBtn.addEventListener('click', () => {
+                this.closeUserModal();
+            });
+        }
+
+        const cancelRoleModalBtn = document.getElementById('cancelRoleModalBtn');
+        if (cancelRoleModalBtn) {
+            cancelRoleModalBtn.addEventListener('click', () => {
+                this.closeRoleModal();
+            });
+        }
+
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        if (cancelDeleteBtn) {
+            cancelDeleteBtn.addEventListener('click', () => {
+                this.closeDeleteModal();
+            });
+        }
+
+        // Save and confirm buttons
+        const saveUserBtn = document.getElementById('saveUserBtn');
+        if (saveUserBtn) {
+            saveUserBtn.addEventListener('click', () => {
+                this.saveUser();
+            });
+        }
+
+        const confirmRoleChangeBtn = document.getElementById('confirmRoleChangeBtn');
+        if (confirmRoleChangeBtn) {
+            confirmRoleChangeBtn.addEventListener('click', () => {
+                this.confirmRoleChange();
+            });
+        }
+
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', () => {
+                this.confirmDelete();
+            });
+        }
+
+        // Pagination buttons
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', () => {
+                if (this.currentPage > 1) {
+                    this.goToPage(this.currentPage - 1);
+                }
+            });
+        }
+
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', () => {
+                if (this.currentPage < this.totalPages) {
+                    this.goToPage(this.currentPage + 1);
+                }
+            });
+        }
+
+        // Items per page
+        const itemsPerPage = document.getElementById('itemsPerPage');
+        if (itemsPerPage) {
+            itemsPerPage.addEventListener('change', (e) => {
+                this.pageSize = parseInt(e.target.value);
+                this.currentPage = 1;
+                this.loadUsers();
+            });
+        }
+
+        // Clear filters
+        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                this.searchTerm = '';
+                this.roleFilter = '';
+                this.currentPage = 1;
+                
+                const searchInput = document.getElementById('searchInput');
+                const roleFilter = document.getElementById('roleFilter');
+                
+                if (searchInput) searchInput.value = '';
+                if (roleFilter) roleFilter.value = '';
+                
+                this.loadUsers();
+            });
+        }
+
         // Form submission
         const userForm = document.getElementById('userForm');
         if (userForm) {
@@ -68,7 +189,7 @@ class AccountManager {
 
         // Modal close on overlay click
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
+            if (e.target.classList.contains('modal')) {
                 this.closeAllModals();
             }
         });
@@ -141,19 +262,23 @@ class AccountManager {
 
     renderUsers() {
         const tbody = document.getElementById('usersTableBody');
-        const emptyState = document.getElementById('emptyState');
         const tableContainer = document.querySelector('.table-container');
 
         if (!tbody || !tableContainer) return;
 
         if (this.users.length === 0) {
-            tbody.innerHTML = '';
-            if (emptyState) emptyState.style.display = 'block';
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px 20px; color: #64748b;">
+                        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 16px; display: block; opacity: 0.5;"></i>
+                        <p style="margin: 0; font-size: 1.1rem;">Không có tài khoản nào</p>
+                        <p style="margin: 8px 0 0 0; font-size: 0.9rem; opacity: 0.7;">Hãy tạo tài khoản mới hoặc thử lại với bộ lọc khác</p>
+                    </td>
+                </tr>
+            `;
             this.clearMobileCards();
             return;
         }
-
-        if (emptyState) emptyState.style.display = 'none';
 
         // Calculate the starting index for STT
         const startIndex = (this.currentPage - 1) * this.pageSize;
@@ -203,7 +328,7 @@ class AccountManager {
     }
 
     renderMobileCards() {
-        const mobileContainer = document.getElementById('mobileCardsContainer');
+        const mobileContainer = document.getElementById('mobileUserCards');
         if (!mobileContainer) return;
 
         // Calculate the starting index for STT
@@ -264,7 +389,7 @@ class AccountManager {
     }
 
     clearMobileCards() {
-        const mobileContainer = document.getElementById('mobileCardsContainer');
+        const mobileContainer = document.getElementById('mobileUserCards');
         if (mobileContainer) {
             mobileContainer.innerHTML = '';
         }
@@ -272,27 +397,23 @@ class AccountManager {
 
     renderPagination() {
         const paginationInfo = document.getElementById('paginationInfo');
-        const paginationControls = document.getElementById('paginationControls');
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageNumbers = document.getElementById('pageNumbers');
 
-        if (!paginationInfo || !paginationControls) return;
+        if (!paginationInfo || !prevPageBtn || !nextPageBtn || !pageNumbers) return;
 
         // Update info
         const start = (this.currentPage - 1) * this.pageSize + 1;
         const end = Math.min(this.currentPage * this.pageSize, this.totalUsers);
-        paginationInfo.textContent = `Hiển thị ${start} - ${end} của ${this.totalUsers} kết quả`;
+        paginationInfo.textContent = `Hiển thị ${start} - ${end} của ${this.totalUsers} tài khoản`;
 
-        // Generate pagination buttons
-        let paginationHTML = '';
+        // Update prev/next buttons
+        prevPageBtn.disabled = this.currentPage === 1;
+        nextPageBtn.disabled = this.currentPage === this.totalPages;
 
-        // Previous button
-        paginationHTML += `
-            <button class="pagination-btn" ${this.currentPage === 1 ? 'disabled' : ''} 
-                    onclick="accountManager.goToPage(${this.currentPage - 1})">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-        `;
-
-        // Page numbers
+        // Generate page numbers
+        let pageNumbersHTML = '';
         const maxVisiblePages = 5;
         let startPage = Math.max(1, this.currentPage - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
@@ -302,15 +423,15 @@ class AccountManager {
         }
 
         if (startPage > 1) {
-            paginationHTML += `<button class="pagination-btn" onclick="accountManager.goToPage(1)">1</button>`;
+            pageNumbersHTML += `<button class="btn btn-outline" onclick="accountManager.goToPage(1)">1</button>`;
             if (startPage > 2) {
-                paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+                pageNumbersHTML += `<span class="pagination-ellipsis">...</span>`;
             }
         }
 
         for (let i = startPage; i <= endPage; i++) {
-            paginationHTML += `
-                <button class="pagination-btn ${i === this.currentPage ? 'active' : ''}" 
+            pageNumbersHTML += `
+                <button class="btn btn-outline ${i === this.currentPage ? 'active' : ''}" 
                         onclick="accountManager.goToPage(${i})">
                     ${i}
                 </button>
@@ -319,20 +440,12 @@ class AccountManager {
 
         if (endPage < this.totalPages) {
             if (endPage < this.totalPages - 1) {
-                paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+                pageNumbersHTML += `<span class="pagination-ellipsis">...</span>`;
             }
-            paginationHTML += `<button class="pagination-btn" onclick="accountManager.goToPage(${this.totalPages})">${this.totalPages}</button>`;
+            pageNumbersHTML += `<button class="btn btn-outline" onclick="accountManager.goToPage(${this.totalPages})">${this.totalPages}</button>`;
         }
 
-        // Next button
-        paginationHTML += `
-            <button class="pagination-btn" ${this.currentPage === this.totalPages ? 'disabled' : ''} 
-                    onclick="accountManager.goToPage(${this.currentPage + 1})">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        `;
-
-        paginationControls.innerHTML = paginationHTML;
+        pageNumbers.innerHTML = pageNumbersHTML;
     }
 
     goToPage(page) {
@@ -346,10 +459,17 @@ class AccountManager {
         this.currentUserId = null;
         this.resetForm();
 
-        document.getElementById('modalTitle').textContent = 'Tạo tài khoản mới';
-        document.getElementById('passwordRequired').style.display = 'inline';
-        document.getElementById('passwordHint').style.display = 'none';
-        document.getElementById('matKhau').required = true;
+        const modalTitleText = document.getElementById('modalTitleText');
+        const passwordRequired = document.getElementById('passwordRequired');
+        const passwordHint = document.getElementById('passwordHint');
+        const matKhau = document.getElementById('matKhau');
+        const saveBtnText = document.getElementById('saveBtnText');
+
+        if (modalTitleText) modalTitleText.textContent = 'Tạo tài khoản mới';
+        if (passwordRequired) passwordRequired.style.display = 'inline';
+        if (passwordHint) passwordHint.style.display = 'none';
+        if (matKhau) matKhau.required = true;
+        if (saveBtnText) saveBtnText.textContent = 'Lưu';
 
         this.showModal('userModal');
 
@@ -388,9 +508,10 @@ class AccountManager {
         const soDienThoaiElement = document.getElementById('soDienThoai');
         const vaiTroElement = document.getElementById('vaiTro');
         const matKhauElement = document.getElementById('matKhau');
-        const modalTitleElement = document.getElementById('modalTitle');
+        const modalTitleText = document.getElementById('modalTitleText');
         const passwordRequiredElement = document.getElementById('passwordRequired');
         const passwordHintElement = document.getElementById('passwordHint');
+        const saveBtnText = document.getElementById('saveBtnText');
 
         if (hoTenElement) hoTenElement.value = user.hoTen || '';
         if (emailElement) emailElement.value = user.email || '';
@@ -401,9 +522,10 @@ class AccountManager {
             matKhauElement.required = false;
         }
 
-        if (modalTitleElement) modalTitleElement.textContent = 'Chỉnh sửa tài khoản';
+        if (modalTitleText) modalTitleText.textContent = 'Chỉnh sửa tài khoản';
         if (passwordRequiredElement) passwordRequiredElement.style.display = 'none';
         if (passwordHintElement) passwordHintElement.style.display = 'block';
+        if (saveBtnText) saveBtnText.textContent = 'Cập nhật';
 
         this.showModal('userModal');
 
@@ -443,7 +565,9 @@ class AccountManager {
             newRoleElement.value = currentRole || '0';
         }
 
+        console.log('About to show roleModal');
         this.showModal('roleModal');
+        console.log('showModal called for roleModal');
     }
 
     openDeleteModal(userId, userName) {
@@ -476,7 +600,7 @@ class AccountManager {
             vaiTro: document.getElementById('vaiTro').value
         };
 
-        const saveButton = document.getElementById('saveButton');
+        const saveButton = document.getElementById('saveUserBtn');
         const originalText = saveButton.innerHTML;
         saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
         saveButton.disabled = true;
@@ -556,18 +680,17 @@ class AccountManager {
                 throw new Error('Không tìm thấy thông tin người dùng');
             }
 
-            // Update user with new role
+            // Update user with new role (giữ nguyên các trường khác)
             const updateData = {
-                MaNguoiDung: this.currentUserForRole,
                 hoTen: user.hoTen,
                 email: user.email,
                 soDienThoai: user.soDienThoai,
                 vaiTro: newRole,
-                matKhau: '' // Keep password empty to not change it
+                matKhau: '' // Không đổi mật khẩu
             };
 
-            const response = await fetch('/Update', {
-                method: 'POST',
+            const response = await fetch(`/api/Admin/UpdateUser/${this.currentUserForRole}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -729,18 +852,21 @@ class AccountManager {
             if (id !== modalId) {
                 const modal = document.getElementById(id);
                 if (modal) {
-                    modal.classList.remove('active');
+                    modal.classList.remove('show');
                 }
             }
         });
 
         const modal = document.getElementById(modalId);
+        console.log('Modal element found:', modal);
+        
         if (modal) {
             // Save current scroll position
             this.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
 
             // Show the modal using CSS classes
-            modal.classList.add('active');
+            modal.classList.add('show');
+            console.log('Added show class to modal');
 
             // Prevent background scroll
             document.body.classList.add('modal-open');
@@ -765,14 +891,18 @@ class AccountManager {
                     modalFooter.style.position = 'relative';
                     modalFooter.style.zIndex = '1000';
                 }
+                
+                console.log('Modal should be visible now');
             }, 50);
+        } else {
+            console.error('Modal element not found:', modalId);
         }
     }
 
     hideModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
-            modal.classList.remove('active');
+            modal.classList.remove('show');
 
             // Restore scroll position
             document.body.classList.remove('modal-open');
@@ -849,7 +979,7 @@ class AccountManager {
         modals.forEach(modalId => {
             const modal = document.getElementById(modalId);
             if (modal) {
-                modal.classList.remove('active');
+                modal.classList.remove('show');
             }
         });
 
@@ -988,9 +1118,9 @@ function togglePassword() {
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function () {
     // Force hide all modals immediately
-    const modals = document.querySelectorAll('.modal-overlay');
+    const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
-        modal.classList.remove('active');
+        modal.classList.remove('show');
         modal.style.display = 'none';
         modal.style.opacity = '0';
         modal.style.visibility = 'hidden';

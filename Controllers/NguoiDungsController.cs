@@ -157,7 +157,7 @@ namespace Ql_NhaTro_jun.Controllers
             }
 
             // Check if user has admin role
-            if (currentUser.VaiTro != "2")
+            if (currentUser.VaiTro == "0")
             {
                 return Forbid();
             }

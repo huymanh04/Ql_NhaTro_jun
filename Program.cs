@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Ql_NhaTro_jun.Models;
+using Ql_NhaTro_jun.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDistributedMemoryCache();
@@ -50,6 +51,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -99,6 +101,7 @@ app.UseMiddleware<UserInfo>();  // ✅ Middleware lấy user gán context
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();  // hoặc MapDefaultControllerRoute(), tùy project
+    endpoints.MapHub<ChatHub>("/chatHub");
 });
 app.MapControllerRoute(
     name: "default",

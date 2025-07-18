@@ -402,13 +402,28 @@ public class RoomTypeController : ControllerBase
         [StringLength(500, ErrorMessage = "Mô tả không được vượt quá 500 ký tự")]
         public string MoTa { get; set; }
 
+    
         public IFormFile ImageFile { get; set; }
 
         [Url(ErrorMessage = "URL không hợp lệ")]
         public string RedirectUrl { get; set; }
     }
 
-    public class RoomTypeUpdateDto : RoomTypeCreateDto { }
+    public class RoomTypeUpdateDto
+    {
+        [Required(ErrorMessage = "Tên loại phòng không được để trống")]
+        [StringLength(100, ErrorMessage = "Tên loại phòng không được vượt quá 100 ký tự")]
+        public string TenTheLoai { get; set; }
+
+        [StringLength(500, ErrorMessage = "Mô tả không được vượt quá 500 ký tự")]
+        public string MoTa { get; set; }
+
+        // KHÔNG có [Required] ở đây
+        public IFormFile ImageFile { get; set; }
+
+        [Url(ErrorMessage = "URL không hợp lệ")]
+        public string RedirectUrl { get; set; }
+    }
 
     public class RoomTypeResponseDto
     {
