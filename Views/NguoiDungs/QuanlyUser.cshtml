@@ -2,8 +2,8 @@
     ViewData["Title"] = "Quản lý tài khoản";
     Layout = "~/Views/Shared/_Layoutadmin.cshtml";
 }
-<link href="~/css/quanlyuser.css?v=@DateTime.Now" rel="stylesheet" />
-<div class="quanlyuser-container">
+
+<div class="user-management">
     <div class="page-header">
         <div class="header-content">
             <div class="header-left">
@@ -25,13 +25,15 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, email, số điện thoại...">
             </div>
+            
             <div class="filter-group">
-                <select id="roleFilter" class="form-select">
+                <select id="roleFilter">
                     <option value="">Tất cả vai trò</option>
                     <option value="2">Admin</option>
                     <option value="1">Quản lý</option>
                     <option value="0">Khách hàng</option>
                 </select>
+                
                 <button class="btn btn-secondary" id="clearFiltersBtn">
                     <i class="fas fa-times"></i> Xóa bộ lọc
                 </button>
@@ -40,10 +42,7 @@
     </div>
 
     <!-- Alert Messages -->
-    <div id="alertContainer" class="alert-container"></div>
-    
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container"></div>
+    <div id="alertContainer"></div>
 
     <!-- Users Table -->
     <div class="table-section">
@@ -56,13 +55,13 @@
                             <th>Họ tên</th>
                             <th>Email</th>
                             <th>Số điện thoại</th>
+                            <th>Số căn cước</th>
                             <th>Vai trò</th>
-                            <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
-
+                        <!-- Data will be loaded here -->
                     </tbody>
                 </table>
             </div>
@@ -107,47 +106,66 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modalTitle">
-                <i class="fas fa-user"></i>
+                <i class="fas fa-user"></i> 
                 <span id="modalTitleText">Tạo tài khoản mới</span>
             </h2>
             <button class="modal-close" id="closeUserModalBtn">
                 <i class="fas fa-times"></i>
             </button>
         </div>
+        
         <form id="userForm" class="modal-body">
             <input type="hidden" id="userId" value="">
-            <div class="form-group">
-                <label for="hoTen">Họ tên <span class="required">*</span></label>
-                <input type="text" id="hoTen" name="hoTen" required placeholder="Nhập họ tên">
-                <div class="error-message" id="hoTenError"></div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="hoTen">Họ tên <span class="required">*</span></label>
+                    <input type="text" id="hoTen" name="hoTen" required placeholder="Nhập họ tên">
+                    <div class="error-message" id="hoTenError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="Nhập email">
+                    <div class="error-message" id="emailError"></div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="email">Email <span class="required">*</span></label>
-                <input type="email" id="email" name="email" required placeholder="Nhập email">
-                <div class="error-message" id="emailError"></div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="soDienThoai">Số điện thoại <span class="required">*</span></label>
+                    <input type="tel" id="soDienThoai" name="soDienThoai" required placeholder="Nhập số điện thoại">
+                    <div class="error-message" id="soDienThoaiError"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="so_cccd">Số CCCD <span class="required">*</span></label>
+                    <input type="text" id="so_cccd" name="so_cccd" required placeholder="Nhập Số CCCD">
+                    <div class="error-message" id="so_cccdError"></div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="soDienThoai">Số điện thoại <span class="required">*</span></label>
-                <input type="tel" id="soDienThoai" name="soDienThoai" required placeholder="Nhập số điện thoại">
-                <div class="error-message" id="soDienThoaiError"></div>
-            </div>
-            <div class="form-group">
-                <label for="matKhau">Mật khẩu <span class="required" id="passwordRequired">*</span></label>
-                <input type="password" id="matKhau" name="matKhau">
-                <div class="form-hint" id="passwordHint">Để trống nếu không muốn thay đổi mật khẩu</div>
-                <div class="error-message" id="matKhauError"></div>
-            </div>
-            <div class="form-group">
-                <label for="vaiTro">Vai trò <span class="required">*</span></label>
-                <select id="vaiTro" name="vaiTro" required>
-                    <option value="">Chọn vai trò</option>
-                    <option value="0">Khách hàng</option>
-                    <option value="1">Quản lý</option>
-                    <option value="2">Admin</option>
-                </select>
-                <div class="error-message" id="vaiTroError"></div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="matKhau">Mật khẩu <span class="required" id="passwordRequired">*</span></label>
+                    <input type="password" id="matKhau" name="matKhau" placeholder="Nhập mật khẩu">
+                    <div class="form-text" id="passwordHint">Để trống nếu không muốn thay đổi mật khẩu</div>
+                    <div class="error-message" id="matKhauError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="vaiTro">Vai trò <span class="required">*</span></label>
+                    <select id="vaiTro" name="vaiTro" required>
+                        <option value="">Chọn vai trò</option>
+                        <option value="0">Khách hàng</option>
+                        <option value="1">Quản lý</option>
+                        <option value="2">Admin</option>
+                    </select>
+                    <div class="error-message" id="vaiTroError"></div>
+                </div>
             </div>
         </form>
+        
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="cancelUserModalBtn">
                 <i class="fas fa-times"></i> Hủy
@@ -163,27 +181,29 @@
 <div class="modal" id="roleModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Thay đổi quyền</h2>
+            <h2><i class="fas fa-user-cog"></i> Thay đổi quyền</h2>
             <button class="modal-close" id="closeRoleModalBtn">
                 <i class="fas fa-times"></i>
             </button>
         </div>
+        
         <div class="modal-body">
             <p>Thay đổi quyền cho: <strong id="roleUserName"></strong></p>
             <div class="form-group">
                 <label for="newRole">Vai trò mới</label>
-                <select id="newRole" class="form-select">
+                <select id="newRole">
                     <option value="0">Khách hàng</option>
                     <option value="1">Quản lý</option>
                     <option value="2">Admin</option>
                 </select>
             </div>
         </div>
+        
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="cancelRoleModalBtn">
                 <i class="fas fa-times"></i> Hủy
             </button>
-            <button type="button" class="btn btn-primary" id="confirmRoleChangeBtn" onclick="confirmRoleChange()">
+            <button type="button" class="btn btn-warning" id="confirmRoleChangeBtn">
                 <i class="fas fa-check"></i> Xác nhận
             </button>
         </div>
@@ -199,10 +219,14 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
+        
         <div class="modal-body">
             <p>Bạn có chắc chắn muốn xóa tài khoản <strong id="deleteUserName"></strong> không?</p>
-            <p class="text-danger"><i class="fas fa-warning"></i> Hành động này không thể hoàn tác!</p>
+            <p class="text-danger">
+                <i class="fas fa-exclamation-triangle"></i> Hành động này không thể hoàn tác!
+            </p>
         </div>
+        
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">
                 <i class="fas fa-times"></i> Hủy
@@ -222,4 +246,1191 @@
     </div>
 </div>
 
-<script src="~/js/account-management.js?v=@DateTime.Now"></script>
+<style>
+    /* Main container styling */
+    .user-management {
+        padding: 20px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    /* Page header */
+    .page-header {
+        margin-bottom: 30px;
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .header-left h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .header-left h1 i {
+        color: #4a90a4;
+        font-size: 1.8rem;
+    }
+
+    .header-left p {
+        color: #6b7280;
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    /* Filters section */
+    .filters-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .filters-container {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        position: relative;
+        flex: 1;
+        min-width: 280px;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        font-size: 1rem;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 12px 12px 12px 40px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        background: #f9fafb;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: #4a90a4;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .filter-group select {
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        font-size: 0.95rem;
+        min-width: 140px;
+        transition: all 0.3s ease;
+    }
+
+    .filter-group select:focus {
+        outline: none;
+        border-color: #4a90a4;
+        box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+    }
+
+    /* Button styling */
+    .btn {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        min-height: 44px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: #4a90a4;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #3d7a8c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+    }
+
+    .btn-warning {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .btn-warning:hover {
+        background: #d97706;
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #4a90a4;
+        border: 1px solid #4a90a4;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+        background: #4a90a4;
+        color: white;
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    /* Table section */
+    .table-section {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+
+    .users-table th {
+        background: #f8fafc;
+        padding: 16px 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    .users-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        vertical-align: middle;
+    }
+
+    .users-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* Badge styling for roles */
+    .badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+        display: inline-block;
+    }
+
+    .badge-role-0 { background-color: #6b7280; }
+    .badge-role-1 { background-color: #3b82f6; }
+    .badge-role-2 { background-color: #ef4444; }
+
+    /* Action buttons in table */
+    .btn-group {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-sm {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        min-height: 32px;
+    }
+
+    /* Mobile cards */
+    .mobile-cards {
+        display: none;
+        padding: 20px;
+        gap: 16px;
+    }
+
+    .mobile-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+    }
+
+    .mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .mobile-card-header strong {
+        font-size: 1.1rem;
+        color: #1f2937;
+    }
+
+    .mobile-card-body p {
+        margin-bottom: 8px;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .mobile-card-body strong {
+        color: #374151;
+    }
+
+    .mobile-card-actions {
+        margin-top: 12px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .mobile-card-actions .btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        min-height: 36px;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        padding: 20px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .pagination-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .items-per-page {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+
+    .items-per-page label {
+        margin: 0;
+        font-weight: 500;
+        color: #6b7280;
+    }
+
+    .items-per-page select {
+        padding: 4px 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: white;
+        font-size: 14px;
+        min-width: 60px;
+    }
+
+    .items-per-page select:focus {
+        outline: none;
+        border-color: #4a90a4;
+        box-shadow: 0 0 0 2px rgba(74, 144, 164, 0.1);
+    }
+
+    .items-per-page span {
+        color: #6b7280;
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-numbers {
+        display: flex;
+        gap: 4px;
+    }
+
+    .page-numbers .page-item {
+        list-style: none;
+    }
+
+    .page-numbers .page-link {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        background: white;
+        color: #374151;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        min-width: 40px;
+        text-align: center;
+        display: block;
+    }
+
+    .page-numbers .page-link:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    .page-numbers .page-item.active .page-link {
+        background: #4a90a4;
+        border-color: #4a90a4;
+        color: white;
+    }
+
+    /* Modal styling */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 99999;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 20px;
+        padding-top: 10px;
+        padding-bottom: 60px;
+        overflow-y: auto;
+    }
+
+    .modal.show {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 80vh;
+        overflow: visible;
+        margin: 0 auto 50px auto;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        flex: 1;
+        max-height: calc(80vh - 160px);
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        background: #f8fafc;
+        flex-shrink: 0;
+        position: sticky;
+        bottom: 0;
+        z-index: 100;
+        margin-top: auto;
+    }
+
+    /* Form styling */
+    .form-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .form-group .required {
+        color: #ef4444;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #4a90a4;
+        box-shadow: 0 0 0 3px rgba(74, 144, 164, 0.1);
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+
+    .error-message {
+        color: #ef4444;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    .text-danger {
+        color: #ef4444;
+    }
+
+    /* Alert styling */
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    .alert-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+    }
+
+    .alert-dismissible {
+        position: relative;
+        padding-right: 40px;
+    }
+
+    .alert .btn-close {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: inherit;
+        opacity: 0.7;
+    }
+
+    .alert .btn-close:hover {
+        opacity: 1;
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+    }
+
+    .loading-content {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #4a90a4;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        margin: 0 auto 10px;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive design */
+    @@media (max-width: 768px) {
+        .user-management {
+            padding: 15px;
+        }
+
+        .header-content {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filters-container {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .search-box {
+            min-width: auto;
+        }
+
+        .filter-group {
+            justify-content: center;
+        }
+
+        .table-container {
+            display: none;
+        }
+
+        .mobile-cards {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pagination-container {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .pagination-controls {
+            justify-content: center;
+        }
+
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-content {
+            max-height: 82vh;
+            margin: 0 auto;
+        }
+
+        .modal-body {
+            max-height: calc(82vh - 160px);
+        }
+
+        .modal-footer {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+            min-height: 50px;
+            font-size: 16px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .user-management {
+            padding: 10px;
+        }
+
+        .page-header {
+            margin-bottom: 20px;
+        }
+
+        .header-left h1 {
+            font-size: 1.6rem;
+        }
+
+        .filters-section {
+            padding: 15px;
+        }
+
+        .modal {
+            padding: 10px;
+            padding-top: 5px;
+            padding-bottom: 40px;
+        }
+
+        .modal-content {
+            max-height: 85vh;
+        }
+
+        .modal-body {
+            max-height: calc(85vh - 140px);
+            padding: 20px;
+        }
+
+        .modal-footer .btn {
+            min-height: 52px;
+            font-weight: 700;
+        }
+    }
+
+    @@media (min-width: 769px) {
+        .mobile-cards {
+            display: none;
+        }
+
+        .table-container {
+            display: block;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+    $(document).ready(function() {
+        // --- STATE MANAGEMENT ---
+        let allUsers = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let currentEditId = null;
+        let totalPages = 0;
+        let totalUsers = 0;
+        let timeout;
+
+        // --- DOM ELEMENTS ---
+        const $loadingOverlay = $('#loadingOverlay');
+        const $tableBody = $('#usersTableBody');
+        const $paginationInfo = $('#paginationInfo');
+        const $pageNumbers = $('#pageNumbers');
+        const $prevPageBtn = $('#prevPageBtn');
+        const $nextPageBtn = $('#nextPageBtn');
+        const $searchInput = $('#searchInput');
+        const $roleFilter = $('#roleFilter');
+        const $itemsPerPageSelect = $('#itemsPerPage');
+
+        // Modals
+        const $userModal = $('#userModal');
+        const $roleModal = $('#roleModal');
+        const $deleteModal = $('#deleteModal');
+        const $modalTitleText = $('#modalTitleText');
+        const $saveBtnText = $('#saveBtnText');
+        const $userForm = $('#userForm');
+
+        // --- UTILITY FUNCTIONS ---
+        function showLoading() { $loadingOverlay.show(); }
+        function hideLoading() { $loadingOverlay.hide(); }
+
+        function getRoleText(role) {
+            switch(role) {
+                case "2": return "Admin";
+                case "1": return "Quản lý";
+                case "0": return "Khách hàng";
+                default: return "Không xác định";
+            }
+        }
+
+        function getRoleBadgeClass(role) {
+            switch(role) {
+                case "2": return "badge-role-2";
+                case "1": return "badge-role-1";
+                case "0": return "badge-role-0";
+                default: return "badge-secondary";
+            }
+        }
+
+        // --- DATA FETCHING ---
+        async function fetchUsers() {
+            showLoading();
+            try {
+                const searchTerm = $searchInput.val();
+                const roleFilter = $roleFilter.val();
+                
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    pageSize: itemsPerPage,
+                    search: searchTerm,
+                    roleFilter: roleFilter
+                });
+
+                const response = await fetch(`/api/Admin/Users?${params}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    allUsers = result.data.users;
+                    totalUsers = result.data.totalUsers;
+                    totalPages = result.data.totalPages;
+                    currentPage = result.data.currentPage;
+                    
+                    renderTable();
+                    renderMobileCards();
+                    renderPagination();
+                } else {
+                    showAlert(result.message || 'Không thể tải danh sách người dùng', 'danger');
+                }
+            } catch (error) {
+                console.error('Failed to fetch users:', error);
+                showAlert('Không thể tải dữ liệu. Vui lòng thử lại.', 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // --- RENDERING ---
+        function renderTable() {
+            $tableBody.empty();
+            if (allUsers.length === 0) {
+                $tableBody.html('<tr><td colspan="7" class="text-center" style="padding: 40px; color: #6b7280;">Không tìm thấy dữ liệu phù hợp.</td></tr>');
+                return;
+            }
+
+            allUsers.forEach(user => {
+                const roleText = getRoleText(user.vaiTro);
+                const badgeClass = getRoleBadgeClass(user.vaiTro);
+                
+                const row = `
+                    <tr>
+                        <td><strong>${user.maNguoiDung}</strong></td>
+                        <td><span style="font-weight: 600;">${user.hoTen || 'N/A'}</span></td>
+                        <td>${user.email || 'N/A'}</td>
+                        <td>${user.soDienThoai || 'N/A'}</td>
+                        <td>${user.so_cccd || 'N/A'}</td>
+                        <td><span class="badge ${badgeClass}">${roleText}</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-primary btn-sm" onclick="editUser(${user.maNguoiDung})" title="Sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="changeRole(${user.maNguoiDung}, '${user.hoTen}', '${user.vaiTro}')" title="Đổi quyền">
+                                    <i class="fas fa-user-cog"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.maNguoiDung}, '${user.hoTen}')" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                $tableBody.append(row);
+            });
+        }
+
+        function renderMobileCards() {
+            const $mobileCardsContainer = $('#mobileUserCards');
+            $mobileCardsContainer.empty();
+            
+            if (allUsers.length === 0) {
+                $mobileCardsContainer.html('<div style="text-align: center; padding: 40px; color: #6b7280;">Không tìm thấy dữ liệu phù hợp.</div>');
+                return;
+            }
+
+            allUsers.forEach(user => {
+                const roleText = getRoleText(user.vaiTro);
+                const badgeClass = getRoleBadgeClass(user.vaiTro);
+                
+                const card = `
+                    <div class="mobile-card">
+                        <div class="mobile-card-header">
+                            <strong>${user.hoTen || 'N/A'}</strong>
+                            <span class="badge ${badgeClass}">${roleText}</span>
+                        </div>
+                        <div class="mobile-card-body">
+                            <p><strong>ID:</strong> ${user.maNguoiDung}</p>
+                            <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
+                            <p><strong>SĐT:</strong> ${user.soDienThoai || 'N/A'}</p>
+                            <p><strong>CCCD:</strong> ${user.so_cccd || 'N/A'}</p>
+                        </div>
+                        <div class="mobile-card-actions">
+                            <button class="btn btn-primary btn-sm" onclick="editUser(${user.maNguoiDung})" title="Sửa">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button class="btn btn-warning btn-sm" onclick="changeRole(${user.maNguoiDung}, '${user.hoTen}', '${user.vaiTro}')" title="Đổi quyền">
+                                <i class="fas fa-user-cog"></i> Quyền
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.maNguoiDung}, '${user.hoTen}')" title="Xóa">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </div>
+                    </div>
+                `;
+                $mobileCardsContainer.append(card);
+            });
+        }
+
+        function renderPagination() {
+            $paginationInfo.text(`Hiển thị ${totalUsers > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - ${Math.min(currentPage * itemsPerPage, totalUsers)} của ${totalUsers} tài khoản`);
+            
+            $pageNumbers.empty();
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = `<div class="page-item ${i === currentPage ? 'active' : ''}">
+                    <button class="page-link page-btn" data-page="${i}">${i}</button>
+                </div>`;
+                $pageNumbers.append(btn);
+            }
+
+            $prevPageBtn.prop('disabled', currentPage === 1);
+            $nextPageBtn.prop('disabled', currentPage === totalPages || totalPages === 0);
+        }
+
+        // --- EVENT HANDLERS ---
+        $searchInput.on('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                currentPage = 1; 
+                fetchUsers();
+            }, 500);
+        });
+
+        $roleFilter.on('change', () => { currentPage = 1; fetchUsers(); });
+        $itemsPerPageSelect.on('change', function() {
+            itemsPerPage = parseInt($(this).val());
+            currentPage = 1;
+            fetchUsers();
+        });
+
+        $('#clearFiltersBtn').on('click', () => {
+            $searchInput.val('');
+            $roleFilter.val('');
+            currentPage = 1;
+            fetchUsers();
+        });
+
+        $(document).on('click', '.page-btn', function() {
+            currentPage = parseInt($(this).data('page'));
+            fetchUsers();
+        });
+
+        $prevPageBtn.on('click', () => { if (currentPage > 1) { currentPage--; fetchUsers(); } });
+        $nextPageBtn.on('click', () => { if (currentPage < totalPages) { currentPage++; fetchUsers(); } });
+
+        // --- MODAL FUNCTIONS ---
+        function openModal(isEdit = false) {
+            $userForm[0].reset();
+            $('.error-message').text('');
+            
+            if (isEdit) {
+                $modalTitleText.text('Sửa tài khoản');
+                $saveBtnText.text('Cập nhật');
+                $('#passwordRequired').hide();
+                $('#passwordHint').show();
+                $('#matKhau').prop('required', false);
+            } else {
+                $modalTitleText.text('Tạo tài khoản mới');
+                $saveBtnText.text('Lưu');
+                $('#passwordRequired').show();
+                $('#passwordHint').hide();
+                $('#matKhau').prop('required', true);
+                currentEditId = null;
+            }
+            
+            $userModal.addClass('show');
+        }
+
+        function closeModal() {
+            $userModal.removeClass('show');
+        }
+
+        $('#addUserBtn').on('click', () => openModal(false));
+
+        // Close modal handlers
+        $('#closeUserModalBtn, #cancelUserModalBtn').on('click', closeModal);
+        $('#closeRoleModalBtn, #cancelRoleModalBtn').on('click', () => $roleModal.removeClass('show'));
+        $('#closeDeleteModalBtn, #cancelDeleteBtn').on('click', () => $deleteModal.removeClass('show'));
+
+        // Close modal when clicking outside
+        $('.modal').on('click', function(e) {
+            if (e.target === this) {
+                $(this).removeClass('show');
+            }
+        });
+
+        // --- CRUD FUNCTIONS ---
+        window.editUser = async function(id) {
+            try {
+                const response = await fetch(`/api/Auth/GetUser/${id}`);
+                const user = await response.json();
+                
+                if (user) {
+                    openModal(true);
+                    currentEditId = id;
+                    
+                    $('#userId').val(user.maNguoiDung);
+                    $('#hoTen').val(user.hoTen);
+                    $('#email').val(user.email);
+                    $('#soDienThoai').val(user.soDienThoai);
+                    $('#so_cccd').val(user.so_cccd);
+                    $('#vaiTro').val(user.vaiTro);
+                    $('#matKhau').val(''); // Clear password field
+                } else {
+                    showAlert('Không thể tải thông tin người dùng.', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading user:', error);
+                showAlert('Không thể tải thông tin người dùng.', 'danger');
+            }
+        };
+
+        window.changeRole = function(id, name, currentRole) {
+            $('#roleUserName').text(name);
+            $('#newRole').val(currentRole);
+            currentEditId = id;
+            $roleModal.addClass('show');
+        };
+
+        window.deleteUser = function(id, name) {
+            $('#deleteUserName').text(name);
+            currentEditId = id;
+            $deleteModal.addClass('show');
+        };
+
+        // Save user
+        $('#saveUserBtn').on('click', async function() {
+            // Validation
+            let isValid = true;
+            const hoTen = $('#hoTen').val().trim();
+            const email = $('#email').val().trim();
+            const soDienThoai = $('#soDienThoai').val().trim();
+            const so_cccd = $('#so_cccd').val().trim();
+            const matKhau = $('#matKhau').val();
+            const vaiTro = $('#vaiTro').val();
+
+            // Clear previous errors
+            $('.error-message').text('');
+
+            if (!hoTen) {
+                $('#hoTenError').text('Vui lòng nhập họ tên.'); isValid = false;
+            }
+            if (!email) {
+                $('#emailError').text('Vui lòng nhập email.'); isValid = false;
+            }
+            if (!soDienThoai) {
+                $('#soDienThoaiError').text('Vui lòng nhập số điện thoại.'); isValid = false;
+            }
+            if (!so_cccd) {
+                $('#so_cccdError').text('Vui lòng nhập số căn cước công dân.'); isValid = false;
+            }
+            if (!currentEditId && !matKhau) {
+                $('#matKhauError').text('Vui lòng nhập mật khẩu.'); isValid = false;
+            }
+            if (!vaiTro) {
+                $('#vaiTroError').text('Vui lòng chọn vai trò.'); isValid = false;
+            }
+
+            if (!isValid) return;
+
+            const data = {
+                HoTen: hoTen,
+                Email: email,
+                SoDienThoai: soDienThoai,
+                so_cccd: so_cccd,
+                VaiTro: vaiTro
+            };
+
+            if (matKhau) {
+                data.MatKhau = matKhau;
+            }
+
+            const isEdit = !!currentEditId;
+            const url = isEdit ? `/api/Admin/UpdateUser/${currentEditId}` : '/api/Admin/CreateUser';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            showLoading();
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(isEdit ? 'Cập nhật tài khoản thành công.' : 'Tạo tài khoản thành công.', 'success');
+                    closeModal();
+                    fetchUsers();
+                } else {
+                    showAlert(result.message || 'Có lỗi xảy ra.', 'danger');
+                }
+            } catch (error) {
+                showAlert('Không thể kết nối đến máy chủ.', 'danger');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Change role
+        $('#confirmRoleChangeBtn').on('click', async function() {
+            const newRole = $('#newRole').val();
+            
+            showLoading();
+            try {
+                const response = await fetch(`/api/Admin/SetUserRole/${currentEditId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ VaiTro: newRole })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Thay đổi quyền thành công.', 'success');
+                    $roleModal.removeClass('show');
+                    fetchUsers();
+                } else {
+                    showAlert(result.message || 'Có lỗi xảy ra khi thay đổi quyền.', 'danger');
+                }
+            } catch (error) {
+                showAlert('Không thể kết nối đến máy chủ.', 'danger');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Delete user
+        $('#confirmDeleteBtn').on('click', async function() {
+            showLoading();
+            try {
+                const response = await fetch(`/api/Admin/DeleteUser/${currentEditId}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Xóa tài khoản thành công.', 'success');
+                    $deleteModal.removeClass('show');
+                    fetchUsers();
+                } else {
+                    showAlert(result.message || 'Có lỗi xảy ra khi xóa.', 'danger');
+                }
+            } catch (error) {
+                showAlert('Không thể kết nối đến máy chủ.', 'danger');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // --- UTILITY FUNCTIONS ---
+        function showAlert(message, type = 'success') {
+            const alertId = 'alert-' + Date.now();
+            const alert = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert" id="${alertId}">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`);
+            $('#alertContainer').append(alert);
+            setTimeout(() => {
+                $(`#${alertId}`).remove();
+            }, 5000);
+        }
+
+        // --- INITIALIZATION ---
+        fetchUsers();
+    });
+    </script>
+}

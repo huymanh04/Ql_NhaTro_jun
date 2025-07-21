@@ -503,7 +503,7 @@
 .table-responsive {
     border-radius: 12px;
     overflow: auto;
-    background: #23243a;
+    background-color: white;
 }
 
 /* Đậm border bảng */

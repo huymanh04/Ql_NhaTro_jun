@@ -23,7 +23,28 @@ namespace Ql_NhaTro_jun.Controllers
         [HttpGet("get-list-motel")]
         public async Task<IActionResult> getMotel()
         {
-            var banners = await _context.NhaTros.ToListAsync();
+            var banners = await _context.NhaTros
+     .Include(t => t.MaChuTroNavigation)
+     .Select(t => new NhaTro
+     {
+         MaNhaTro = t.MaNhaTro,
+         TenNhaTro = t.TenNhaTro,
+         DiaChi = t.DiaChi,
+         MaTinh = t.MaTinh,
+         MaKhuVuc = t.MaKhuVuc,
+         MoTa = t.MoTa,
+         NgayTao = t.NgayTao,
+
+         // Chú ý: Navigation cần chọn lại từng field nếu không trả về full entity
+         MaChuTroNavigation = t.MaChuTroNavigation == null ? null : new NguoiDung
+         {
+             MaNguoiDung = t.MaChuTroNavigation.MaNguoiDung,
+             HoTen = t.MaChuTroNavigation.HoTen,
+             // thêm các field khác nếu cần
+         }
+     })
+     .ToListAsync();
+
             return Ok(banners);
         }
         [HttpGet("get-motel-by-id/{id}")]

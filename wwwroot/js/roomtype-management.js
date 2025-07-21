@@ -359,7 +359,7 @@ class RoomTypeManagement {
         const formData = this.getFormData();
         const saveBtn = document.getElementById('saveRoomTypeBtn');
         const originalText = saveBtn.innerHTML;
-
+        // Đã xử lý imageFile trong getFormData, không cần append ở đây nữa
         try {
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
@@ -419,28 +419,44 @@ class RoomTypeManagement {
                 await this.loadRoomTypes();
             } else {
                 this.showAlert(result.message || 'Có lỗi xảy ra khi xóa', 'error');
+                this.hideDeleteModal();
             }
         } catch (error) {
             console.error('Error deleting room type:', error);
             this.showAlert('Lỗi kết nối: ' + error.message, 'error');
+            this.hideDeleteModal();
         } finally {
             deleteBtn.disabled = false;
             deleteBtn.innerHTML = originalText;
         }
     }
 
+
     getFormData() {
         const formData = new FormData();
-
         formData.append('tenTheLoai', document.getElementById('tenTheLoai').value.trim());
         formData.append('moTa', document.getElementById('moTa').value.trim());
         formData.append('redirectUrl', document.getElementById('redirectUrl').value.trim());
-
         const imageFile = document.getElementById('imageFile').files[0];
         if (imageFile) {
             formData.append('imageFile', imageFile);
-        }
+        } else {
+            const imgElement = document.getElementById('previewImg');
+            const imageSrc = imgElement.src;
+            const parts = imageSrc.split(',');
+            const mimeMatch = parts[0].match(/:(.*?);/);
+            const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+            const bstr = atob(parts[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            const blob = new Blob([u8arr], { type: mime });
 
+            formData.append('imageFile', blob);
+        }
+        // Nếu không có file mới, KHÔNG append imageFile vào FormData
         return formData;
     }
 

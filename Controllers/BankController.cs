@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using Ql_NhaTro_jun.Models;
+using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -17,6 +19,92 @@ namespace Ql_NhaTro_jun.Controllers
             _logger = logger;
             _context = context;
         }
+        [HttpPost]
+        [Route("/check-status")]
+        public async Task<JsonResult> CheckPaymentStatusAsync(string noidung)
+        {
+
+            int userId = (int)JunTech.id;
+            NguoiDung user = _context.NguoiDungs.Find(userId);
+
+            var url = "https://thueapi.dailysieure.com/api-mbbank";
+            var data = new Dictionary<string, string>
+    {
+        { "taikhoan", "DAMHUYMANH" },
+        { "matkhau", "Manh@2005" },
+        { "sotaikhoan", "3456686868678" }
+    };
+
+            try
+            {
+                using (var client = new HttpClient())
+                using (var content = new FormUrlEncodedContent(data))
+                {
+                    client.Timeout = TimeSpan.FromSeconds(20);
+                    var response = await client.PostAsync(url, content);
+                    string responseString = await response.Content.ReadAsStringAsync();
+
+                    JObject obj = JObject.Parse(responseString);
+                    var transactions = obj["transactions"]
+                        .Where(tx => tx["addDescription"]?.ToString().Contains(noidung) == true);
+
+                    // Nếu không tìm thấy, thử loại bỏ @ hoặc .
+                    if (!transactions.Any())
+                    {
+                        string altNoiDung = noidung.Replace("@", "").Replace(".", "");
+                        transactions = obj["transactions"]
+                            .Where(tx => tx["addDescription"]?.ToString().Contains(altNoiDung) == true);
+                    }
+
+                    foreach (var tx in transactions)
+                    {
+                        int amount = int.Parse(tx["amount"].ToString());
+                        if (amount < 10000) continue;
+
+                        string description = tx["addDescription"]?.ToString()?.Replace(" ", "") ?? "";
+                        if (description.Length > 250)
+                            description = description.Substring(0, 250);
+
+                        var existed = _context.BankHistories.FirstOrDefault(c => c.TransactionCode == description);
+                        if (existed != null) continue;
+
+                        var bank = new BankHistory
+                        {
+                            Amount = amount,
+                            CreatedAt = DateTime.Parse(tx["transactionDate"].ToString()),
+                            TransactionCode = description,
+                            Note = noidung,
+                            BankName = "MB BANK"
+                        };
+
+                        var usera = _context.NguoiDungs.FirstOrDefault(u => u.MaNguoiDung == JunTech.id);
+                        {
+                            bank.MaNguoiDung = usera.MaNguoiDung;
+                            var hoadon = _context.HoaDonTienIches.FirstOrDefault(t => t.MaHoaDon == int.Parse(noidung.Replace("#", "")));
+                            hoadon.DaThanhToan = true;
+                            _context.Update(hoadon);
+                            _context.Entry(usera).State = EntityState.Modified;
+                            _context.BankHistories.Add(bank);
+                            _context.SaveChanges();
+
+                            return new JsonResult(new
+                            {
+                                success = true,
+                                isPaid = true,
+                                message = $"Bạn đã thanh toán thành công {amount:N0} VNĐ cho hóa đơn {noidung}"
+                            });
+                        }
+                    }
+                }
+
+                return new JsonResult(new { success = false, isPaid = false, message = "Không tìm thấy giao dịch phù hợp" });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { success = false, isPaid = false, message = "Lỗi xử lý: " + ex.Message });
+            }
+        }
+
         [HttpGet("get-banks")]
         public async Task<IActionResult> GetBanks()
         {

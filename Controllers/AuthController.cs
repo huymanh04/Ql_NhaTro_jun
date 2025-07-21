@@ -135,6 +135,7 @@ namespace Api_Ql_nhatro.Controllers
             }
 
             model.VaiTro = "0";
+
             _context.Add(model);
 
             HttpContext.Session.Remove($"AES_{model.Email}_Key");
@@ -516,6 +517,7 @@ namespace Api_Ql_nhatro.Controllers
                 hoTen = user.HoTen,
                 email = user.Email,
                 soDienThoai = user.SoDienThoai,
+                so_cccd=user.so_cccd,
                 vaiTro = user.VaiTro
             });
         }

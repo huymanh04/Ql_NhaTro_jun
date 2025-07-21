@@ -316,7 +316,7 @@
                 };
 
                 $.ajax({
-                    url: `/api/UtilityBill/edit-hoadon-tien-ich/${id}`,
+                    url: `/api/UtilityBill/edit-hoadon-tien-ich/${id}?DaThanhToan=${$('#editDaThanhToan').val()}`,
                     type: 'PUT',
                     contentType: 'application/json',
                     data: JSON.stringify(data),

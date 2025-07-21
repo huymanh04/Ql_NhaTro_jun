@@ -299,89 +299,97 @@ class MotelManagement {
 
         // Render desktop table
         tbody.innerHTML = pageMotels.map((motel, index) => {
-            const tinh = this.provinces.find(p => p.maTinh === motel.maTinh);
-            const khuVuc = this.areas.find(a => a.maKhuVuc === motel.maKhuVuc);
-            const chuTro = this.owners.find(o => o.maNguoiDung === motel.maChuTro);
+
             
-            // Calculate STT (số thứ tự)
+            const tenTinh = this.provinces.find(p => p.maTinh === motel.maTinh)?.tenTinh || 'N/A';
+            const tenKhuVuc = this.areas.find(a => a.maKhuVuc === motel.maKhuVuc)?.tenKhuVuc || 'N/A';
+            const tenChuTro = motel.maChuTroNavigation?.hoTen || 'N/A';
+
+           
+             
+                // xử lý motel hợp lệ
+            
+
             const stt = (this.currentPage - 1) * this.itemsPerPage + index + 1;
-            
+
             return `
-                <tr>
-                    <td><strong>${stt}</strong></td>
-                    <td><strong>${motel.tenNhaTro}</strong></td>
-                    <td title="${motel.diaChi}">${motel.diaChi}</td>
-                    <td>${tinh ? tinh.tenTinh : 'N/A'}</td>
-                    <td>${khuVuc ? khuVuc.tenKhuVuc : 'N/A'}</td>
-                    <td>${chuTro ? chuTro.hoTen : 'N/A'}</td>
-                    <td>${this.formatDate(motel.ngayTao)}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-action btn-edit" data-id="${motel.maNhaTro}">
-                                <i class="fas fa-edit"></i> Sửa
-                            </button>
-                            <button class="btn-action btn-delete" data-id="${motel.maNhaTro}">
-                                <i class="fas fa-trash"></i> Xóa
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+        <tr>
+            <td><strong>${stt}</strong></td>
+            <td><strong>${motel.tenNhaTro}</strong></td>
+            <td title="${motel.diaChi}">${motel.diaChi}</td>
+            <td>${tenTinh}</td>
+            <td>${tenKhuVuc}</td>
+            <td>${tenChuTro}</td>
+            <td>${this.formatDate(motel.ngayTao)}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-action btn-edit" data-id="${motel.maNhaTro}">
+                        <i class="fas fa-edit"></i> Sửa
+                    </button>
+                    <button class="btn-action btn-delete" data-id="${motel.maNhaTro}">
+                        <i class="fas fa-trash"></i> Xóa
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `;
         }).join('');
+
 
         // Render mobile cards
         mobileCards.innerHTML = pageMotels.map((motel, index) => {
             const tinh = this.provinces.find(p => p.maTinh === motel.maTinh);
+
             const khuVuc = this.areas.find(a => a.maKhuVuc === motel.maKhuVuc);
-            const chuTro = this.owners.find(o => o.maNguoiDung === motel.maChuTro);
-            
-            // Calculate STT (số thứ tự)
+            const tenChuTro = motel.maChuTroNavigation?.hoTen || 'N/A';
+
+            // Tính STT
             const stt = (this.currentPage - 1) * this.itemsPerPage + index + 1;
-            
+
             return `
-                <div class="mobile-card">
-                    <div class="mobile-card-header">
-                        <div class="mobile-card-info">
-                            <h3>${motel.tenNhaTro}</h3>
-                            <p>STT: ${stt}</p>
-                        </div>
-                    </div>
-                    <div class="mobile-card-details">
-                        <div class="mobile-detail-item">
-                            <span class="mobile-detail-label">Địa chỉ</span>
-                            <span class="mobile-detail-value">${motel.diaChi}</span>
-                        </div>
-                        <div class="mobile-detail-item">
-                            <span class="mobile-detail-label">Tỉnh/Thành</span>
-                            <span class="mobile-detail-value">${tinh ? tinh.tenTinh : 'N/A'}</span>
-                        </div>
-                        <div class="mobile-detail-item">
-                            <span class="mobile-detail-label">Khu vực</span>
-                            <span class="mobile-detail-value">${khuVuc ? khuVuc.tenKhuVuc : 'N/A'}</span>
-                        </div>
-                        <div class="mobile-detail-item">
-                            <span class="mobile-detail-label">Chủ trọ</span>
-                            <span class="mobile-detail-value">${chuTro ? chuTro.hoTen : 'N/A'}</span>
-                        </div>
-                        <div class="mobile-detail-item">
-                            <span class="mobile-detail-label">Ngày tạo</span>
-                            <span class="mobile-detail-value">${this.formatDate(motel.ngayTao)}</span>
-                        </div>
-                        <div class="mobile-detail-item">
-                            <span class="mobile-detail-label">Mô tả</span>
-                            <span class="mobile-detail-value">${motel.moTa || 'Không có mô tả'}</span>
-                        </div>
-                    </div>
-                    <div class="mobile-card-actions">
-                        <button class="btn-action btn-edit" data-id="${motel.maNhaTro}">
-                            <i class="fas fa-edit"></i> Sửa
-                        </button>
-                        <button class="btn-action btn-delete" data-id="${motel.maNhaTro}">
-                            <i class="fas fa-trash"></i> Xóa
-                        </button>
-                    </div>
+        <div class="mobile-card">
+            <div class="mobile-card-header">
+                <div class="mobile-card-info">
+                    <h3>${motel.tenNhaTro}</h3>
+                    <p>STT: ${stt}</p>
                 </div>
-            `;
+            </div>
+            <div class="mobile-card-details">
+                <div class="mobile-detail-item">
+                    <span class="mobile-detail-label">Địa chỉ</span>
+                    <span class="mobile-detail-value">${motel.diaChi}</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span class="mobile-detail-label">Tỉnh/Thành</span>
+                    <span class="mobile-detail-value">${tinh ? tinh.tenTinh : 'N/A'}</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span class="mobile-detail-label">Khu vực</span>
+                    <span class="mobile-detail-value">${khuVuc ? khuVuc.tenKhuVuc : 'N/A'}</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span class="mobile-detail-label">Chủ trọ</span>
+                    <span class="mobile-detail-value">${tenChuTro}</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span class="mobile-detail-label">Ngày tạo</span>
+                    <span class="mobile-detail-value">${this.formatDate(motel.ngayTao)}</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span class="mobile-detail-label">Mô tả</span>
+                    <span class="mobile-detail-value">${motel.moTa || 'Không có mô tả'}</span>
+                </div>
+            </div>
+            <div class="mobile-card-actions">
+                <button class="btn-action btn-edit" data-id="${motel.maNhaTro}">
+                    <i class="fas fa-edit"></i> Sửa
+                </button>
+                <button class="btn-action btn-delete" data-id="${motel.maNhaTro}">
+                    <i class="fas fa-trash"></i> Xóa
+                </button>
+            </div>
+        </div>
+    `;
         }).join('');
 
         console.log('✅ MOTEL RENDERED:');

@@ -18,9 +18,13 @@ public partial class NguoiDung
     public string? MatKhau { get; set; }
 
     public string? VaiTro { get; set; }
+
+    public string so_cccd { get; set; } = null!;
     [NotMapped]
     [JsonPropertyName("g-recaptcha-response")]
     public string? RecaptchaResponse { get; set; }
+    public virtual ICollection<BankHistory> BankHistories { get; set; } = new List<BankHistory>();
+
     public virtual ICollection<HopDongNguoiThue> HopDongNguoiThues { get; set; } = new List<HopDongNguoiThue>();
 
     public virtual ICollection<NhaTro> NhaTros { get; set; } = new List<NhaTro>();

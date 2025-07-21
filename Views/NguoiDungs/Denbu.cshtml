@@ -455,17 +455,31 @@ $(document).ready(function() {
         }
 
         try {
-                    const response = await fetch(`/api/Room/get-room-trong-by-nha-tro/${motelId}`);
+            // Lấy tất cả phòng của nhà trọ (không chỉ phòng trống)
+            const response = await fetch(`/api/Room/get-room-by-nha-tro/${motelId}`);
             const result = await response.json();
-            if (result.success && result.data.phong && result.data.phong.length > 0) {
-                allRooms = result.data.phong;
+            
+            if (result.success && result.data && result.data.length > 0) {
+                allRooms = result.data;
                 $roomSelect.empty().append('<option value="">Chọn phòng</option>');
                 allRooms.forEach(room => {
                     $roomSelect.append(`<option value="${room.maPhong}">${room.tenPhong}</option>`);
                 });
                 $roomSelect.prop('disabled', false);
             } else {
-                 $roomSelect.empty().append('<option value="">Không có phòng nào đang thuê</option>');
+                // Fallback: thử endpoint khác
+                const fallbackResponse = await fetch(`/api/Room/get-room-trong-by-nha-tro/${motelId}`);
+                const fallbackResult = await fallbackResponse.json();
+                if (fallbackResult.success && fallbackResult.data.phong && fallbackResult.data.phong.length > 0) {
+                    allRooms = fallbackResult.data.phong;
+                    $roomSelect.empty().append('<option value="">Chọn phòng</option>');
+                    allRooms.forEach(room => {
+                        $roomSelect.append(`<option value="${room.maPhong}">${room.tenPhong}</option>`);
+                    });
+                    $roomSelect.prop('disabled', false);
+                } else {
+                    $roomSelect.empty().append('<option value="">Không có phòng nào</option>');
+                }
             }
         } catch (error) {
             console.error('Failed to fetch rooms:', error);
@@ -482,18 +496,30 @@ $(document).ready(function() {
         }
 
         try {
+            // Lấy tất cả hợp đồng của phòng (bao gồm cả đã hoàn thành)
                     const response = await fetch(`/api/Contract/get-contract-by-room-id/${roomId}`);
             const result = await response.json();
-            if (result.success && result.data) {
-                const contract = result.data;
-                 if (contract && !contract.isCompleted) {
-                     $contractSelect.empty().append(`<option value="${contract.contractId}">Hợp đồng #${contract.contractId}</option>`);
-                     $contractSelect.prop('disabled', false);
-                 } else {
-                     $contractSelect.empty().append('<option value="">Không có hợp đồng hiệu lực</option>');
-                 }
+            
+            if (result.success && result.data && result.data.length > 0) {
+                $contractSelect.empty().append('<option value="">Chọn hợp đồng</option>');
+                result.data.forEach(contract => {
+                    const status = contract.isCompleted ? ' (Đã hoàn thành)' : ' (Đang hiệu lực)';
+                    $contractSelect.append(`<option value="${contract.contractId}">Hợp đồng #${contract.contractId}${status}</option>`);
+                });
+                $contractSelect.prop('disabled', false);
             } else {
-                 $contractSelect.empty().append('<option value="">Không có hợp đồng cho phòng này</option>');
+                // Fallback: thử endpoint cũ
+                        const fallbackResponse = await fetch(`/api/Contract/get-contract-by-room-id/${roomId}`);
+                const fallbackResult = await fallbackResponse.json();
+                if (fallbackResult.success && fallbackResult.data) {
+                    const contract = fallbackResult.data;
+                    $contractSelect.empty().append('<option value="">Chọn hợp đồng</option>');
+                    const status = contract.isCompleted ? ' (Đã hoàn thành)' : ' (Đang hiệu lực)';
+                    $contractSelect.append(`<option value="${contract.contractId}">Hợp đồng #${contract.contractId}${status}</option>`);
+                    $contractSelect.prop('disabled', false);
+                } else {
+                    $contractSelect.empty().append('<option value="">Không có hợp đồng cho phòng này</option>');
+                }
             }
         } catch (error) {
             console.error('Failed to fetch contract:', error);
@@ -537,31 +563,51 @@ $(document).ready(function() {
     
     window.editItem = async function(id) {
         const item = allCompensations.find(c => c.maDenBu == id);
-        if (!item) return;
+        if (!item) {
+            showAlert('Không tìm thấy thông tin đền bù.', 'warning');
+            return;
+        }
 
         const contract = allContracts.find(c => c.contractId == item.maHopDong);
-        if (!contract || !contract.room || !contract.room.nhaTro) {
-             showAlert('Không thể tải thông tin chi tiết cho hợp đồng này.', 'warning');
-             return;
+        if (!contract || !contract.room) {
+            showAlert('Không thể tải thông tin chi tiết cho hợp đồng này.', 'warning');
+            return;
         }
 
         openModal(true);
         currentEditId = id;
         
-        // Populate and set dropdowns sequentially
-        populateMotelDropdown();
-        $motelSelect.val(contract.room.nhaTro.maNhaTro);
-        
-        await updateRoomDropdown(contract.room.nhaTro.maNhaTro);
-        $roomSelect.val(contract.room.maPhong);
-        
-        await updateContractDropdown(contract.room.maPhong);
-        $contractSelect.val(item.maHopDong);
+        try {
+            // 1. Populate và chọn nhà trọ
+            populateMotelDropdown();
+            
+            // Tìm mã nhà trọ từ thông tin phòng
+            const motelId = contract.room.maNhaTro || contract.room.nhaTro?.maNhaTro;
+            if (motelId) {
+                $motelSelect.val(motelId);
+                
+                // 2. Load và chọn phòng
+                await updateRoomDropdown(motelId);
+                $roomSelect.val(contract.room.maPhong);
+                
+                // 3. Load và chọn hợp đồng  
+                await updateContractDropdown(contract.room.maPhong);
+                $contractSelect.val(item.maHopDong);
+            } else {
+                // Fallback: nếu không có thông tin nhà trọ, load tất cả hợp đồng
+                populateContractFilters();
+                $contractSelect.val(item.maHopDong);
+            }
 
-        // Set other fields
-        $('#compensationId').val(item.maDenBu);
-        $('#noiDung').val(item.noiDung);
-        $('#soTien').val(item.soTien);
+            // 4. Set các field khác
+            $('#compensationId').val(item.maDenBu);
+            $('#noiDung').val(item.noiDung);
+            $('#soTien').val(item.soTien);
+            
+        } catch (error) {
+            console.error('Error loading edit data:', error);
+            showAlert('Có lỗi khi tải dữ liệu chỉnh sửa.', 'danger');
+        }
     };
 
     window.viewItem = function(id) {

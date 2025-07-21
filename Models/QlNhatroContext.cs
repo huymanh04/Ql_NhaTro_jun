@@ -17,6 +17,8 @@ public partial class QlNhatroContext : DbContext
 
     public virtual DbSet<Bank> Banks { get; set; }
 
+    public virtual DbSet<BankHistory> BankHistories { get; set; }
+
     public virtual DbSet<Banner> Banners { get; set; }
 
     public virtual DbSet<CaiDatHeThong> CaiDatHeThongs { get; set; }
@@ -65,6 +67,23 @@ public partial class QlNhatroContext : DbContext
             entity.Property(e => e.SoTaiKhoan).HasMaxLength(100);
             entity.Property(e => e.Ten).HasMaxLength(50);
             entity.Property(e => e.TenNganHang).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<BankHistory>(entity =>
+        {
+            entity.HasKey(e => e.HistoryId).HasName("PK__BankHist__4D7B4ADDDD5FAE14");
+
+            entity.Property(e => e.HistoryId).HasColumnName("HistoryID");
+            entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.BankName).HasMaxLength(100);
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.Note).HasMaxLength(250);
+            entity.Property(e => e.TransactionCode).HasMaxLength(250);
+
+            entity.HasOne(d => d.MaNguoiDungNavigation).WithMany(p => p.BankHistories)
+                .HasForeignKey(d => d.MaNguoiDung)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BankHistories_Users");
         });
 
         modelBuilder.Entity<Banner>(entity =>
@@ -230,6 +249,11 @@ public partial class QlNhatroContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.HoTen).HasMaxLength(100);
             entity.Property(e => e.MatKhau).HasMaxLength(255);
+            entity.Property(e => e.so_cccd)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .HasDefaultValue("")
+                .HasColumnName("so_cccd");
             entity.Property(e => e.SoDienThoai).HasMaxLength(20);
             entity.Property(e => e.VaiTro).HasMaxLength(20);
         });

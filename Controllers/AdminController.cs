@@ -789,6 +789,7 @@ namespace Ql_NhaTro_jun.Controllers
                         u.HoTen,
                         u.Email,
                         u.SoDienThoai,
+                        u.so_cccd,
                         u.VaiTro,
                         VaiTroText = u.VaiTro == "2" ? "Admin" : u.VaiTro == "1" ? "Quản lý" : "Khách hàng",
                     })
@@ -813,7 +814,7 @@ namespace Ql_NhaTro_jun.Controllers
         }
 
         [HttpPost("CreateUser")]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+        public async Task<IActionResult> CreateUser([FromBody] NguoiDung request)
         {
             try
             {
@@ -857,6 +858,7 @@ namespace Ql_NhaTro_jun.Controllers
                     HoTen = request.HoTen,
                     Email = request.Email,
                     SoDienThoai = request.SoDienThoai,
+                    so_cccd = request.so_cccd,
                     MatKhau = request.MatKhau, // Trong thực tế nên hash password
                     VaiTro = request.VaiTro
                 };
@@ -869,6 +871,7 @@ namespace Ql_NhaTro_jun.Controllers
                     HoTen = newUser.HoTen,
                     Email = newUser.Email,
                     SoDienThoai = newUser.SoDienThoai,
+                    so_cccd=newUser.so_cccd,
                     VaiTro = newUser.VaiTro
                 }));
             }

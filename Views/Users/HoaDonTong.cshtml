@@ -734,6 +734,84 @@
         <h4>Chưa có hóa đơn nào</h4>
         <p>Bạn chưa có hóa đơn tiện ích nào được tạo</p>
     </div>
+    <!-- Modal thanh toán -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="paymentModalLabel">
+                        <i class="fas fa-credit-card me-2"></i>Thanh toán hóa đơn
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Thông tin hóa đơn -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Thông tin hóa đơn</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-5"><strong>Mã HĐ:</strong></div>
+                                        <div class="col-7" id="modal-ma-hoadon">-</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5"><strong>Tổng tiền:</strong></div>
+                                        <div class="col-7">
+                                            <span id="modal-tong-tien" class="text-danger fw-bold">-</span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-5"><strong>Nội dung:</strong></div>
+                                        <div class="col-7" id="modal-noi-dung">Thanh toán hóa đơn tiện ích</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- QR Code thanh toán -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-qrcode me-2"></i>Quét mã QR để thanh toán</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="qrCodeContainer" class="mb-3">
+                                        <img id="qrCodeImage" src="" height="200px" alt="QR Code" class="border rounded">
+                                    </div>
+                                    <div class="bank-info">
+                                        <p class="mb-1"><strong>Ngân hàng:</strong> <span id="ten_ngan_hang"></span></p>
+                                        <p class="mb-1">
+                                            <strong>STK:</strong> 
+                                            <span id="stk_bank" class="text-primary fw-bold" style="cursor: pointer;" onclick="copyToClipboard('stk_bank')"></span>
+                                            <i class="fas fa-copy ms-1 text-muted" style="font-size: 12px;"></i>
+                                        </p>
+                                        <p class="mb-1"><strong>Chủ TK:</strong> <span id="ten_chu_tai_khoan"></span></p>
+                                        <p class="text-muted small">Nhấp vào số tài khoản để sao chép</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Hướng dẫn:</strong> Quét mã QR bằng ứng dụng ngân hàng hoặc chuyển khoản với nội dung chính xác để hệ thống tự động xác nhận thanh toán.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Đóng
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="checkPaymentStatus()">
+                        <i class="fas fa-check-circle me-2"></i>Đã thanh toán
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section scripts {
@@ -746,6 +824,71 @@ console.log('JunTech object:', JunTech);
 
 let currentHoaDon = null;
 
+// Hiển thị modal thanh toán
+function showPaymentModal(maHoaDon, tongTien) {
+    currentHoaDon = { maHoaDon, tongTien };
+    
+    // Cập nhật thông tin trong modal
+    document.getElementById('modal-ma-hoadon').textContent = '#' + maHoaDon;
+    document.getElementById('modal-tong-tien').textContent = tongTien.toLocaleString('vi-VN') + ' đ';
+    
+    // Tạo nội dung chuyển khoản
+    const noiDung = `HD${maHoaDon}`;
+    document.getElementById('modal-noi-dung').textContent = noiDung;
+    
+    // Tạo QR Code với thông tin thanh toán
+   
+    
+    // Hiển thị modal
+    const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    modal.show();
+}
+
+// Sao chép số tài khoản
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent;
+    
+    navigator.clipboard.writeText(text).then(function() {
+        // Hiển thị thông báo thành công
+        const originalText = element.innerHTML;
+        element.innerHTML = '<i class="fas fa-check text-success"></i> Đã sao chép';
+        
+        setTimeout(() => {
+            element.innerHTML = originalText;
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Không thể sao chép: ', err);
+    });
+}
+
+// Kiểm tra trạng thái thanh toán
+function checkPaymentStatus() {
+    if (!currentHoaDon) return;
+    
+    // Hiển thị loading
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang kiểm tra...';
+    btn.disabled = true;
+    
+    // Simulate API call - thay thế bằng API thực tế
+    setTimeout(() => {
+        // Đóng modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+        modal.hide();
+        
+        // Reload lại danh sách hóa đơn
+        loadHoaDon();
+        
+        // Reset button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        // Hiển thị thông báo thành công
+        alert('Kiểm tra thanh toán thành công!');
+    }, 2000);
+}
 async function loadHoaDon() {
     const loadingContainer = document.getElementById('loading-container');
     const contentContainer = document.getElementById('content-container');
@@ -759,6 +902,32 @@ async function loadHoaDon() {
     emptyContainer.style.display = 'none';
     
     try {
+                try {
+                    const url = '/api/Bank/get-banks';
+                    const response1 = await fetch(url);
+                    const result1 = await response1.json();
+
+                    if (result1.success && Array.isArray(result1.data) && result1.data.length > 0) {
+                        const firstBank = result1.data[0];
+
+                        // Gán thông tin ngân hàng
+                        document.getElementById('stk_bank').textContent = firstBank.soTaiKhoan;
+                        document.getElementById('ten_ngan_hang').textContent = firstBank.tenNganHang;
+                        document.getElementById('ten_chu_tai_khoan').textContent = firstBank.ten.toUpperCase();
+
+                        // Tạo nội dung và QR
+                        const noiDung = document.getElementById('modal-ma-hoadon').textContent;
+                        const tongTien = document.getElementById('modal-tong-tien').textContent;
+
+                        const qrUrl = `https://img.vietqr.io/image/MB-${firstBank.soTaiKhoan}-compact2.jpg?amount=${tongTien}&addInfo=${encodeURIComponent(noiDung)}&accountName=${encodeURIComponent(firstBank.ten.toUpperCase())}`;
+                        document.getElementById('qrCodeImage').src = qrUrl;
+                    } else {
+                        console.error("Không có dữ liệu ngân hàng.");
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi gọi API ngân hàng:", error);
+                }
+
         // Sử dụng JunTech.id để lấy hóa đơn của khách hàng đang đăng nhập
         const apiUrl = `/api/UtilityBill/get-hoa-don-by-khach-hang/${JunTech.id}`;
         console.log('Calling API:', apiUrl);
@@ -769,11 +938,11 @@ async function loadHoaDon() {
         
         if (result.success && result.data && result.data.length > 0) {
             const hoaDons = result.data;
-            
+
             // Cập nhật tên phòng (lấy từ hóa đơn đầu tiên)
             const roomNames = [...new Set(hoaDons.map(hd => hd.tenPhong))];
             document.getElementById('room-name').textContent = roomNames.join(', ');
-            
+
             // Tạo bảng hóa đơn
             const tbody = document.getElementById('hoadon-tbody');
             tbody.innerHTML = hoaDons.map((hd, index) => `
@@ -793,6 +962,7 @@ async function loadHoaDon() {
                         <span class="status-badge ${hd.daThanhToan ? 'status-paid' : 'status-unpaid'}">
                             ${hd.daThanhToan ? 'Đã thanh toán' : 'Chưa thanh toán'}
                         </span>
+                        ${!hd.daThanhToan ? `<button type="button" class="btn btn-warning btn-sm mt-2 btn-thanh-toan" onclick="showPaymentModal(${hd.maHoaDon}, ${hd.tongTien})">Thanh toán</button>` : ''}
                     </td>
                 </tr>
             `).join('');

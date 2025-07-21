@@ -568,8 +568,9 @@ class HoadonManager {
 
         try {
             this.showLoading();
+            const isPaid = $('#daThanhToan').val() === "true";
             const url = this.isEditing 
-                ? `/api/UtilityBill/edit-hoadon-tien-ich/${this.currentBillId}`
+                ? `/api/UtilityBill/edit-hoadon-tien-ich/${this.currentBillId}?DaThanhToan=${isPaid}`
                 : '/api/UtilityBill/add-hoadon-tien-ich';
             
             const method = this.isEditing ? 'PUT' : 'POST';

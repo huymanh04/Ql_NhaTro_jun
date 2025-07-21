@@ -157,6 +157,11 @@ public class RoomTypeController : ControllerBase
                 return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
             }
             #endregion
+            // Nếu không có file ảnh, gán model.ImageFile = null để tránh lỗi ModelState
+            if (Request.Form.Files["imageFile"] == null || Request.Form.Files["imageFile"].Length == 0)
+            {
+                model.ImageFile = null;
+            }
             if (!ModelState.IsValid)
             {
                 return BadRequest(ApiResponse<object>.CreateError(
@@ -402,7 +407,7 @@ public class RoomTypeController : ControllerBase
         [StringLength(500, ErrorMessage = "Mô tả không được vượt quá 500 ký tự")]
         public string MoTa { get; set; }
 
-    
+        // KHÔNG có [Required] ở đây
         public IFormFile ImageFile { get; set; }
 
         [Url(ErrorMessage = "URL không hợp lệ")]
