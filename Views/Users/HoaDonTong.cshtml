@@ -677,7 +677,12 @@
         }
     }
 </style>
-
+<link href="~/css/notification.css" rel="stylesheet" />
+<div id="live-notification" class="hidden">
+    <div class="message">Notification message</div>
+    <div class="close-btn"></div>
+    <div class="progress-bar"></div>
+</div>
 <div class="hoadon-container animate-fade-in">
     <div class="hoadon-header">
         <h2><i class="fas fa-file-invoice-dollar"></i> Hóa Đơn Chi Tiết</h2>
@@ -711,6 +716,27 @@
                         </tr>
                     </thead>
                     <tbody id="hoadon-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bảng lịch sử thanh toán -->
+        <div class="hoadon-card" style="margin-top: 30px;">
+            <h5 style="padding: 16px 0 0 16px; color: var(--primary);"><i class="fas fa-history"></i> Lịch sử thanh toán</h5>
+            <div class="table-responsive">
+                <table class="hoadon-table">
+                    <thead>
+                        <tr>
+                            <th>Mã giao dịch</th>
+                            <th>Số tiền</th>
+                            <th>Ngân hàng</th>
+                            <th>Mã giao dịch</th>
+                            <th>Ghi chú</th>
+                            <th>Thời gian</th>
+                            <th>Phương thức</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lichsu-tbody"></tbody>
                 </table>
             </div>
         </div>
@@ -805,7 +831,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-2"></i>Đóng
                     </button>
-                    <button type="button" class="btn btn-success" onclick="checkPaymentStatus()">
+                    <button type="button" class="btn btn-success" onclick="checkPaymentStatus(event)">
                         <i class="fas fa-check-circle me-2"></i>Đã thanh toán
                     </button>
                 </div>
@@ -823,26 +849,104 @@ console.log('JunTech ID:', JunTech.id);
 console.log('JunTech object:', JunTech);
 
 let currentHoaDon = null;
+        let checkIntervalId = null;
+    let stk='';
+        let name = '';
+        function startCheckingPayment(noidung, modalInstance) {
+            // Hủy vòng lặp cũ nếu đang chạy
+            if (checkIntervalId) {
+                clearInterval(checkIntervalId);
+            }
 
-// Hiển thị modal thanh toán
-function showPaymentModal(maHoaDon, tongTien) {
-    currentHoaDon = { maHoaDon, tongTien };
+            checkIntervalId = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/Bank/check-status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ noidung })
+                    });
+
+                    const text = await response.text();
+                    console.log("Server trả:", text);
+
+                    const result = JSON.parse(text);
+
+                    if (result.success && result.isPaid) {
+                        clearInterval(checkIntervalId); // ✅ Dừng kiểm tra khi thành công
+                        // alert(result.message);
+                        showNotification(result.message, 'success');
+                        // Ẩn modal
+                        const modalElement = document.getElementById('paymentModal');
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) modal.hide();
+
+                        // Cập nhật danh sách hóa đơn
+                        loadHoaDon();
+                        // Cập nhật lịch sử thanh toán
+                        loadLichSuThanhToan();
+                    } else {
+                        console.log("Chưa phát hiện thanh toán...");
+                    }
+
+                } catch (error) {
+                    console.error("Lỗi khi kiểm tra thanh toán:", error);
+                }
+            }, 2000); // Kiểm tra mỗi 2 giây
+        }
+        function showNotification(message, type, duration = 10000) {
+            const notification = document.getElementById('live-notification');
+            notification.querySelector('.message').textContent = message;
+            notification.className = ''; // Clear all classes
+            notification.classList.add(type); // Add type class (success, error, info, warning)
+            notification.classList.add('show');
+
+            // Clear any existing timeout
+            if (window.notificationTimeout) {
+                clearTimeout(window.notificationTimeout);
+            }
+
+            // Auto dismiss
+            window.notificationTimeout = setTimeout(() => {
+                notification.classList.add('remove');
+                setTimeout(() => {
+                    notification.classList.remove('show', 'remove');
+                    notification.classList.add('hidden');
+                }, 300);
+            }, duration);
+
+            // Close button functionality
+            notification.querySelector('.close-btn').addEventListener('click', function () {
+                clearTimeout(window.notificationTimeout);
+                notification.classList.add('remove');
+                setTimeout(() => {
+                    notification.classList.remove('show', 'remove');
+                    notification.classList.add('hidden');
+                }, 300);
+            }, { once: true });
+        }
+
+    // Hiển thị modal thanh toán
+    function showPaymentModal(maHoaDon, tongTien) {
+        currentHoaDon = { maHoaDon, tongTien };
     
-    // Cập nhật thông tin trong modal
-    document.getElementById('modal-ma-hoadon').textContent = '#' + maHoaDon;
-    document.getElementById('modal-tong-tien').textContent = tongTien.toLocaleString('vi-VN') + ' đ';
+        // Cập nhật thông tin trong modal
+        document.getElementById('modal-ma-hoadon').textContent = '#' + maHoaDon;
+        document.getElementById('modal-tong-tien').textContent = tongTien.toLocaleString('vi-VN') + ' đ';
     
-    // Tạo nội dung chuyển khoản
-    const noiDung = `HD${maHoaDon}`;
-    document.getElementById('modal-noi-dung').textContent = noiDung;
+        // Tạo nội dung chuyển khoản
+        const noiDung = `HD${maHoaDon}`;
+        document.getElementById('modal-noi-dung').textContent = noiDung;
+                const qrUrl = `https://img.vietqr.io/image/MB-${stk}-compact2.jpg?amount=${tongTien}&addInfo=${encodeURIComponent(noiDung)}&accountName=${encodeURIComponent(name.toUpperCase())}`;
+                document.getElementById('qrCodeImage').src = qrUrl;
+        // Tạo QR Code với thông tin thanh toán
+
+            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            modal.show();
     
-    // Tạo QR Code với thông tin thanh toán
-   
-    
-    // Hiển thị modal
-    const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
-    modal.show();
-}
+            startCheckingPayment(noiDung, modal);
+
+     
+    }
 
 // Sao chép số tài khoản
 function copyToClipboard(elementId) {
@@ -853,7 +957,7 @@ function copyToClipboard(elementId) {
         // Hiển thị thông báo thành công
         const originalText = element.innerHTML;
         element.innerHTML = '<i class="fas fa-check text-success"></i> Đã sao chép';
-        
+                showNotification('Đã sao chép', 'success');
         setTimeout(() => {
             element.innerHTML = originalText;
         }, 2000);
@@ -863,32 +967,58 @@ function copyToClipboard(elementId) {
 }
 
 // Kiểm tra trạng thái thanh toán
-function checkPaymentStatus() {
-    if (!currentHoaDon) return;
-    
-    // Hiển thị loading
-    const btn = event.target;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang kiểm tra...';
-    btn.disabled = true;
-    
-    // Simulate API call - thay thế bằng API thực tế
-    setTimeout(() => {
-        // Đóng modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
-        modal.hide();
-        
-        // Reload lại danh sách hóa đơn
-        loadHoaDon();
-        
-        // Reset button
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        
-        // Hiển thị thông báo thành công
-        alert('Kiểm tra thanh toán thành công!');
-    }, 2000);
-}
+        async function checkPaymentStatus(event) {
+            if (!currentHoaDon) return;
+
+            const btn = event?.target;
+            if (!btn) {
+                console.warn("Không tìm thấy button từ event");
+                return;
+            }
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang kiểm tra...';
+            btn.disabled = true;
+
+            const noidung = document.querySelector("#modal-noi-dung").textContent;
+
+            try {
+                const response = await fetch('/api/Bank/check-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ noidung })
+                });
+
+                // Đọc response text để debug nếu cần
+                const text = await response.text();
+                console.log("Server trả:", text);
+                const result = JSON.parse(text);
+
+                if (result.success && result.isPaid) {
+                    alert(result.message);
+
+                    const modalElement = document.getElementById('paymentModal');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) modal.hide();
+                    }
+
+                    loadHoaDon();
+                    loadLichSuThanhToan();
+                } else {
+                    alert("Chưa phát hiện thanh toán!\n" + (result.message || ""));
+                }
+
+            } catch (error) {
+                console.error("Lỗi khi kiểm tra thanh toán:", error);
+                alert("Lỗi khi kiểm tra thanh toán. Vui lòng thử lại.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+
 async function loadHoaDon() {
     const loadingContainer = document.getElementById('loading-container');
     const contentContainer = document.getElementById('content-container');
@@ -916,11 +1046,10 @@ async function loadHoaDon() {
                         document.getElementById('ten_chu_tai_khoan').textContent = firstBank.ten.toUpperCase();
 
                         // Tạo nội dung và QR
-                        const noiDung = document.getElementById('modal-ma-hoadon').textContent;
-                        const tongTien = document.getElementById('modal-tong-tien').textContent;
-
-                        const qrUrl = `https://img.vietqr.io/image/MB-${firstBank.soTaiKhoan}-compact2.jpg?amount=${tongTien}&addInfo=${encodeURIComponent(noiDung)}&accountName=${encodeURIComponent(firstBank.ten.toUpperCase())}`;
-                        document.getElementById('qrCodeImage').src = qrUrl;
+                  
+                        name = firstBank.ten.toUpperCase();
+                        stk = firstBank.soTaiKhoan;;
+                      
                     } else {
                         console.error("Không có dữ liệu ngân hàng.");
                     }
@@ -989,7 +1118,41 @@ async function loadHoaDon() {
     }
 }
 
+async function loadLichSuThanhToan() {
+    try {
+        const response = await fetch('/api/Bank/get-lich-su');
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+            const lichSu = result.data;
+            const tbody = document.getElementById('lichsu-tbody');
+            if (!tbody) return;
+            if (lichSu.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7">Chưa có lịch sử thanh toán nào</td></tr>';
+                return;
+            }
+            tbody.innerHTML = lichSu.map(item => `
+                <tr>
+                    <td>${item.historyId}</td>
+                    <td>${item.amount ? Number(item.amount).toLocaleString('vi-VN') + ' đ' : ''}</td>
+                    <td>${item.bankName || ''}</td>
+                    <td>${item.transactionCode || ''}</td>
+                    <td>${item.note || ''}</td>
+                    <td>${item.createdAt ? new Date(item.createdAt).toLocaleString('vi-VN') : ''}</td>
+                    <td>${item.phuong_thuc || ''}</td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        const tbody = document.getElementById('lichsu-tbody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="7">Lỗi khi tải lịch sử thanh toán</td></tr>';
+        console.error('Lỗi khi tải lịch sử thanh toán:', error);
+    }
+}
+
 // Tự động load khi trang được tải
-document.addEventListener('DOMContentLoaded', loadHoaDon);
+document.addEventListener('DOMContentLoaded', function() {
+    loadHoaDon();
+    loadLichSuThanhToan();
+});
 </script>
 }

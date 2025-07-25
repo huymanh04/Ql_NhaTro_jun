@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using Ql_NhaTro_jun.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
+using System.Text.RegularExpressions;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,10 +22,10 @@ namespace Ql_NhaTro_jun.Controllers
             _context = context;
         }
         [HttpPost]
-        [Route("/check-status")]
-        public async Task<JsonResult> CheckPaymentStatusAsync(string noidung)
+        [Route("check-status")]
+        public async Task<JsonResult> CheckPaymentStatusAsync([FromForm] string noidung)
         {
-
+            await Task.Delay(10000);
             int userId = (int)JunTech.id;
             NguoiDung user = _context.NguoiDungs.Find(userId);
 
@@ -59,7 +61,7 @@ namespace Ql_NhaTro_jun.Controllers
                     foreach (var tx in transactions)
                     {
                         int amount = int.Parse(tx["amount"].ToString());
-                        if (amount < 10000) continue;
+                        //if (amount < 10000) continue;
 
                         string description = tx["addDescription"]?.ToString()?.Replace(" ", "") ?? "";
                         if (description.Length > 250)
@@ -67,24 +69,27 @@ namespace Ql_NhaTro_jun.Controllers
 
                         var existed = _context.BankHistories.FirstOrDefault(c => c.TransactionCode == description);
                         if (existed != null) continue;
-
+                        description=Regex.Replace(description, @"\D", "");
                         var bank = new BankHistory
                         {
                             Amount = amount,
                             CreatedAt = DateTime.Parse(tx["transactionDate"].ToString()),
                             TransactionCode = description,
-                            Note = noidung,
-                            BankName = "MB BANK"
+                            Note = "Mã hóa đơn "+noidung,
+                            BankName = "MB BANK",
+                            Phuong_thuc="Thanh toán Onl"
                         };
 
                         var usera = _context.NguoiDungs.FirstOrDefault(u => u.MaNguoiDung == JunTech.id);
                         {
-                            bank.MaNguoiDung = usera.MaNguoiDung;
-                            var hoadon = _context.HoaDonTienIches.FirstOrDefault(t => t.MaHoaDon == int.Parse(noidung.Replace("#", "")));
+                 
+                            var hoadon = _context.HoaDonTienIches.FirstOrDefault(t => t.MaHoaDon == int.Parse(noidung.Replace("HD", "")));
+                            bank.MaPhong = (int)hoadon.MaPhong;
                             hoadon.DaThanhToan = true;
                             _context.Update(hoadon);
                             _context.Entry(usera).State = EntityState.Modified;
                             _context.BankHistories.Add(bank);
+
                             _context.SaveChanges();
 
                             return new JsonResult(new
@@ -103,6 +108,36 @@ namespace Ql_NhaTro_jun.Controllers
             {
                 return new JsonResult(new { success = false, isPaid = false, message = "Lỗi xử lý: " + ex.Message });
             }
+        }
+        [HttpGet]
+        [Route("get-lich-su")]
+        public async Task<JsonResult> GetLichSu()
+        {
+            var maPhong = await _context.HopDongNguoiThues
+     .Where(h => h.MaKhachThue == JunTech.id)
+     .Select(h => h.MaHopDongNavigation.MaPhong)
+     .FirstOrDefaultAsync();
+
+            var lichSu = await _context.BankHistories
+                .Where(t => t.MaPhong == maPhong)
+                .OrderByDescending(t => t.CreatedAt)
+                .Select(t => new
+                {
+                    t.HistoryId,
+                    t.Amount,
+                    t.BankName,
+                    t.TransactionCode,
+                    t.Note,
+                    t.CreatedAt,
+                    t.Phuong_thuc
+                })
+                .ToListAsync();
+
+            return new JsonResult(new
+            {
+                success = true,
+                data = lichSu
+            });
         }
 
         [HttpGet("get-banks")]

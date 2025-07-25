@@ -7,7 +7,7 @@ public partial class BankHistory
 {
     public int HistoryId { get; set; }
 
-    public int MaNguoiDung { get; set; }
+    public int MaPhong { get; set; }
 
     public decimal Amount { get; set; }
 
@@ -16,8 +16,9 @@ public partial class BankHistory
     public string? TransactionCode { get; set; }
 
     public string? Note { get; set; }
+    public string? Phuong_thuc { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
-    public virtual NguoiDung MaNguoiDungNavigation { get; set; } = null!;
+    public virtual PhongTro MaPhongNavigation { get; set; } = null!;
 }

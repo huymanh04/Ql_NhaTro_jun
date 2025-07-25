@@ -20,7 +20,7 @@ public partial class PhongTro
     public bool? ConTrong { get; set; }
 
     public string? MoTa { get; set; }
-
+    public virtual ICollection<BankHistory> BankHistories { get; set; } = new List<BankHistory>();
     public virtual ICollection<HinhAnhPhongTro> HinhAnhPhongTros { get; set; } = new List<HinhAnhPhongTro>();
 
     public virtual ICollection<HoaDonTienIch> HoaDonTienIches { get; set; } = new List<HoaDonTienIch>();

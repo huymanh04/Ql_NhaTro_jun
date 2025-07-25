@@ -23,7 +23,7 @@ public partial class NguoiDung
     [NotMapped]
     [JsonPropertyName("g-recaptcha-response")]
     public string? RecaptchaResponse { get; set; }
-    public virtual ICollection<BankHistory> BankHistories { get; set; } = new List<BankHistory>();
+
 
     public virtual ICollection<HopDongNguoiThue> HopDongNguoiThues { get; set; } = new List<HopDongNguoiThue>();
 

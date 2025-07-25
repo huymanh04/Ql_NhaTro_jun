@@ -1,0 +1,95 @@
+@{
+    ViewData["Title"] = "Chi tiết phòng trọ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<head>
+    <meta name="description" content="Chi tiết phòng trọ, giá tốt, vị trí đẹp, đầy đủ tiện nghi, hình ảnh thực tế" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="/Room/Detail/@(ViewBag.RoomId ?? "")" />
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "Apartment",
+        "name": "Phòng trọ chi tiết",
+        "description": "Thông tin chi tiết phòng trọ, giá, diện tích, tiện nghi, hình ảnh thực tế.",
+        "url": "/Room/Detail/@(ViewBag.RoomId ?? "")"
+    }
+    </script>
+</head>
+<div class="container py-5 animate-fade-in">
+    <div class="row mb-4">
+        <div class="col-12 col-md-8 mx-auto">
+            <a href="/" class="btn btn-link mb-3"><i class="fa fa-arrow-left"></i> Quay lại trang chủ</a>
+            <div class="card shadow-lg">
+                <div class="row g-0">
+                    <div class="col-md-6">
+                        <!-- Carousel ảnh phòng -->
+                        <div id="roomImagesCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner" id="carousel-images">
+                                <div class="carousel-item active">
+                                    <img src="/images/no-image.png" class="d-block w-100" alt="Ảnh phòng trọ" style="height:320px;object-fit:cover;">
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#roomImagesCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#roomImagesCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card-body">
+                            <h1 class="card-title fs-3 fw-bold" id="room-title">Phòng trọ</h1>
+                            <div class="mb-2">
+                                <span class="badge bg-primary me-2" id="room-area">-- m²</span>
+                                <span class="fw-bold text-danger fs-5" id="room-price">-- đ/tháng</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge" id="room-status">--</span>
+                            </div>
+                            <div class="mb-2 text-muted" id="room-address"><i class="fa fa-map-marker-alt me-1"></i> Địa chỉ: --</div>
+                            <div class="mb-3" id="room-desc">Mô tả phòng trọ...</div>
+                            <a href="/Room/All" class="btn btn-outline-primary"><i class="fa fa-list me-1"></i> Xem tất cả phòng trọ</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts {
+<script>
+async function loadRoomDetail() {
+    // Lấy id từ URL
+    const urlParts = window.location.pathname.split('/');
+    const id = urlParts[urlParts.length - 1];
+    // Lấy thông tin phòng
+    const res = await fetch(`/api/Room/get-room-by-id/${id}`);
+    const json = await res.json();
+    if (!json.success || !json.data) return;
+    const room = json.data;
+    document.getElementById('room-title').textContent = room.tenPhong;
+    document.getElementById('room-area').textContent = room.dienTich + ' m²';
+    document.getElementById('room-price').textContent = Number(room.gia).toLocaleString('vi-VN') + ' đ/tháng';
+    document.getElementById('room-status').textContent = room.conTrong ? 'Còn phòng' : 'Đã thuê';
+    document.getElementById('room-status').className = 'badge ' + (room.conTrong ? 'bg-success' : 'bg-secondary');
+    document.getElementById('room-address').innerHTML = '<i class="fa fa-map-marker-alt me-1"></i> ' + (room.moTa ? room.moTa.split('\n')[0] : 'Địa chỉ đang cập nhật');
+    document.getElementById('room-desc').textContent = room.moTa || '';
+    // Lấy ảnh phòng
+    const imgRes = await fetch(`/api/Room/get-room-images/${id}`);
+    const imgJson = await imgRes.json();
+    if (imgJson.success && Array.isArray(imgJson.data) && imgJson.data.length > 0) {
+        const carousel = document.getElementById('carousel-images');
+        carousel.innerHTML = imgJson.data.map((img, idx) => `
+            <div class="carousel-item${idx === 0 ? ' active' : ''}">
+                <img src="data:image/png;base64,${img.duongDanHinhBase64}" class="d-block w-100" alt="Ảnh phòng trọ ${room.tenPhong}" style="height:320px;object-fit:cover;">
+            </div>
+        `).join('');
+    }
+}
+document.addEventListener('DOMContentLoaded', loadRoomDetail);
+</script>
+} 

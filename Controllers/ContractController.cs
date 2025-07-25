@@ -355,7 +355,7 @@ namespace Ql_NhaTro_jun.Controllers
                 };
                 _context.HoaDonTienIches.Add(hoaDonTienIch);
                 await _context.SaveChangesAsync();
-
+      
                 // Tạo hóa đơn tổng
                 var hoaDonTong = new HoaDonTong
                 {
@@ -365,7 +365,10 @@ namespace Ql_NhaTro_jun.Controllers
                     GhiChu = "Đóng tiền cọc tháng đầu tiên. Chưa có hóa đơn tiện ích cụ thể. " +
                              "Hóa đơn tiện ích sẽ được tạo sau khi có số liệu điện nước.",
                 };
+                
+     
                 _context.HoaDonTongs.Add(hoaDonTong);
+        
 
                 foreach (var tenantId in model.TenantIds)
                 {
@@ -374,12 +377,23 @@ namespace Ql_NhaTro_jun.Controllers
                         MaHopDong = contract.MaHopDong,
                         MaKhachThue = tenantId
                     });
+                    
                 }
-
+                var bank = new BankHistory
+                {
+                    Amount = model.DepositAmount,
+                    CreatedAt = DateTime.Now,
+                    TransactionCode = "Cọc tiền phòng",
+                    Note = "Mã hóa đơn HD" + hoaDonTienIch.MaHoaDon,
+                    BankName = "MB BANK",
+                    Phuong_thuc = "Thanh toán Tiền mặt",
+                    MaPhong = (int)phong.MaPhong
+                };
+                _context.BankHistories.Add(bank);
                 await _context.SaveChangesAsync();
 
                 // Return detailed contract information
-                var createdContract = await GetContractDetailById(contract.MaHopDong);
+                    var createdContract = await GetContractDetailById(contract.MaHopDong);
 
                 return Ok(ApiResponse<ContractDetailDto>.CreateSuccess(
                     "Tạo hợp đồng thành công",
@@ -440,7 +454,8 @@ namespace Ql_NhaTro_jun.Controllers
                         {
                             MaHopDong = contract.MaHopDong,
                             MaKhachThue = tenantId
-                        });
+                        }); 
+                     
                     }
                 }
                 else

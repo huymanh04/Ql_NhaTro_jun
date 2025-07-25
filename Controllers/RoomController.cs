@@ -26,49 +26,49 @@ namespace Ql_NhaTro_jun.Controllers
             _context = context;
         }
         // GET api/<ValuesController>/5
-        [HttpGet("get-all-room")]
-        public async Task<IActionResult> Getall()
-        {
-            try
+            [HttpGet("get-all-room")]
+            public async Task<IActionResult> Getall()
             {
-                var tinhThanhs= await _context.PhongTros
-                 .Select(p => new PhongTroDTO
-                 {
-                     MaPhong = p.MaPhong,
-                     MaNhaTro = (int)p.MaNhaTro,
-                     MaTheLoai = p.MaTheLoai,
-                     TenPhong = p.TenPhong,
-                     Gia = (decimal)p.Gia,
-                     DienTich = (float)p.DienTich,
-                     ConTrong = (bool)p.ConTrong,
-                     MoTa = p.MoTa
-                 })
-                 .ToListAsync();
-               
-                var img = await _context.HinhAnhPhongTros
-
-                    .Select(i => new HinhAnhPhongDto
-                    {
-                        MaHinhAnh = i.MaHinhAnh,
-                        MaPhong = i.MaPhong,
-                        DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-                        IsMain = (bool)i.IsMain
-                    })
-                    .ToListAsync();
-                var result = new PhongVaHinhDtoo
+                try
                 {
-                    Phong = tinhThanhs,
-                    HinhAnh = img
-                };
-                await _context.SaveChangesAsync();
-                return Ok(ApiResponse<object>.CreateSuccess("Lấy thành công", result));
+                    var tinhThanhs= await _context.PhongTros
+                     .Select(p => new PhongTroDTO
+                     {
+                         MaPhong = p.MaPhong,
+                         MaNhaTro = (int)p.MaNhaTro,
+                         MaTheLoai = p.MaTheLoai,
+                         TenPhong = p.TenPhong,
+                         Gia = (decimal)p.Gia,
+                         DienTich = (float)p.DienTich,
+                         ConTrong = (bool)p.ConTrong,
+                         MoTa = p.MoTa
+                     })
+                     .ToListAsync();
+               
+                    var img = await _context.HinhAnhPhongTros
+
+                        .Select(i => new HinhAnhPhongDto
+                        {
+                            MaHinhAnh = i.MaHinhAnh,
+                            MaPhong = i.MaPhong,
+                            DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
+                            IsMain = (bool)i.IsMain
+                        })
+                        .ToListAsync();
+                    var result = new PhongVaHinhDtoo
+                    {
+                        Phong = tinhThanhs,
+                        HinhAnh = img
+                    };
+                    await _context.SaveChangesAsync();
+                    return Ok(ApiResponse<object>.CreateSuccess("Lấy thành công", result));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Lỗi khi lấy danh sách tỉnh thành");
+                    return StatusCode(500, ApiResponse<object>.CreateError("Đã xảy ra lỗi khi lấy danh sách tỉnh thành"));
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Lỗi khi lấy danh sách tỉnh thành");
-                return StatusCode(500, ApiResponse<object>.CreateError("Đã xảy ra lỗi khi lấy danh sách tỉnh thành"));
-            }
-        }
         [HttpGet("get-room-by-nha-tro/{id}")]
         public async Task<IActionResult> GetRoomByNhaTro(int id)
         {
@@ -340,6 +340,56 @@ namespace Ql_NhaTro_jun.Controllers
             {
                 _logger.LogError(ex, "Lỗi khi lấy danh sách phòng trống");
                 return StatusCode(500, ApiResponse<object>.CreateError("Đã xảy ra lỗi khi lấy danh sách phòng trống"));
+            }
+        }
+        [HttpGet("related-rooms")]
+        public async Task<IActionResult> GetRelatedRooms([FromQuery] int loaiPhongId, [FromQuery] int excludeId)
+        {
+            try
+            {
+                var phongTros = await _context.PhongTros
+                    .Where(p => p.MaTheLoai == loaiPhongId && p.MaPhong != excludeId)
+                    .Select(p => new PhongTroDTO
+                    {
+                        MaPhong = p.MaPhong,
+                        MaNhaTro = (int)p.MaNhaTro,
+                        MaTheLoai = p.MaTheLoai,
+                        TenPhong = p.TenPhong,
+                        Gia = (decimal)p.Gia,
+                        DienTich = (float)p.DienTich,
+                        ConTrong = (bool)p.ConTrong,
+                        MoTa = p.MoTa
+                    })
+                    .ToListAsync();
+
+                // Lấy ảnh đại diện cho từng phòng (IsMain=true hoặc ảnh đầu tiên nếu không có)
+                var phongIds = phongTros.Select(x => x.MaPhong).ToList();
+                var anhMap = await _context.HinhAnhPhongTros
+                    .Where(h => phongIds.Contains(h.MaPhong) && h.IsMain == true)
+                    .GroupBy(h => h.MaPhong)
+                    .Select(g => new { MaPhong = g.Key, DuongDanHinhBase64 = Convert.ToBase64String(g.First().DuongDanHinh) })
+                    .ToListAsync();
+                var anhDict = anhMap.ToDictionary(x => x.MaPhong, x => x.DuongDanHinhBase64);
+
+                // Bổ sung trường AnhDaiDienBase64 vào từng phòng (dùng dynamic cho đúng style)
+                var result = phongTros.Select(p => new {
+                    p.MaPhong,
+                    p.MaNhaTro,
+                    p.MaTheLoai,
+                    p.TenPhong,
+                    p.Gia,
+                    p.DienTich,
+                    p.ConTrong,
+                    p.MoTa,
+                    AnhDaiDienBase64 = anhDict.ContainsKey(p.MaPhong) ? anhDict[p.MaPhong] : null
+                }).ToList();
+
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy phòng liên quan thành công", result));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy phòng liên quan");
+                return StatusCode(500, ApiResponse<object>.CreateError("Đã xảy ra lỗi khi lấy phòng liên quan"));
             }
         }
         // POST api/<ValuesController>

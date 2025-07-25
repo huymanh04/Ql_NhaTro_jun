@@ -79,9 +79,10 @@ public partial class QlNhatroContext : DbContext
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.Note).HasMaxLength(250);
             entity.Property(e => e.TransactionCode).HasMaxLength(250);
+            entity.Property(e => e.Phuong_thuc).HasMaxLength(20);
 
-            entity.HasOne(d => d.MaNguoiDungNavigation).WithMany(p => p.BankHistories)
-                .HasForeignKey(d => d.MaNguoiDung)
+            entity.HasOne(d => d.MaPhongNavigation).WithMany(p => p.BankHistories)
+                .HasForeignKey(d => d.MaPhong)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_BankHistories_Users");
         });

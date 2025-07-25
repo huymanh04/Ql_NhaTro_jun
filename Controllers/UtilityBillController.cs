@@ -130,7 +130,7 @@ namespace Ql_NhaTro_jun.Controllers
                 var hoaDon = await _context.HoaDonTienIches.FindAsync(id);
                 if (hoaDon == null)
                     return NotFound(ApiResponse<object>.CreateError("Hóa đơn tiện ích không tồn tại"));
-                var hopDong = await _context.HopDongs.FirstOrDefaultAsync(h => h.MaPhong == hoaDon.MaPhong && h.DaKetThuc == false);
+                var hopDong = await _context.HopDongs.Include(t=>t.HopDongNguoiThues).FirstOrDefaultAsync(h => h.MaPhong == hoaDon.MaPhong && h.DaKetThuc == false);
 
                 var hoadowntong = await _context.HoaDonTongs
            .Where(h => h.MaHopDong == hopDong.MaHopDong)
@@ -139,10 +139,7 @@ namespace Ql_NhaTro_jun.Controllers
            .FirstOrDefaultAsync();
                 hoaDon.SoDien = model.SoDien;
                 hoaDon.SoNuoc = model.SoNuoc;
-                if (DaThanhToan)
-                {
-                    hoaDon.DaThanhToan = true;
-                }
+                
                 decimal tong = 0;
                 if (model.SoDien > 0 || model.SoNuoc > 0)
                 {
@@ -164,6 +161,23 @@ namespace Ql_NhaTro_jun.Controllers
                 if (model.note != string.Empty && model.note != null)
                 {
                     hoadowntong.GhiChu = model.note;
+                }
+                if (DaThanhToan)
+                {
+                    hoaDon.DaThanhToan = true;
+                    int mang = 0;
+                    
+                        var bank = new BankHistory
+                        {
+                            Amount = tong,
+                            CreatedAt = DateTime.Now,
+                            TransactionCode = "Thanh Toán tiền phòng " + hoaDon.MaPhongNavigation.TenPhong,
+                            Note = "Mã hóa đơn HD" + hoaDon.MaHoaDon,
+                            BankName = "MB BANK",
+                            Phuong_thuc = "Thanh toán tiền mặt",
+                            MaPhong = (int)hoaDon.MaPhong
+                        };
+                        _context.BankHistories.Add(bank); 
                 }
                 _context.HoaDonTienIches.Update(hoaDon);
                 _context.HoaDonTongs.Update(hoadowntong);

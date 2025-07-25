@@ -1,0 +1,132 @@
+﻿@{
+    ViewData["Title"] = "Chi tiết phòng trọ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<head>
+    <meta name="description" content="Chi tiết phòng trọ, giá tốt, vị trí đẹp, đầy đủ tiện nghi, hình ảnh thực tế" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="/Phongtro/Detail/@(ViewBag.RoomId ?? "")" />
+</head>
+<div class="container py-5 animate-fade-in">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/Room/All">Phòng trọ</a></li>
+            <li class="breadcrumb-item active" aria-current="page" id="breadcrumb-room-name">Chi tiết phòng</li>
+        </ol>
+    </nav>
+    <div class="row">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <img id="mainImage" src="/images/no-image.png" alt="Ảnh phòng trọ" class="img-fluid rounded" style="width: 100%; height:320px; object-fit:cover;">
+                </div>
+            </div>
+            <div class="row mt-3" id="room-thumbnails">
+                <!-- Ảnh nhỏ sẽ được JS render -->
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <h2 class="mb-3" id="room-title">Phòng trọ</h2>
+            <p class="text-muted mb-3" id="room-address">Địa chỉ: --</p>
+            <h3 class="text-primary mb-4" id="room-price">-- đ/tháng</h3>
+            <p class="mb-4" id="room-desc">Mô tả phòng trọ...</p>
+            <div class="mb-4">
+                <h5>Thông số phòng:</h5>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Diện tích</th>
+                            <td id="room-area">-- m²</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Trạng thái</th>
+                            <td id="room-status">--</td>
+                        </tr>
+                        <!-- Thêm các thông số khác nếu có -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex align-items-center mb-4">
+                <button class="btn btn-primary flex-shrink-0" type="button">
+                    <i class="fa fa-phone me-1"></i>
+                    Liên hệ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="mb-4">Phòng liên quan</h2>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="related-rooms">
+            <!-- JS render phòng liên quan -->
+        </div>
+    </div>
+</section>
+@section scripts {
+    <script>
+        async function loadRoomDetail() {
+            // Lấy id từ URL
+            const urlParts = window.location.pathname.split('/');
+            const id = urlParts[urlParts.length - 1];
+            // Lấy thông tin phòng
+            const res = await fetch(`/api/Room/get-room-by-id/${id}`);
+            const json = await res.json();
+            if (!json.success || !json.data) return;
+            const room = json.data;
+            document.getElementById('room-title').textContent = room.tenPhong;
+            document.getElementById('room-area').textContent = room.dienTich + ' m²';
+            document.getElementById('room-price').textContent = Number(room.gia).toLocaleString('vi-VN') + ' đ/tháng';
+            document.getElementById('room-status').textContent = room.conTrong ? 'Còn phòng' : 'Đã thuê';
+            document.getElementById('room-address').textContent = 'Địa chỉ: ' + (room.moTa ? room.moTa.split('\n')[0] : 'Địa chỉ đang cập nhật');
+            document.getElementById('room-desc').textContent = room.moTa || '';
+            document.getElementById('breadcrumb-room-name').textContent = room.tenPhong;
+            // Lấy ảnh phòng
+            const imgRes = await fetch(`/api/Room/get-room-images/${id}`);
+            const imgJson = await imgRes.json();
+            if (imgJson.success && Array.isArray(imgJson.data) && imgJson.data.length > 0) {
+                const mainImg = document.getElementById('mainImage');
+                mainImg.src = "data:image/png;base64," + imgJson.data[0].duongDanHinhBase64;
+                const thumbnails = imgJson.data.map((img, idx) => `
+                    <div class="col-3">
+                        <img src="data:image/png;base64,${img.duongDanHinhBase64}"
+                             alt="Thumbnail"
+                             class="img-fluid rounded"
+                             style="cursor: pointer; height: 60px; object-fit:cover;"
+                             onclick="document.getElementById('mainImage').src = this.src" />
+                    </div>
+                `).join('');
+                document.getElementById('room-thumbnails').innerHTML = thumbnails;
+            }
+            // Lấy phòng liên quan
+            loadRelatedRooms(room.id, room.loaiPhongId);
+        }
+        async function loadRelatedRooms(roomId, loaiPhongId) {
+            // Giả sử có API lấy phòng liên quan theo loại phòng, loại trừ phòng hiện tại
+            const res = await fetch(`/api/Room/related-rooms?loaiPhongId=${loaiPhongId}&excludeId=${roomId}`);
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                const html = json.data.map(room => `
+                    <div class="col">
+                        <div class="card shadow-sm h-100">
+                            <img src="data:image/png;base64,${room.anhDaiDienBase64 || ''}" class="card-img-top" alt="${room.tenPhong}">
+                            <div class="card-body">
+                                <h5 class="card-title">${room.tenPhong}</h5>
+                                <p class="card-text">${room.moTa ? room.moTa.substring(0, 60) + '...' : ''}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                        <a href="/Phongtro/Detail/${room.id}" class="btn btn-sm btn-outline-secondary">Xem chi tiết</a>
+                                    </div>
+                                    <small class="text-muted">${Number(room.gia).toLocaleString('vi-VN')} đ/tháng</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('related-rooms').innerHTML = html;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadRoomDetail);
+    </script>
+} 

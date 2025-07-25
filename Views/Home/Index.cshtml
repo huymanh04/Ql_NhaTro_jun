@@ -277,6 +277,24 @@
         </div>
     </section>
 
+    <!-- Danh sách phòng trọ mới nhất -->
+    <section id="room-list-section" class="py-5 bg-light">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col text-center">
+                    <h2 class="fw-bold mb-2">Phòng trọ mới nhất</h2>
+                    <p class="text-muted">Khám phá 8 phòng trọ nổi bật, giá tốt, vị trí đẹp, đầy đủ tiện nghi</p>
+                </div>
+            </div>
+            <div class="row" id="room-list">
+                <!-- JS sẽ render phòng trọ ở đây -->
+            </div>
+            <div class="text-center mt-4">
+                <a href="/Room/All" class="btn btn-outline-primary">Xem tất cả phòng trọ</a>
+            </div>
+        </div>
+    </section>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -432,6 +450,37 @@
                 slider.innerHTML = `<p class="text-danger">${error.message}</p>`;
             }
         }
+        async function LoaPhongtro() {
+            const slider = document.getElementById('typeroom');
+            try {
+                const response = await fetch('/api/Room/get-all-room');
+                if (!response.ok) throw new Error('Không thể load danh sách  phòng');
+
+                const dataa = await response.json();
+                const dataaaaaa = dataa.data;
+
+                dataaaaaa.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'col-md-3';
+
+                    div.innerHTML = `
+                                        <div class="category-card">
+                                                <img src="data:image/png;base64,${item.imageBase64}" class="img-fluid" alt="${item.tenTheLoai}">
+                                            <div class="category-content">
+                                                <h3>${item.tenTheLoai}</h3>
+                                                <p>${item.moTa || ''}</p>
+                                                <a href="${item.redirectUrl || '#'}" class="btn btn-outline-primary">Xem ngay</a>
+                                            </div>
+                                        </div>
+                                    `;
+
+                    slider.appendChild(div);
+                });
+
+            } catch (error) {
+                slider.innerHTML = `<p class="text-danger">${error.message}</p>`;
+            }
+        }
         async function loadBanners() {
             try {
                 const res = await fetch('/api/Banner/get-banner', {
@@ -542,6 +591,47 @@
             }
 
         }
+
+        async function loadRoomList() {
+            const roomList = document.getElementById('room-list');
+            roomList.innerHTML = '<div class="text-center py-5 w-100"><div class="spinner-border text-primary"></div></div>';
+            try {
+                const res = await fetch('/api/Room/get-all-room');
+                const json = await res.json();
+                if (!json.success || !json.data) throw new Error('Không có dữ liệu phòng');
+                const rooms = json.data.Phong;
+                const images = json.data.HinhAnh;
+                // Lấy 8 phòng đầu tiên
+                const topRooms = rooms.slice(0, 8);
+                roomList.innerHTML = topRooms.map(room => {
+                    // Tìm ảnh đại diện
+                    const img = images.find(img => img.MaPhong === room.MaPhong && img.IsMain) || images.find(img => img.MaPhong === room.MaPhong);
+                    const imgSrc = img ? `data:image/png;base64,${img.DuongDanHinhBase64}` : '/images/no-image.png';
+                    return `
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card h-100 shadow-sm room-card-seo">
+                    <a href="/Room/Detail/${room.MaPhong}" title="Xem chi tiết phòng ${room.TenPhong}">
+                        <img src="${imgSrc}" class="card-img-top" alt="Phòng ${room.TenPhong}" loading="lazy" style="height:200px;object-fit:cover;">
+                    </a>
+                    <div class="card-body">
+                        <h3 class="card-title fs-5 mb-2"><a href="/Room/Detail/${room.MaPhong}" class="text-dark text-decoration-none" title="${room.TenPhong}">${room.TenPhong}</a></h3>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-primary">${room.DienTich} m²</span>
+                            <span class="fw-bold text-danger">${Number(room.Gia).toLocaleString('vi-VN')}đ/tháng</span>
+                        </div>
+                        <div class="mb-2 text-muted" style="font-size:0.95em"><i class="fa fa-map-marker-alt me-1"></i> ${room.MoTa ? room.MoTa.split('\n')[0] : 'Địa chỉ đang cập nhật'}</div>
+                        <span class="badge ${room.ConTrong ? 'bg-success' : 'bg-secondary'}">${room.ConTrong ? 'Còn phòng' : 'Đã thuê'}</span>
+                        <a href="/Room/Detail/${room.MaPhong}" class="btn btn-outline-primary w-100 mt-3" title="Xem chi tiết phòng">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+            `;
+                }).join('');
+            } catch (err) {
+                roomList.innerHTML = `<div class='text-danger text-center py-5 w-100'>${err.message}</div>`;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadRoomList);
 
 
     </script>
