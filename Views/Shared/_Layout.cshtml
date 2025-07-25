@@ -126,18 +126,13 @@
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end" role="menu">
                                         <li role="none">
-                                            <a class="dropdown-item" href="#" onclick="return false;" role="menuitem">
+                                            <a class="dropdown-item" href="/Nguoidungs" onclick="return false;" role="menuitem">
                                                 <i class="fas fa-user me-2" aria-hidden="true"></i>
                                                 @(user ?? "User")
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider" role="separator"></li>
-                                        <li role="none">
-                                            <a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="Index" role="menuitem">
-                                                <i class="fas fa-cog me-2" aria-hidden="true"></i>
-                                                Cài Đặt
-                                            </a>
-                                        </li>
+                                        
                                         <li role="none">
                                             <a href="#" class="dropdown-item" id="logoutBtn" role="menuitem">
                                                 <i class="fas fa-sign-out-alt me-2" aria-hidden="true"></i>

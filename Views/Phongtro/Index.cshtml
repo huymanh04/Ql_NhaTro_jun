@@ -1,0 +1,116 @@
+@{
+    ViewData["Title"] = "Danh sách phòng trọ còn trống";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<head>
+    <meta name="description" content="Danh sách phòng trọ còn trống, giá tốt, vị trí đẹp, đầy đủ tiện nghi, hình ảnh thực tế" />
+    <style>
+        .room-card {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            transition: box-shadow 0.2s, transform 0.2s;
+            background: #fff;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .room-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+            transform: translateY(-2px) scale(1.01);
+        }
+        .room-thumb {
+            border-radius: 16px 16px 0 0;
+            object-fit: cover;
+            width: 100%;
+            height: 180px;
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.2s ease-in-out infinite;
+        }
+        @@keyframes skeleton-loading {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
+        .spinner {
+            display: flex; align-items: center; justify-content: center; min-height: 300px;
+        }
+        .badge-status {
+            font-size: 0.95em;
+            padding: 0.4em 0.8em;
+        }
+        .search-box {
+            max-width: 400px;
+            margin: 0 auto 2rem auto;
+        }
+    </style>
+</head>
+<div class="container py-5 animate-fade-in">
+    <h1 class="mb-4">Danh sách phòng trọ còn trống</h1>
+    <div class="search-box mb-4">
+        <input type="text" id="search-room" class="form-control" placeholder="Tìm kiếm theo tên phòng...">
+    </div>
+    <div id="room-list-loading" class="spinner">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="room-list" style="display:none">
+        <!-- JS render phòng trọ -->
+    </div>
+</div>
+@section scripts {
+    <script>
+        let allRooms = [];
+        let allImages = [];
+        let filteredRooms = [];
+        async function loadAllRooms() {
+            document.getElementById('room-list-loading').style.display = '';
+            document.getElementById('room-list').style.display = 'none';
+            const res = await fetch('/api/Room/get-all-room');
+            const json = await res.json();
+            if (!json.success || !json.data) return;
+            allRooms = json.data.phong || json.data.Phong || [];
+            allImages = json.data.hinhAnh || json.data.HinhAnh || [];
+            // Chỉ lấy phòng còn trống
+            filteredRooms = allRooms.filter(r => r.conTrong === true);
+            renderRoomList();
+        }
+        function renderRoomList() {
+            const imgMap = {};
+            allImages.forEach(img => {
+                if (img.isMain && !imgMap[img.maPhong]) {
+                    imgMap[img.maPhong] = img.duongDanHinhBase64;
+                }
+            });
+            const html = filteredRooms.map(room => `
+                <div class="col">
+                    <div class="room-card h-100">
+                        <img src="data:image/png;base64,${imgMap[room.maPhong] || ''}" class="room-thumb" alt="${room.tenPhong}">
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <h5 class="mb-1">${room.tenPhong}</h5>
+                            <div class="text-primary fw-bold mb-1">${Number(room.gia).toLocaleString('vi-VN')} đ/tháng</div>
+                            <div class="mb-1 text-muted" style="font-size:0.97em;">${room.moTa ? room.moTa.substring(0, 60) + (room.moTa.length > 60 ? '...' : '') : ''}</div>
+                            <div class="mb-2">
+                                <span class="badge badge-status bg-success">Còn phòng</span>
+                                <span class="ms-2"><i class="fa fa-expand"></i> ${room.dienTich} m²</span>
+                            </div>
+                            <a href="/Phongtro/Detail/${room.maPhong}" class="btn btn-outline-primary btn-sm mt-auto">Xem chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('room-list').innerHTML = html || '<div class="col"><div class="alert alert-info">Hiện tại không có phòng trọ nào còn trống.</div></div>';
+            document.getElementById('room-list-loading').style.display = 'none';
+            document.getElementById('room-list').style.display = '';
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllRooms();
+            document.getElementById('search-room').addEventListener('input', function() {
+                const keyword = this.value.trim().toLowerCase();
+                filteredRooms = allRooms.filter(r => r.conTrong === true && r.tenPhong.toLowerCase().includes(keyword));
+                renderRoomList();
+            });
+        });
+    </script>
+} 

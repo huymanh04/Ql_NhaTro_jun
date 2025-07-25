@@ -1,0 +1,71 @@
+@{
+    ViewData["Title"] = "Tin tức & Cẩm nang";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<head>
+    <meta name="description" content="Tin tức, cẩm nang thuê phòng trọ, mẹo tiết kiệm, kinh nghiệm thuê trọ, hợp đồng, sinh viên, người đi làm" />
+    <style>
+        .news-card {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            transition: box-shadow 0.2s, transform 0.2s;
+            background: #fff;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .news-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+            transform: translateY(-2px) scale(1.01);
+        }
+        .news-thumb {
+            object-fit: cover;
+            width: 100%;
+            height: 200px;
+        }
+        .news-footer {
+            background: transparent;
+            font-size: 0.95em;
+            color: #888;
+        }
+    </style>
+</head>
+<div class="container py-5 animate-fade-in">
+    <h1 class="mb-4 text-center">Tin tức & Cẩm nang</h1>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="news-card h-100">
+                <img src="~/images/blog-1.jpg" class="news-thumb" alt="Bài viết 1">
+                <div class="p-3 flex-grow-1 d-flex flex-column">
+                    <h5 class="card-title">Cách tìm phòng trọ phù hợp cho sinh viên</h5>
+                    <p class="card-text">Những lưu ý quan trọng khi tìm kiếm phòng trọ dành cho sinh viên...</p>
+                    <a href="#" class="btn btn-link p-0 mt-auto">Đọc thêm <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="news-footer p-2 ps-3">Đăng ngày 18/05/2025</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="news-card h-100">
+                <img src="~/images/blog-2.jpg" class="news-thumb" alt="Bài viết 2">
+                <div class="p-3 flex-grow-1 d-flex flex-column">
+                    <h5 class="card-title">Mẹo tiết kiệm chi phí khi thuê phòng trọ</h5>
+                    <p class="card-text">Các cách hiệu quả giúp bạn tiết kiệm chi phí khi thuê trọ...</p>
+                    <a href="#" class="btn btn-link p-0 mt-auto">Đọc thêm <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="news-footer p-2 ps-3">Đăng ngày 15/05/2025</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="news-card h-100">
+                <img src="~/images/blog-3.jpg" class="news-thumb" alt="Bài viết 3">
+                <div class="p-3 flex-grow-1 d-flex flex-column">
+                    <h5 class="card-title">Những điều cần biết về hợp đồng thuê phòng</h5>
+                    <p class="card-text">Hướng dẫn chi tiết về các điều khoản quan trọng trong hợp đồng...</p>
+                    <a href="#" class="btn btn-link p-0 mt-auto">Đọc thêm <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="news-footer p-2 ps-3">Đăng ngày 10/05/2025</div>
+            </div>
+        </div>
+    </div>
+</div> 
