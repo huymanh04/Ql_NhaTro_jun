@@ -20,8 +20,9 @@ public partial class NguoiDung
     public string? VaiTro { get; set; }
 
     public string so_cccd { get; set; } = string.Empty;
-
+    [NotMapped]
     public bool IsEmailConfirmed { get; set; } = false;
+    [NotMapped]
     public string? EmailConfirmationCode { get; set; }
 
     [NotMapped]
