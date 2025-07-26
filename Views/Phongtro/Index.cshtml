@@ -45,13 +45,88 @@
             max-width: 400px;
             margin: 0 auto 2rem auto;
         }
+        .room-card::before {
+            pointer-events: none !important;
+            content: none !important;
+            background: none !important;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .btn-modern {
+            border-radius: 8px !important;
+            padding: 0.7em 1.5em;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-modern-primary {
+            background: linear-gradient(90deg, #3182ce 0%, #63b3ed 100%);
+            color: #fff;
+            border: none;
+        }
+        .btn-modern-primary:hover {
+            background: linear-gradient(90deg, #2563eb 0%, #4299e1 100%);
+            color: #fff;
+        }
+        .btn-modern-secondary {
+            background: #f3f4f6;
+            color: #222;
+            border: none;
+        }
+        .btn-modern-secondary:hover {
+            background: #e2e8f0;
+            color: #2563eb;
+        }
+        .btn-modern i {
+            margin-right: 0.5em;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 <div class="container py-5 animate-fade-in">
     <h1 class="mb-4">Danh sách phòng trọ còn trống</h1>
-    <div class="search-box mb-4">
-        <input type="text" id="search-room" class="form-control" placeholder="Tìm kiếm theo tên phòng...">
-    </div>
+    <form id="form-search" class="mb-4">
+        <div class="row">
+            <div class="col-md-3 mb-2">
+                <select id="filter-theloai" class="form-control">
+                    <option value="">-- Thể loại phòng --</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-2">
+                <select id="filter-khuvuc" class="form-control">
+                    <option value="">-- Khu vực --</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-2">
+                <div class="price-label">Khoảng giá (nghìn đồng)</div>
+                <div class="price-slider-container">
+                    <div class="range-slider">
+                        <div class="slider-track"></div>
+                        <div class="range-input">
+                            <input type="range" min="500" max="100000" value="500" id="slider-min">
+                            <input type="range" min="500" max="100000" value="100000" id="slider-max">
+                        </div>
+                    </div>
+                    <div class="price-values">
+                        <span id="min-value-text">500.000đ</span>
+                        <span id="max-value-text">100.000.000đ</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2 d-flex align-items-end">
+                <div class="action-buttons w-100">
+                    <button id="btn-search" class="btn btn-modern btn-modern-primary w-50" type="submit"><i class="fas fa-search"></i> Tìm kiếm</button>
+                    <button id="btn-view-all" class="btn btn-modern btn-modern-secondary w-50" type="button">Xem tất cả</button>
+                </div>
+            </div>
+        </div>
+    </form>
     <div id="room-list-loading" class="spinner">
         <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
     </div>
@@ -63,54 +138,165 @@
     <script>
         let allRooms = [];
         let allImages = [];
-        let filteredRooms = [];
-        async function loadAllRooms() {
+        async function loadTheLoaiOptions() {
+            const select = document.getElementById('filter-theloai');
+            const res = await fetch('/api/Roomtype/get-type-room');
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                json.data.forEach(loai => {
+                    const opt = document.createElement('option');
+                    opt.value = loai.maTheLoai;
+                    opt.textContent = loai.tenTheLoai;
+                    select.appendChild(opt);
+                });
+            }
+        }
+        async function loadKhuVucOptions() {
+            const select = document.getElementById('filter-khuvuc');
+            const res = await fetch('/api/Location/Tinh-thanh');
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                json.data.forEach(kv => {
+                    const opt = document.createElement('option');
+                    opt.value = kv.maTinh;
+                    opt.textContent = kv.tenTinh;
+                    select.appendChild(opt);
+                });
+            }
+        }
+        function formatPrice(price) {
+            return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ".000đ";
+        }
+        function updateSlider() {
+            const minInput = document.getElementById('slider-min');
+            const maxInput = document.getElementById('slider-max');
+            let minVal = parseInt(minInput.value);
+            let maxVal = parseInt(maxInput.value);
+            if (maxVal - minVal < 500) {
+                if (event.target === minInput) minInput.value = maxVal - 500;
+                else maxInput.value = minVal + 500;
+                minVal = parseInt(minInput.value);
+                maxVal = parseInt(maxInput.value);
+            }
+            document.getElementById('min-value-text').textContent = formatPrice(minVal);
+            document.getElementById('max-value-text').textContent = formatPrice(maxVal);
+        }
+        async function filterRoomsFromApi(e) {
+            if (e) e.preventDefault();
+            const theloai = document.getElementById('filter-theloai').value;
+            const khuvuc = document.getElementById('filter-khuvuc').value;
+            const minVal = document.getElementById('slider-min').value;
+            const maxVal = document.getElementById('slider-max').value;
+            let url = `/api/Room/search?`;
+            if (theloai) url += `theLoai=${theloai}&`;
+            if (khuvuc) url += `khuVuc=${khuvuc}&`;
+            if (minVal) url += `minPrice=${minVal * 1000}&`;
+            if (maxVal) url += `maxPrice=${maxVal * 1000}&`;
             document.getElementById('room-list-loading').style.display = '';
             document.getElementById('room-list').style.display = 'none';
-            const res = await fetch('/api/Room/get-all-room');
-            const json = await res.json();
-            if (!json.success || !json.data) return;
-            allRooms = json.data.phong || json.data.Phong || [];
-            allImages = json.data.hinhAnh || json.data.HinhAnh || [];
-            // Chỉ lấy phòng còn trống
-            filteredRooms = allRooms.filter(r => r.conTrong === true);
-            renderRoomList();
+            try {
+                const res = await fetch(url);
+                const json = await res.json();
+                // Sửa đoạn này để nhận mọi trường hợp trả về
+                if (Array.isArray(json.data)) {
+                    allRooms = json.data;
+                    allImages = [];
+                } else {
+                    allRooms = Array.isArray(json.data.Phong) ? json.data.Phong
+                        : Array.isArray(json.data.phong) ? json.data.phong
+                        : [];
+                    allImages = Array.isArray(json.data.HinhAnh) ? json.data.HinhAnh
+                        : Array.isArray(json.data.hinhAnh) ? json.data.hinhAnh
+                        : [];
+                }
+                console.log('json.data:', json.data);
+                console.log('allRooms:', allRooms);
+                console.log('allImages:', allImages);
+                renderRoomList(allRooms);
+            } catch (err) {
+                document.getElementById('room-list').innerHTML = `<div class='text-danger text-center py-5 w-100'>${err.message}</div>`;
+                document.getElementById('room-list-loading').style.display = 'none';
+                document.getElementById('room-list').style.display = '';
+            }
         }
-        function renderRoomList() {
+        async function loadRoomsOnPageLoad() {
+            document.getElementById('room-list-loading').style.display = '';
+            document.getElementById('room-list').style.display = 'none';
+            try {
+                const res = await fetch('/api/Room/search');
+                const json = await res.json();
+                if (!json.success || !json.data) throw new Error('Không có dữ liệu phòng');
+                if (Array.isArray(json.data)) {
+                    allRooms = json.data;
+                    allImages = [];
+                } else {
+                    allRooms = json.data.Phong || json.data.phong || [];
+                    allImages = json.data.HinhAnh || json.data.hinhAnh || [];
+                }
+                renderRoomList(allRooms);
+            } catch (err) {
+                document.getElementById('room-list').innerHTML = `<div class='text-danger text-center py-5 w-100'>${err.message}</div>`;
+                document.getElementById('room-list-loading').style.display = 'none';
+                document.getElementById('room-list').style.display = '';
+            }
+        }
+        function renderRoomList(rooms) {
+            const roomList = document.getElementById('room-list');
+            const emptyDiv = document.getElementById('room-list-empty');
+            if (!rooms.length) {
+                roomList.innerHTML = '<div class="col"><div class="alert alert-info">Không có phòng phù hợp.</div></div>';
+                document.getElementById('room-list-loading').style.display = 'none';
+                roomList.style.display = '';
+                return;
+            }
+            if (emptyDiv) emptyDiv.style.display = 'none';
             const imgMap = {};
             allImages.forEach(img => {
                 if (img.isMain && !imgMap[img.maPhong]) {
                     imgMap[img.maPhong] = img.duongDanHinhBase64;
                 }
             });
-            const html = filteredRooms.map(room => `
-                <div class="col">
-                    <div class="room-card h-100">
-                        <img src="data:image/png;base64,${imgMap[room.maPhong] || ''}" class="room-thumb" alt="${room.tenPhong}">
-                        <div class="p-3 d-flex flex-column flex-grow-1">
-                            <h5 class="mb-1">${room.tenPhong}</h5>
-                            <div class="text-primary fw-bold mb-1">${Number(room.gia).toLocaleString('vi-VN')} đ/tháng</div>
-                            <div class="mb-1 text-muted" style="font-size:0.97em;">${room.moTa ? room.moTa.substring(0, 60) + (room.moTa.length > 60 ? '...' : '') : ''}</div>
-                            <div class="mb-2">
-                                <span class="badge badge-status bg-success">Còn phòng</span>
-                                <span class="ms-2"><i class="fa fa-expand"></i> ${room.dienTich} m²</span>
+            roomList.innerHTML = rooms.map(room => {
+                const id = room.MaPhong || room.maPhong;
+                const tenPhong = room.TenPhong || room.tenPhong;
+                const gia = room.Gia || room.gia;
+                const dienTich = room.DienTich || room.dienTich;
+                const imgSrc = imgMap[id] ? `data:image/png;base64,${imgMap[id]}` : '/images/no-image.png';
+                return `
+                    <div class="col-md-3 col-sm-6 mb-4">
+                        <div class="card h-100 shadow-sm room-card-seo">
+                            <a href="/Phongtro/Detail/${id}" title="Xem chi tiết phòng ${tenPhong}">
+                                <img src="${imgSrc}" class="card-img-top" alt="Phòng ${tenPhong}" loading="lazy" style="height:200px;object-fit:cover;">
+                            </a>
+                            <div class="card-body">
+                                <h3 class="card-title fs-5 mb-2">
+                                    <a href="/Phongtro/Detail/${id}" class="text-dark text-decoration-none" title="${tenPhong}">
+                                        ${tenPhong}
+                                    </a>
+                                </h3>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary">${dienTich} m²</span>
+                                    <span class="fw-bold text-danger">${Number(gia).toLocaleString('vi-VN')}đ/tháng</span>
+                                </div>
+                                <a href="/Phongtro/Detail/${id}" class="btn btn-outline-primary w-100 mt-3" title="Xem chi tiết phòng">Xem chi tiết</a>
                             </div>
-                            <a href="/Phongtro/Detail/${room.maPhong}" class="btn btn-outline-primary btn-sm mt-auto">Xem chi tiết</a>
                         </div>
                     </div>
-                </div>
-            `).join('');
-            document.getElementById('room-list').innerHTML = html || '<div class="col"><div class="alert alert-info">Hiện tại không có phòng trọ nào còn trống.</div></div>';
+                `;
+            }).join('');
             document.getElementById('room-list-loading').style.display = 'none';
-            document.getElementById('room-list').style.display = '';
+            roomList.style.display = '';
         }
         document.addEventListener('DOMContentLoaded', () => {
-            loadAllRooms();
-            document.getElementById('search-room').addEventListener('input', function() {
-                const keyword = this.value.trim().toLowerCase();
-                filteredRooms = allRooms.filter(r => r.conTrong === true && r.tenPhong.toLowerCase().includes(keyword));
-                renderRoomList();
-            });
+            loadTheLoaiOptions();
+            loadKhuVucOptions();
+            updateSlider();
+            document.getElementById('form-search').addEventListener('submit', filterRoomsFromApi);
+            document.getElementById('slider-min').addEventListener('input', updateSlider);
+            document.getElementById('slider-max').addEventListener('input', updateSlider);
+            document.getElementById('btn-view-all').addEventListener('click', loadRoomsOnPageLoad);
+            // Tự động load phòng khi vào trang
+            loadRoomsOnPageLoad();
         });
     </script>
 } 

@@ -1,56 +1,34 @@
 ﻿@{
-    ViewData["Title"] = "Chi tiết phòng trọ";
+    ViewData["Title"] = "Phòng trọ " + (ViewBag.RoomName ?? "");
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <head>
-    <meta name="description" content="Chi tiết phòng trọ, giá tốt, vị trí đẹp, đầy đủ tiện nghi, hình ảnh thực tế" />
-    <meta name="robots" content="index, follow" />
+    <meta name="description" content="Phòng trọ @ViewBag.RoomName, giá tốt, vị trí đẹp, đầy đủ tiện nghi, hình ảnh thực tế." />
     <link rel="canonical" href="/Phongtro/Detail/@(ViewBag.RoomId ?? "")" />
     <style>
-        .room-card, .related-room-card {
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-            transition: box-shadow 0.2s, transform 0.2s;
-            background: #fff;
-        }
-        .room-card:hover, .related-room-card:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.13);
-            transform: translateY(-2px) scale(1.01);
-        }
-        .room-thumb, .related-thumb {
-            border-radius: 12px;
-            object-fit: cover;
-            width: 100%;
-            height: 60px;
-            transition: box-shadow 0.2s;
-        }
-        .main-image {
-            border-radius: 16px;
-            object-fit: cover;
-            width: 100%;
-            height: 320px;
-        }
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
-            background-size: 400% 100%;
-            animation: skeleton-loading 1.2s ease-in-out infinite;
-        }
-        @@keyframes skeleton-loading {
-            0% { background-position: 100% 50%; }
-            100% { background-position: 0 50%; }
-        }
-        .spinner {
-            display: flex; align-items: center; justify-content: center; min-height: 300px;
-        }
+        .main-image { border-radius: 16px; object-fit: cover; width: 100%; height: 340px; }
+        .room-thumb { border-radius: 12px; object-fit: cover; width: 100%; height: 60px; cursor:pointer; }
+        .room-info-table th { width: 120px; }
+        .related-room-card { border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: box-shadow 0.2s; }
+        .related-room-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.13); }
+        .spinner { display: flex; align-items: center; justify-content: center; min-height: 200px; }
     </style>
 </head>
 <div class="container py-5 animate-fade-in">
     <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="/Room/All">Phòng trọ</a></li>
-            <li class="breadcrumb-item active" aria-current="page" id="breadcrumb-room-name">Chi tiết phòng</li>
+        <ol class="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
+            <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a href="/" itemprop="item"><span itemprop="name">Trang chủ</span></a>
+                <meta itemprop="position" content="1" />
+            </li>
+            <li class="breadcrumb-item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a href="/Phongtro/Index" itemprop="item"><span itemprop="name">Phòng trọ</span></a>
+                <meta itemprop="position" content="2" />
+            </li>
+            <li class="breadcrumb-item active" aria-current="page" id="breadcrumb-room-name" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <span itemprop="name">Chi tiết phòng</span>
+                <meta itemprop="position" content="3" />
+            </li>
         </ol>
     </nav>
     <div id="room-loading" class="spinner">
@@ -59,41 +37,46 @@
     <div id="room-content" style="display:none">
         <div class="row">
             <div class="col-lg-6 mb-4 mb-lg-0">
-                <div class="room-card border-0 shadow-sm">
-                    <div class="card-body p-0">
-                        <img id="mainImage" src="/images/no-image.png" alt="Ảnh phòng trọ" class="main-image skeleton">
-                    </div>
+                <div class="mb-3">
+                    <img id="mainImage" src="/images/no-image.png" alt="Ảnh phòng trọ" class="main-image" />
                 </div>
-                <div class="row mt-3 g-2" id="room-thumbnails">
-                    <!-- Ảnh nhỏ sẽ được JS render -->
-                </div>
+                <div class="row g-2" id="room-thumbnails"></div>
             </div>
             <div class="col-lg-6">
-                <h2 class="mb-3" id="room-title">Phòng trọ</h2>
-                <p class="text-muted mb-3" id="room-address">Địa chỉ: --</p>
-                <h3 class="text-primary mb-4" id="room-price">-- đ/tháng</h3>
-                <p class="mb-4" id="room-desc">Mô tả phòng trọ...</p>
-                <div class="mb-4">
-                    <h5>Thông số phòng:</h5>
-                    <table class="table table-striped">
-                        <tbody>
-                            <tr>
-                                <th scope="row">Diện tích</th>
-                                <td id="room-area">-- m²</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Mô tả</th>
-                                <td id="room-shortdesc">--</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <h1 class="mb-3 fs-3 fw-bold" id="room-title">Phòng trọ</h1>
+                <div class="mb-2">
+                    <span class="badge bg-primary me-2" id="room-area">-- m²</span>
+                    <span class="fw-bold text-danger fs-5" id="room-price">-- đ/tháng</span>
                 </div>
-                <div class="d-flex align-items-center mb-4">
-                    <button class="btn btn-primary flex-shrink-0" type="button">
-                        <i class="fa fa-phone me-1"></i>
-                        Liên hệ
-                    </button>
+                <div class="mb-2">
+                    <strong>Nhà trọ:</strong> <span id="room-nhatro">--</span>
                 </div>
+                <div class="mb-2">
+                    <strong>Thể loại phòng:</strong> <span id="room-theloai">--</span>
+                </div>
+                <div class="mb-2">
+                    <strong>Khu vực:</strong> <span id="room-khuvuc">--</span>
+                </div>
+                <div class="mb-2 text-muted" id="room-address"><i class="fa fa-map-marker-alt me-1"></i> Địa chỉ: --</div>
+                <table class="table table-striped room-info-table mb-4">
+                    <tbody>
+                        <tr>
+                            <th>Diện tích</th>
+                            <td id="room-area-table">-- m²</td>
+                        </tr>
+                        <tr>
+                            <th>Giá thuê</th>
+                            <td id="room-price-table">-- đ/tháng</td>
+                        </tr>
+                        <tr>
+                            <th>Mô tả</th>
+                            <td id="room-shortdesc">--</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn btn-primary btn-lg w-100 mb-2" type="button">
+                    <i class="fa fa-phone me-1"></i> Liên hệ
+                </button>
             </div>
         </div>
     </div>
@@ -104,86 +87,80 @@
         <div id="related-loading" class="spinner">
             <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
         </div>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="related-rooms" style="display:none">
-            <!-- JS render phòng liên quan -->
-        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="related-rooms" style="display:none"></div>
     </div>
 </section>
 @section scripts {
-    <script>
-        let currentRoom = null;
-        async function loadRoomDetail() {
-            document.getElementById('room-loading').style.display = '';
-            document.getElementById('room-content').style.display = 'none';
-            // Lấy id từ URL
-            const urlParts = window.location.pathname.split('/');
-            const id = urlParts[urlParts.length - 1];
-            // Lấy thông tin phòng
-            const res = await fetch(`/api/Room/get-room-by-id/${id}`);
-            const json = await res.json();
-            if (!json.success || !json.data) return;
-            const room = json.data.phong || json.data.Phong || json.data;
-            currentRoom = room;
-            document.getElementById('room-title').textContent = room.tenPhong;
-            document.getElementById('room-area').textContent = room.dienTich + ' m²';
-            document.getElementById('room-price').textContent = Number(room.gia).toLocaleString('vi-VN') + ' đ/tháng';
-            document.getElementById('room-address').textContent = 'Địa chỉ: ' + (room.moTa ? room.moTa.split('\n')[0] : 'Địa chỉ đang cập nhật');
-            document.getElementById('room-desc').textContent = room.moTa || '';
-            document.getElementById('room-shortdesc').textContent = room.moTa ? room.moTa.substring(0, 60) + (room.moTa.length > 60 ? '...' : '') : '';
-            document.getElementById('breadcrumb-room-name').textContent = room.tenPhong;
-            // Lấy ảnh phòng
-            const imgRes = await fetch(`/api/Room/get-room-images/${id}`);
-            const imgJson = await imgRes.json();
-            if (imgJson.success && Array.isArray(imgJson.data) && imgJson.data.length > 0) {
-                const mainImg = document.getElementById('mainImage');
-                mainImg.src = "data:image/png;base64," + imgJson.data[0].duongDanHinhBase64;
-                mainImg.classList.remove('skeleton');
-                const thumbnails = imgJson.data.map((img, idx) => `
-                    <div class="col-3">
-                        <img src="data:image/png;base64,${img.duongDanHinhBase64}"
-                             alt="Thumbnail"
-                             class="room-thumb img-fluid rounded shadow-sm ${idx === 0 ? 'border border-primary' : ''}"
-                             style="cursor: pointer;"
-                             onclick="document.getElementById('mainImage').src = this.src" />
-                    </div>
-                `).join('');
-                document.getElementById('room-thumbnails').innerHTML = thumbnails;
-            } else {
-                document.getElementById('mainImage').classList.remove('skeleton');
-            }
-            document.getElementById('room-loading').style.display = 'none';
-            document.getElementById('room-content').style.display = '';
-            // Lấy phòng liên quan
-            loadRelatedRooms(room.maTheLoai, room.maNhaTro, room.maPhong);
+<script>
+    let currentRoom = null;
+    async function loadRoomDetail() {
+        document.getElementById('room-loading').style.display = '';
+        document.getElementById('room-content').style.display = 'none';
+        const urlParts = window.location.pathname.split('/');
+        const id = urlParts[urlParts.length - 1];
+        const res = await fetch(`/api/Room/get-room-by-id/${id}`);
+        const json = await res.json();
+        if (!json.success || !json.data) return;
+        const room = json.data.phong || json.data.Phong || json.data;
+        currentRoom = room;
+        document.getElementById('room-title').textContent = room.tenPhong;
+        document.getElementById('room-area').textContent = room.dienTich + ' m²';
+        document.getElementById('room-area-table').textContent = room.dienTich + ' m²';
+        document.getElementById('room-price').textContent = Number(room.gia).toLocaleString('vi-VN') + ' đ/tháng';
+        document.getElementById('room-price-table').textContent = Number(room.gia).toLocaleString('vi-VN') + ' đ/tháng';
+        document.getElementById('room-nhatro').textContent = room.tenNhaTro || '--';
+        document.getElementById('room-theloai').textContent = room.tenTheLoai || '--';
+        document.getElementById('room-khuvuc').textContent = room.tenKhuVuc || '--';
+        document.getElementById('room-address').innerHTML = '<i class="fa fa-map-marker-alt me-1"></i> ' + (room.diaChi || 'Địa chỉ đang cập nhật');
+        document.getElementById('room-shortdesc').textContent = room.moTa ? room.moTa.substring(0, 60) + (room.moTa.length > 60 ? '...' : '') : '';
+        document.getElementById('breadcrumb-room-name').textContent = room.tenPhong;
+        // Ảnh phòng
+        const imgRes = await fetch(`/api/Room/get-room-images/${id}`);
+        const imgJson = await imgRes.json();
+        if (imgJson.success && Array.isArray(imgJson.data) && imgJson.data.length > 0) {
+            const mainImg = document.getElementById('mainImage');
+            mainImg.src = "data:image/png;base64," + imgJson.data[0].duongDanHinhBase64;
+            const thumbnails = imgJson.data.map((img, idx) => `
+                <div class="col-3">
+                    <img src="data:image/png;base64,${img.duongDanHinhBase64}"
+                         alt="Ảnh phòng trọ ${room.tenPhong} - ${idx+1}"
+                         class="room-thumb img-fluid shadow-sm ${idx === 0 ? 'border border-primary' : ''}"
+                         onclick="document.getElementById('mainImage').src = this.src" />
+                </div>
+            `).join('');
+            document.getElementById('room-thumbnails').innerHTML = thumbnails;
         }
-        async function loadRelatedRooms(maTheLoai, maNhaTro, excludeId) {
-            document.getElementById('related-loading').style.display = '';
-            document.getElementById('related-rooms').style.display = 'none';
-            // Lấy phòng liên quan cùng thể loại và cùng nhà trọ, loại trừ phòng hiện tại
-            const res = await fetch(`/api/Room/related-rooms?loaiPhongId=${maTheLoai}&excludeId=${excludeId}`);
-            const json = await res.json();
-            let html = '';
-            if (json.success && Array.isArray(json.data)) {
-                html = json.data
-                    .filter(room => room.maNhaTro === maNhaTro)
-                    .map(room => `
-                        <div class="col">
-                            <div class="related-room-card h-100 p-2">
-                                <img src="data:image/png;base64,${room.anhDaiDienBase64 || ''}" class="related-thumb mb-2" alt="${room.tenPhong}">
-                                <div class="px-1 pb-2">
-                                    <h5 class="card-title mb-1" style="font-size:1.1rem;">${room.tenPhong}</h5>
-                                    <div class="text-primary fw-bold mb-1">${Number(room.gia).toLocaleString('vi-VN')} đ/tháng</div>
-                                    <div class="text-muted mb-1" style="font-size:0.95em;">${room.moTa ? room.moTa.substring(0, 50) + (room.moTa.length > 50 ? '...' : '') : ''}</div>
-                                    <a href="/Phongtro/Detail/${room.maPhong}" class="btn btn-sm btn-outline-secondary mt-1">Xem chi tiết</a>
-                                </div>
+        document.getElementById('room-loading').style.display = 'none';
+        document.getElementById('room-content').style.display = '';
+        loadRelatedRooms(room.maTheLoai, room.maNhaTro, room.maPhong);
+    }
+    async function loadRelatedRooms(maTheLoai, maNhaTro, excludeId) {
+        document.getElementById('related-loading').style.display = '';
+        document.getElementById('related-rooms').style.display = 'none';
+        const res = await fetch(`/api/Room/related-rooms?loaiPhongId=${maTheLoai}&excludeId=${excludeId}`);
+        const json = await res.json();
+        let html = '';
+        if (json.success && Array.isArray(json.data)) {
+            html = json.data
+                .filter(room => room.maNhaTro === maNhaTro)
+                .map(room => `
+                    <div class="col">
+                        <div class="related-room-card h-100 p-2">
+                            <img src="data:image/png;base64,${room.anhDaiDienBase64 || ''}" class="related-thumb mb-2" alt="Phòng liên quan: ${room.tenPhong}">
+                            <div class="px-1 pb-2">
+                                <h5 class="card-title mb-1" style="font-size:1.1rem;">${room.tenPhong}</h5>
+                                <div class="text-primary fw-bold mb-1">${Number(room.gia).toLocaleString('vi-VN')} đ/tháng</div>
+                                <div class="text-muted mb-1" style="font-size:0.95em;">${room.moTa ? room.moTa.substring(0, 50) + (room.moTa.length > 50 ? '...' : '') : ''}</div>
+                                <a href="/Phongtro/Detail/${room.maPhong}" class="btn btn-sm btn-outline-secondary mt-1">Xem chi tiết</a>
                             </div>
                         </div>
-                    `).join('');
-            }
-            document.getElementById('related-rooms').innerHTML = html || '<div class="col"><div class="alert alert-info">Không có phòng liên quan.</div></div>';
-            document.getElementById('related-loading').style.display = 'none';
-            document.getElementById('related-rooms').style.display = '';
+                    </div>
+                `).join('');
         }
-        document.addEventListener('DOMContentLoaded', loadRoomDetail);
-    </script>
+        document.getElementById('related-rooms').innerHTML = html || '<div class="col"><div class="alert alert-info">Không có phòng liên quan.</div></div>';
+        document.getElementById('related-loading').style.display = 'none';
+        document.getElementById('related-rooms').style.display = '';
+    }
+    document.addEventListener('DOMContentLoaded', loadRoomDetail);
+</script>
 } 

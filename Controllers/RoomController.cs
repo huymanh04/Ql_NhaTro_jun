@@ -208,16 +208,19 @@ namespace Ql_NhaTro_jun.Controllers
             {
                 var phongTro = await _context.PhongTros
                     .Where(p => p.MaPhong == id)
-                    .Select(p => new PhongTroDTO
-                    {
-                        MaPhong = p.MaPhong,
-                        MaNhaTro = (int)p.MaNhaTro,
-                        MaTheLoai = p.MaTheLoai,
-                        TenPhong = p.TenPhong,
-                        Gia = (decimal)p.Gia,
-                        DienTich = (float)p.DienTich,
-                        ConTrong = (bool)p.ConTrong,
-                        MoTa = p.MoTa
+                    .Select(p => new {
+                        p.MaPhong,
+                        p.MaNhaTro,
+                        p.MaTheLoai,
+                        p.TenPhong,
+                        p.Gia,
+                        p.DienTich,
+                        p.ConTrong,
+                        p.MoTa,
+                        TenTheLoai = p.MaTheLoaiNavigation.TenTheLoai,
+                        TenNhaTro = p.MaNhaTroNavigation.TenNhaTro,
+                        DiaChi = p.MaNhaTroNavigation.DiaChi,
+                        TenKhuVuc = p.MaNhaTroNavigation.MaKhuVucNavigation.TenKhuVuc
                     })
                     .FirstOrDefaultAsync();
 
@@ -225,7 +228,7 @@ namespace Ql_NhaTro_jun.Controllers
                 {
                     return NotFound(ApiResponse<object>.CreateError("Phòng không tồn tại"));
                 }
-                var img= await _context.HinhAnhPhongTros
+                var img = await _context.HinhAnhPhongTros
                     .Where(i => i.MaPhong == id)
                     .Select(i => new HinhAnhPhongDto
                     {
@@ -235,14 +238,12 @@ namespace Ql_NhaTro_jun.Controllers
                         IsMain = (bool)i.IsMain
                     })
                     .ToListAsync();
-                var result = new PhongVaHinhDto
-                {
+                var result = new {
                     Phong = phongTro,
                     HinhAnh = img
                 };
 
-                return Ok(ApiResponse<PhongVaHinhDto>.CreateSuccess("Lấy thành công", result));
-
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy thành công", result));
             }
             catch (Exception ex)
             {
@@ -393,54 +394,57 @@ namespace Ql_NhaTro_jun.Controllers
             }
         }
         [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string location, [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice)
+        public async Task<IActionResult> Search([FromQuery] int? theLoai, [FromQuery] int? khuVuc, [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice)
         {
-            var query = _context.PhongTros.Include(p => p.MaNhaTroNavigation).AsQueryable();
-            if (!string.IsNullOrEmpty(location))
+            try
             {
-                if (int.TryParse(location, out int maTinh))
+                var query = _context.PhongTros.AsQueryable();
+                if (theLoai.HasValue)
+                    query = query.Where(p => p.MaTheLoai == theLoai.Value);
+                if (khuVuc.HasValue)
+                    query = query.Where(p => p.MaNhaTroNavigation.MaKhuVuc == khuVuc.Value);
+                if (minPrice.HasValue)
+                    query = query.Where(p => p.Gia >= minPrice.Value);
+                if (maxPrice.HasValue)
+                    query = query.Where(p => p.Gia <= maxPrice.Value);
+
+                var phongTros = await query
+                    .Select(p => new PhongTroDTO
+                    {
+                        MaPhong = p.MaPhong,
+                        MaNhaTro = (int)p.MaNhaTro,
+                        MaTheLoai = p.MaTheLoai,
+                        TenPhong = p.TenPhong,
+                        Gia = (decimal)p.Gia,
+                        DienTich = (float)p.DienTich,
+                        ConTrong = (bool)p.ConTrong,
+                        MoTa = p.MoTa
+                    })
+                    .ToListAsync();
+
+                var phongIds = phongTros.Select(x => x.MaPhong).ToList();
+                var img = await _context.HinhAnhPhongTros
+                    .Where(i => phongIds.Contains(i.MaPhong) && i.IsMain == true)
+                    .Select(i => new HinhAnhPhongDto
+                    {
+                        MaHinhAnh = i.MaHinhAnh,
+                        MaPhong = i.MaPhong,
+                        DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
+                        IsMain = (bool)i.IsMain
+                    })
+                    .ToListAsync();
+                var result = new PhongVaHinhDtoo
                 {
-                    query = query.Where(p => p.MaNhaTroNavigation.MaTinh == maTinh);
-                }
+                    Phong = phongTros,
+                    HinhAnh = img
+                };
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy thành công", result));
             }
-            if (minPrice.HasValue)
+            catch (Exception ex)
             {
-                query = query.Where(p => p.Gia >= minPrice.Value);
+                _logger.LogError(ex, "Lỗi khi tìm kiếm phòng");
+                return StatusCode(500, ApiResponse<object>.CreateError("Đã xảy ra lỗi khi tìm kiếm phòng"));
             }
-            if (maxPrice.HasValue)
-            {
-                query = query.Where(p => p.Gia <= maxPrice.Value);
-            }
-            var phongTros = await query
-                .Select(p => new PhongTroDTO
-                {
-                    MaPhong = p.MaPhong,
-                    MaNhaTro = (int)p.MaNhaTro,
-                    MaTheLoai = p.MaTheLoai,
-                    TenPhong = p.TenPhong,
-                    Gia = (decimal)p.Gia,
-                    DienTich = (float)p.DienTich,
-                    ConTrong = (bool)p.ConTrong,
-                    MoTa = p.MoTa
-                })
-                .ToListAsync();
-            var roomIds = phongTros.Select(r => r.MaPhong).ToList();
-            var images = await _context.HinhAnhPhongTros
-                .Where(i => roomIds.Contains(i.MaPhong) && i.IsMain == true)
-                .Select(i => new HinhAnhPhongDto
-                {
-                    MaHinhAnh = i.MaHinhAnh,
-                    MaPhong = i.MaPhong,
-                    DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-                    IsMain = (bool)i.IsMain
-                })
-                .ToListAsync();
-            var result = new PhongVaHinhDtoo
-            {
-                Phong = phongTros,
-                HinhAnh = images
-            };
-            return Ok(ApiResponse<object>.CreateSuccess("Tìm kiếm thành công", result));
         }
         // POST api/<ValuesController>
         [HttpPost("add-room")]
