@@ -105,7 +105,7 @@ async function loadTheloaiPhongTro() {
                     <div class="category-content">
                         <h3>${item.tenTheLoai}</h3>
                         <p>${item.moTa || ''}</p>
-                        <a href="${item.redirectUrl || '#'}" class="btn btn-outline-primary">Xem ngay</a>
+                      <a href="/Phongtro/Index?location=${encodeURIComponent(item.maTheLoai)}" class="btn btn-outline-primary">Xem ngay</a>
                     </div>
                 </div>
             `;

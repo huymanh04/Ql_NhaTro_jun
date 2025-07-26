@@ -19,7 +19,11 @@ public partial class NguoiDung
 
     public string? VaiTro { get; set; }
 
-    public string so_cccd { get; set; } = null!;
+    public string so_cccd { get; set; } = string.Empty;
+
+    public bool IsEmailConfirmed { get; set; } = false;
+    public string? EmailConfirmationCode { get; set; }
+
     [NotMapped]
     [JsonPropertyName("g-recaptcha-response")]
     public string? RecaptchaResponse { get; set; }

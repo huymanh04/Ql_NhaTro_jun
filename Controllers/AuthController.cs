@@ -10,6 +10,8 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using static Ql_NhaTro_jun.Controllers.AdminController;
+using MailKit.Net.Smtp;
+using MimeKit;
 
 namespace Api_Ql_nhatro.Controllers
 {
@@ -102,50 +104,80 @@ namespace Api_Ql_nhatro.Controllers
         {
             var key = HttpContext.Session.GetString($"AES_{model.Email}_Key");
             var iv = HttpContext.Session.GetString($"AES_{model.Email}_IV");
-
             if (key == null || iv == null)
                 return BadRequest(new { message = "Phiên đã hết hạn hoặc không tồn tại AES Key" });
             var decryptedPassword = AesHelper.Decrypt(model.MatKhau, key, iv);
             model.MatKhau = decryptedPassword;
             var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == model.SoDienThoai);
-
             if (user != null)
             {
                 return Unauthorized(new { message = "Số điện thoại đã tồn tại" });
             }
             var emaill = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == model.Email);
-
-            if (user != null)
+            if (emaill != null)
             {
                 return Unauthorized(new { message = "Email đã tồn tại" });
             }
             var recaptchaResponse = model.RecaptchaResponse;
-
-
             string secretKey = "6LcQdhUrAAAAALA0Kf-pPNX8yTyHbpdZpVC3bsuG";
-
             var client = new WebClient();
-            var result = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}",
-                                    secretKey, recaptchaResponse));
-
+            var result = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, recaptchaResponse));
             var response = JsonSerializer.Deserialize<RecaptchaResponse>(result);
             if (!response.Success)
             {
                 return BadRequest(new { message = "Xác minh reCAPTCHA thất bại!" });
             }
-
             model.VaiTro = "0";
-
+            // Sinh mã xác thực email
+            var code = new Random().Next(100000, 999999).ToString();
+            model.IsEmailConfirmed = false;
+            model.EmailConfirmationCode = code;
             _context.Add(model);
-
             HttpContext.Session.Remove($"AES_{model.Email}_Key");
             HttpContext.Session.Remove($"AES_{model.Email}_IV");
             try
             {
                 await _context.SaveChangesAsync();
+                // Gửi email xác thực
+                var emailMessage = new MimeMessage();
+                emailMessage.From.Add(new MailboxAddress("QL Nhà Trọ", "your_email@gmail.com"));
+                emailMessage.To.Add(new MailboxAddress(model.HoTen, model.Email));
+                emailMessage.Subject = "Mã xác thực đăng ký tài khoản";
+                emailMessage.Body = new TextPart("plain")
+                {
+                    Text = $"Xin chào {model.HoTen},\n\nMã xác thực đăng ký tài khoản của bạn là: {code}\nVui lòng nhập mã này để hoàn tất đăng ký.\n\nTrân trọng!"
+                };
+                using (var smtpClient = new SmtpClient())
+                {
+                    await smtpClient.ConnectAsync("smtp.gmail.com", 587, false);
+                    await smtpClient.AuthenticateAsync("your_email@gmail.com", "your_app_password");
+                    await smtpClient.SendAsync(emailMessage);
+                    await smtpClient.DisconnectAsync(true);
+                }
             }
             catch (Exception EE) { }
-            return Ok(new { Success = true, message = "Đăng Ký thành công !" });
+            return Ok(new { Success = true, message = "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản." });
+        }
+        [HttpPost("verify-email-code")]
+        public async Task<IActionResult> VerifyEmailCode([FromBody] VerifyEmailCodeRequest req)
+        {
+            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == req.Email);
+            if (user == null)
+                return NotFound(new { message = "Không tìm thấy tài khoản" });
+            if (user.IsEmailConfirmed)
+                return BadRequest(new { message = "Email đã được xác thực trước đó" });
+            if (user.EmailConfirmationCode != req.Code)
+                return BadRequest(new { message = "Mã xác thực không đúng" });
+            user.IsEmailConfirmed = true;
+            user.EmailConfirmationCode = null;
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Xác thực email thành công!" });
+        }
+
+        public class VerifyEmailCodeRequest
+        {
+            public string Email { get; set; }
+            public string Code { get; set; }
         }
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()

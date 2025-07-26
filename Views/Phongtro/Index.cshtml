@@ -219,20 +219,65 @@
                 document.getElementById('room-list').style.display = '';
             }
         }
+        // Hàm lấy giá trị query string
+        function getQueryParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name) || '';
+        }
+        // Promise cho options
+        function loadTheLoaiOptionsPromise() {
+            return new Promise(resolve => {
+                loadTheLoaiOptions().then(resolve);
+            });
+        }
+        function loadKhuVucOptionsPromise() {
+            return new Promise(resolve => {
+                loadKhuVucOptions().then(resolve);
+            });
+        }
+        async function setFiltersFromQuery() {
+            const theloai = getQueryParam('theLoai');
+            const khuvuc = getQueryParam('khuVuc') || getQueryParam('location');
+            const minVal = getQueryParam('minPrice');
+            const maxVal = getQueryParam('maxPrice');
+            if (theloai) document.getElementById('filter-theloai').value = theloai;
+            if (khuvuc) document.getElementById('filter-khuvuc').value = khuvuc;
+            if (minVal) document.getElementById('slider-min').value = Math.floor(Number(minVal)/1000);
+            if (maxVal) document.getElementById('slider-max').value = Math.floor(Number(maxVal)/1000);
+            updateSlider();
+        }
         async function loadRoomsOnPageLoad() {
             document.getElementById('room-list-loading').style.display = '';
             document.getElementById('room-list').style.display = 'none';
+            // Lấy filter từ query string nếu có
+            const theloai = getQueryParam('theLoai');
+            const khuvuc = getQueryParam('khuVuc') || getQueryParam('location');
+            const minVal = getQueryParam('minPrice');
+            const maxVal = getQueryParam('maxPrice');
+            // Gọi API với filter
+            let url = `/api/Room/search?`;
+            if (theloai) url += `theLoai=${theloai}&`;
+            if (khuvuc) url += `khuVuc=${khuvuc}&`;
+            if (minVal) url += `minPrice=${minVal}&`;
+            if (maxVal) url += `maxPrice=${maxVal}&`;
             try {
-                const res = await fetch('/api/Room/search');
+                const res = await fetch(url);
                 const json = await res.json();
                 if (!json.success || !json.data) throw new Error('Không có dữ liệu phòng');
                 if (Array.isArray(json.data)) {
                     allRooms = json.data;
                     allImages = [];
                 } else {
-                    allRooms = json.data.Phong || json.data.phong || [];
-                    allImages = json.data.HinhAnh || json.data.hinhAnh || [];
+                    allRooms = Array.isArray(json.data.Phong) ? json.data.Phong
+                        : Array.isArray(json.data.phong) ? json.data.phong
+                        : [];
+                    allImages = Array.isArray(json.data.HinhAnh) ? json.data.HinhAnh
+                        : Array.isArray(json.data.hinhAnh) ? json.data.hinhAnh
+                        : [];
                 }
+                console.log('json.data:', json.data);
+                console.log('allRooms:', allRooms);
+                console.log('allImages:', allImages);
                 renderRoomList(allRooms);
             } catch (err) {
                 document.getElementById('room-list').innerHTML = `<div class='text-danger text-center py-5 w-100'>${err.message}</div>`;
@@ -287,15 +332,18 @@
             document.getElementById('room-list-loading').style.display = 'none';
             roomList.style.display = '';
         }
-        document.addEventListener('DOMContentLoaded', () => {
-            loadTheLoaiOptions();
-            loadKhuVucOptions();
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Promise.all([
+                loadTheLoaiOptionsPromise(),
+                loadKhuVucOptionsPromise()
+            ]);
+            await setFiltersFromQuery();
             updateSlider();
             document.getElementById('form-search').addEventListener('submit', filterRoomsFromApi);
             document.getElementById('slider-min').addEventListener('input', updateSlider);
             document.getElementById('slider-max').addEventListener('input', updateSlider);
             document.getElementById('btn-view-all').addEventListener('click', loadRoomsOnPageLoad);
-            // Tự động load phòng khi vào trang
+            // Tự động load phòng khi vào trang, có set lại filter nếu có query string
             loadRoomsOnPageLoad();
         });
     </script>
