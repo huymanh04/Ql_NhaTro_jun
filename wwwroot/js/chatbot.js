@@ -76,7 +76,7 @@ class Chatbot {
                 this.showError(data.message || 'Không thể tải danh sách hội thoại');
             }
         } catch (error) {
-            this.showError('Lỗi khi tải danh sách hội thoại: ' + error.message);
+            
         } finally {
             this.isLoading = false;
             this.isFirstLoadConversations = false;
@@ -207,7 +207,7 @@ class Chatbot {
                 this.showError(data.message || 'Không thể tải tin nhắn');
             }
         } catch (error) {
-            this.showError('Lỗi khi tải tin nhắn: ' + error.message);
+          
         } finally {
             this.isLoading = false;
             this.isFirstLoadMessages = false;
@@ -322,10 +322,10 @@ class Chatbot {
                 this.scrollToBottom();
                 this.loadMessages(this.currentConversationId, this.currentRecipientId, this.currentRecipientName);
             } else {
-                this.showError(data.message || 'Không thể gửi tin nhắn');
+               
             }
         } catch (error) {
-            this.showError('Lỗi khi gửi tin nhắn: ' + error.message);
+           
         }
     }
 

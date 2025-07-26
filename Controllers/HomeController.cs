@@ -24,7 +24,10 @@ namespace Ql_NhaTro_jun.Controllers
         
         public async Task<IActionResult> About()
         {
-            return View(await _context.CaiDatHeThongs.FirstOrDefaultAsync());
+            // Nếu cần dùng dữ liệu cấu hình, truyền qua ViewBag
+            // var m = await _context.CaiDatHeThongs.FirstOrDefaultAsync();
+            // ViewBag.CaiDat = m;
+            return View();
         }
         
         public async Task<IActionResult> Contact()

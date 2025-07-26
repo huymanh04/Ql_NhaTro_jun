@@ -608,3 +608,28 @@ input[type="range"]::-moz-range-thumb {
         text-align: center;
     }
 }
+
+/* Khu vực phổ biến - location card */
+.location-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+.location-card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.location-img {
+    height: 220px;
+    object-fit: cover;
+    filter: brightness(0.85);
+    transition: filter 0.2s;
+}
+.location-card:hover .location-img {
+    filter: brightness(1);
+}
+.bg-gradient-to-top {
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 80%, rgba(0,0,0,0.1) 100%);
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+}

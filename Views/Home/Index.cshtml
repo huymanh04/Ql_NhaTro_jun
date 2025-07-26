@@ -32,7 +32,7 @@
                     <h1 class="display-4 text-white">Tìm Phòng Trọ Ưng Ý</h1>
                     <p class="lead text-white">Hàng ngàn phòng trọ chất lượng đang chờ bạn</p>
                     <div class="search-box mt-4">
-                        <form asp-controller="Room" asp-action="Search" method="get" class="search-form">
+                        <form asp-controller="Phongtro" asp-action="Index" method="get" class="search-form">
                             <div class="row mb-3">
                                 <div class="col-md-12">
                                     <div class="price-label">Khu vực (Tỉnh thành)</div>
@@ -115,35 +115,47 @@
     <section class="location-section py-5">
         <div class="container">
             <h2 class="section-title text-center mb-4">Khu vực phổ biến</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="location-card">
-                        <img src="~/images/location-1.jpg" class="img-fluid" alt="Quận 1">
-                        <div class="location-overlay">
-                            <h3>Quận 1</h3>
-                            <p>125 phòng trọ</p>
-                            <a href="#" class="stretched-link"></a>
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-4 col-sm-6">
+                    <div class="card location-card shadow-sm border-0 h-100 position-relative overflow-hidden">
+                        <img src="~/images/location-1.jpg" class="card-img-top location-img" alt="Quận 1">
+                        <div class="card-img-overlay d-flex flex-column justify-content-end p-0">
+                            <div class="bg-gradient-to-top p-3">
+                                <h5 class="card-title text-white mb-1">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>Quận 1
+                                </h5>
+                                <p class="card-text text-white-50 mb-0">125 phòng trọ</p>
+                            </div>
                         </div>
+                        <a href="#" class="stretched-link"></a>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="location-card">
-                        <img src="~/images/location-2.jpg" class="img-fluid" alt="Quận Bình Thạnh">
-                        <div class="location-overlay">
-                            <h3>Quận Bình Thạnh</h3>
-                            <p>210 phòng trọ</p>
-                            <a href="#" class="stretched-link"></a>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card location-card shadow-sm border-0 h-100 position-relative overflow-hidden">
+                        <img src="~/images/location-2.jpg" class="card-img-top location-img" alt="Quận Bình Thạnh">
+                        <div class="card-img-overlay d-flex flex-column justify-content-end p-0">
+                            <div class="bg-gradient-to-top p-3">
+                                <h5 class="card-title text-white mb-1">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>Quận Bình Thạnh
+                                </h5>
+                                <p class="card-text text-white-50 mb-0">210 phòng trọ</p>
+                            </div>
                         </div>
+                        <a href="#" class="stretched-link"></a>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="location-card">
-                        <img src="~/images/location-3.jpg" class="img-fluid" alt="Quận Gò Vấp">
-                        <div class="location-overlay">
-                            <h3>Quận Gò Vấp</h3>
-                            <p>180 phòng trọ</p>
-                            <a href="#" class="stretched-link"></a>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card location-card shadow-sm border-0 h-100 position-relative overflow-hidden">
+                        <img src="~/images/location-3.jpg" class="card-img-top location-img" alt="Quận Gò Vấp">
+                        <div class="card-img-overlay d-flex flex-column justify-content-end p-0">
+                            <div class="bg-gradient-to-top p-3">
+                                <h5 class="card-title text-white mb-1">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>Quận Gò Vấp
+                                </h5>
+                                <p class="card-text text-white-50 mb-0">180 phòng trọ</p>
+                            </div>
                         </div>
+                        <a href="#" class="stretched-link"></a>
                     </div>
                 </div>
             </div>

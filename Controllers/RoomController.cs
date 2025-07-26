@@ -392,6 +392,56 @@ namespace Ql_NhaTro_jun.Controllers
                 return StatusCode(500, ApiResponse<object>.CreateError("Đã xảy ra lỗi khi lấy phòng liên quan"));
             }
         }
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string location, [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice)
+        {
+            var query = _context.PhongTros.Include(p => p.MaNhaTroNavigation).AsQueryable();
+            if (!string.IsNullOrEmpty(location))
+            {
+                if (int.TryParse(location, out int maTinh))
+                {
+                    query = query.Where(p => p.MaNhaTroNavigation.MaTinh == maTinh);
+                }
+            }
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Gia >= minPrice.Value);
+            }
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Gia <= maxPrice.Value);
+            }
+            var phongTros = await query
+                .Select(p => new PhongTroDTO
+                {
+                    MaPhong = p.MaPhong,
+                    MaNhaTro = (int)p.MaNhaTro,
+                    MaTheLoai = p.MaTheLoai,
+                    TenPhong = p.TenPhong,
+                    Gia = (decimal)p.Gia,
+                    DienTich = (float)p.DienTich,
+                    ConTrong = (bool)p.ConTrong,
+                    MoTa = p.MoTa
+                })
+                .ToListAsync();
+            var roomIds = phongTros.Select(r => r.MaPhong).ToList();
+            var images = await _context.HinhAnhPhongTros
+                .Where(i => roomIds.Contains(i.MaPhong) && i.IsMain == true)
+                .Select(i => new HinhAnhPhongDto
+                {
+                    MaHinhAnh = i.MaHinhAnh,
+                    MaPhong = i.MaPhong,
+                    DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
+                    IsMain = (bool)i.IsMain
+                })
+                .ToListAsync();
+            var result = new PhongVaHinhDtoo
+            {
+                Phong = phongTros,
+                HinhAnh = images
+            };
+            return Ok(ApiResponse<object>.CreateSuccess("Tìm kiếm thành công", result));
+        }
         // POST api/<ValuesController>
         [HttpPost("add-room")]
         public async Task<IActionResult> AddRoomType([FromForm] CreatePhongTroDTO createDto)

@@ -1,6 +1,8 @@
 @{
     ViewData["Title"] = "Quản lý tài khoản";
     Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+
+    var role = Context.Items["role"];
 }
 
 <div class="user-management">
@@ -157,9 +159,16 @@
                     <label for="vaiTro">Vai trò <span class="required">*</span></label>
                     <select id="vaiTro" name="vaiTro" required>
                         <option value="">Chọn vai trò</option>
-                        <option value="0">Khách hàng</option>
-                        <option value="1">Quản lý</option>
-                        <option value="2">Admin</option>
+              
+                        @if (role != null && role.ToString() == "2")
+                        {
+                            <option value="1">Quản lý</option>
+                            <option value="2">Admin</option>
+                        }
+                      
+                            <option value="0">Khách hàng</option>
+                        
+                     
                     </select>
                     <div class="error-message" id="vaiTroError"></div>
                 </div>
@@ -178,38 +187,42 @@
 </div>
 
 <!-- Role Change Modal -->
-<div class="modal" id="roleModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2><i class="fas fa-user-cog"></i> Thay đổi quyền</h2>
-            <button class="modal-close" id="closeRoleModalBtn">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="modal-body">
-            <p>Thay đổi quyền cho: <strong id="roleUserName"></strong></p>
-            <div class="form-group">
-                <label for="newRole">Vai trò mới</label>
-                <select id="newRole">
-                    <option value="0">Khách hàng</option>
-                    <option value="1">Quản lý</option>
-                    <option value="2">Admin</option>
-                </select>
+@if (role == "2")
+{
+
+    <div class="modal" id="roleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-cog"></i> Thay đổi quyền</h2>
+                <button class="modal-close" id="closeRoleModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p>Thay đổi quyền cho: <strong id="roleUserName"></strong></p>
+                <div class="form-group">
+                    <label for="newRole">Vai trò mới</label>
+                    <select id="newRole">
+                        <option value="0">Khách hàng</option>
+                        <option value="1">Quản lý</option>
+                        <option value="2">Admin</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelRoleModalBtn">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
+                <button type="button" class="btn btn-warning" id="confirmRoleChangeBtn">
+                    <i class="fas fa-check"></i> Xác nhận
+                </button>
             </div>
         </div>
-        
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" id="cancelRoleModalBtn">
-                <i class="fas fa-times"></i> Hủy
-            </button>
-            <button type="button" class="btn btn-warning" id="confirmRoleChangeBtn">
-                <i class="fas fa-check"></i> Xác nhận
-            </button>
-        </div>
     </div>
-</div>
 
+}
 <!-- Delete Confirmation Modal -->
 <div class="modal" id="deleteModal">
     <div class="modal-content delete-modal">
@@ -1096,30 +1109,44 @@
             allUsers.forEach(user => {
                 const roleText = getRoleText(user.vaiTro);
                 const badgeClass = getRoleBadgeClass(user.vaiTro);
-                
-                const row = `
-                    <tr>
-                        <td><strong>${user.maNguoiDung}</strong></td>
-                        <td><span style="font-weight: 600;">${user.hoTen || 'N/A'}</span></td>
-                        <td>${user.email || 'N/A'}</td>
-                        <td>${user.soDienThoai || 'N/A'}</td>
-                        <td>${user.so_cccd || 'N/A'}</td>
-                        <td><span class="badge ${badgeClass}">${roleText}</span></td>
-                        <td>
-                            <div class="btn-group">
-                                <button class="btn btn-primary btn-sm" onclick="editUser(${user.maNguoiDung})" title="Sửa">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-warning btn-sm" onclick="changeRole(${user.maNguoiDung}, '${user.hoTen}', '${user.vaiTro}')" title="Đổi quyền">
-                                    <i class="fas fa-user-cog"></i>
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.maNguoiDung}, '${user.hoTen}')" title="Xóa">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
+
+                    let actions = `
+            <button class="btn btn-primary btn-sm" onclick="editUser(${user.maNguoiDung})" title="Sửa">
+                <i class="fas fa-edit"></i>
+            </button>
+        `;
+
+                if (@role === 2) {
+                    actions += `
+                <button class="btn btn-warning btn-sm" onclick="changeRole(${user.maNguoiDung}, '${user.hoTen}', '${user.vaiTro}')" title="Đổi quyền">
+                    <i class="fas fa-user-cog"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.maNguoiDung}, '${user.hoTen}')" title="Xóa">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+                } else if (roleText === "Khách hàng") {
+                    actions += `
+                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.maNguoiDung}, '${user.hoTen}')" title="Xóa">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+                } else {
+                    actions = '';
+                }
+
+                    const row = `
+            <tr>
+                <td><strong>${user.maNguoiDung}</strong></td>
+                <td><span style="font-weight: 600;">${user.hoTen || 'N/A'}</span></td>
+                <td>${user.email || 'N/A'}</td>
+                <td>${user.soDienThoai || 'N/A'}</td>
+                <td>${user.so_cccd || 'N/A'}</td>
+                <td><span class="badge ${badgeClass}">${roleText}</span></td>
+                <td><div class="btn-group">${actions}</div></td>
+            </tr>
+        `;
+
                 $tableBody.append(row);
             });
         }
