@@ -118,7 +118,7 @@
 <script>
     // Lấy roomId từ query string hoặc gán cứng để test
     const urlParams = new URLSearchParams(window.location.search);
-    const roomId = urlParams.get('roomId') || 1; // Thay 1 bằng id phòng thực tế
+    const roomId = urlParams.get('roomId')||-1; // Thay 1 bằng id phòng thực tế
 
     function iconHtml(icon) {
         return `<span class=\"contract-row-icon\"><i class=\"${icon}\"></i></span>`;

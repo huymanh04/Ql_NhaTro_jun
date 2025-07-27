@@ -199,6 +199,13 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
+                if (id == -1)
+                {
+                    var m = await _context.HopDongNguoiThues.FirstOrDefaultAsync(m => m.MaKhachThue == JunTech.id);
+                    id = m.MaHopDong;
+                    var ma = await _context.HopDongs.FirstOrDefaultAsync(t => t.MaHopDong == id);
+                    id = (int)ma.MaPhong;
+                }
                 var contract = await _context.HopDongs
                     .Include(c => c.MaPhongNavigation)
                         .ThenInclude(p => p.MaNhaTroNavigation)

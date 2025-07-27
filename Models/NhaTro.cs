@@ -18,6 +18,7 @@ public partial class NhaTro
     public int? MaKhuVuc { get; set; }
 
     public string? MoTa { get; set; }
+    public string? gg_map { get; set; }
 
     public DateTime? NgayTao { get; set; }
 

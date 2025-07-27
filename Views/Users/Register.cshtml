@@ -387,10 +387,11 @@
 
                             if (Register.ok) {
                             showNotification(result.message, 'success');
-
+                            // Lưu email vào sessionStorage và chuyển hướng sang trang xác thực mã
+                            sessionStorage.setItem('registerEmail', email);
                             setTimeout(() => {
-                window.location.href = '/Home';
-                }, 5000);
+                                window.location.href = '/Users/Verycode';
+                            }, 1000);
                             } else { showNotification(result.message, 'warning');
 
 

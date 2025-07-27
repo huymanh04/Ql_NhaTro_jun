@@ -266,6 +266,7 @@ public partial class QlNhatroContext : DbContext
             entity.ToTable("NhaTro");
 
             entity.Property(e => e.DiaChi).HasMaxLength(255);
+
             entity.Property(e => e.NgayTao)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

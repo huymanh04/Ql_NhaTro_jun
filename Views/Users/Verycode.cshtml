@@ -1,0 +1,400 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác thực tài khoản - Nhà trọ</title>
+    <style>
+        .verify-page {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+         
+        }
+        .verify-container {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(49,130,206,0.10), 0 1.5px 6px rgba(99,179,237,0.08);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .verify-container .icon {
+            background: linear-gradient(135deg, #3182ce 0%, #63b3ed 100%);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 30px;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(49,130,206,0.10);
+        }
+        .verify-container h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .verify-container .subtitle {
+            color: #6c757d;
+            margin-bottom: 24px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        .verify-container .code-input-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 18px 0 24px;
+        }
+        .verify-container .code-input {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #63b3ed;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #3182ce;
+            transition: all 0.3s;
+            font-family: monospace;
+            background: #f8f9fa;
+        }
+        .verify-container .code-input:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 2px #3182ce33;
+        }
+        .verify-container .btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #3182ce 0%, #63b3ed 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(49,130,206,0.08);
+        }
+        .verify-container .btn:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #4299e1 100%);
+        }
+        .verify-container .resend-section {
+            padding: 16px 0 0 0;
+            border-top: 1px solid #e9ecef;
+            margin-top: 18px;
+        }
+        .verify-container .resend-text {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .verify-container .resend-btn {
+            background: none;
+            border: none;
+            color: #3182ce;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .verify-container .resend-btn:hover {
+            color: #63b3ed;
+        }
+        .verify-container .timer {
+            color: #dc3545;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .verify-container .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #c3e6cb;
+            display: none;
+            font-size: 15px;
+        }
+        .verify-container .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #f5c6cb;
+            display: none;
+            font-size: 15px;
+        }
+        @@media (max-width: 480px) {
+            .verify-container {
+                padding: 20px 8px;
+                margin: 10px;
+            }
+            .verify-container .code-input {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+            .verify-container .code-input-container {
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-page">
+        <div class="verify-container">
+            <div class="icon">🏠</div>
+            <h1>Xác thực tài khoản</h1>
+            <p class="subtitle">
+                Chúng tôi đã gửi mã xác nhận 6 chữ số đến email của bạn.<br>
+                Vui lòng nhập mã để hoàn tất đăng ký.
+            </p>
+
+            <div class="success-message" id="successMessage">
+                ✅ Xác thực thành công! Chuyển hướng trong giây lát...
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                ❌ Mã xác nhận không đúng. Vui lòng kiểm tra lại.
+            </div>
+
+            <form id="verificationForm">
+                <div class="code-input-container">
+                    <input type="text" class="code-input" maxlength="1" data-index="0">
+                    <input type="text" class="code-input" maxlength="1" data-index="1">
+                    <input type="text" class="code-input" maxlength="1" data-index="2">
+                    <input type="text" class="code-input" maxlength="1" data-index="3">
+                    <input type="text" class="code-input" maxlength="1" data-index="4">
+                    <input type="text" class="code-input" maxlength="1" data-index="5">
+                </div>
+
+                <button type="submit" class="btn" id="verifyBtn">
+                    Xác thực tài khoản
+                </button>
+            </form>
+
+            <div class="resend-section">
+                <p class="resend-text">Không nhận được mã?</p>
+                <button class="resend-btn" id="resendBtn">Gửi lại mã xác nhận</button>
+                <div class="timer" id="timer" style="display: none;">
+                    Gửi lại sau: <span id="countdown">60</span>s
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const codeInputs = document.querySelectorAll('.code-input');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const resendBtn = document.getElementById('resendBtn');
+        const timer = document.getElementById('timer');
+        const countdown = document.getElementById('countdown');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        let timeLeft = 60;
+        let timerInterval;
+
+        // Xử lý nhập mã
+        codeInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+
+                // Chỉ cho phép số
+                if (!/^\d*$/.test(value)) {
+                    e.target.value = '';
+                    return;
+                }
+
+                if (value) {
+                    e.target.classList.add('filled');
+                    // Tự động chuyển sang ô tiếp theo
+                    if (index < codeInputs.length - 1) {
+                        codeInputs[index + 1].focus();
+                    }
+                } else {
+                    e.target.classList.remove('filled');
+                }
+
+                updateVerifyButton();
+            });
+
+            input.addEventListener('keydown', (e) => {
+                // Backspace - chuyển về ô trước
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    codeInputs[index - 1].focus();
+                }
+
+                // Arrow keys navigation
+                if (e.key === 'ArrowLeft' && index > 0) {
+                    codeInputs[index - 1].focus();
+                }
+                if (e.key === 'ArrowRight' && index < codeInputs.length - 1) {
+                    codeInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').replace(/\D/g, '');
+
+                for (let i = 0; i < Math.min(pastedData.length, codeInputs.length - index); i++) {
+                    if (codeInputs[index + i]) {
+                        codeInputs[index + i].value = pastedData[i];
+                        codeInputs[index + i].classList.add('filled');
+                    }
+                }
+
+                updateVerifyButton();
+            });
+        });
+
+        function updateVerifyButton() {
+            const allFilled = Array.from(codeInputs).every(input => input.value);
+            verifyBtn.disabled = !allFilled;
+        }
+
+        // Lấy email từ sessionStorage (giả sử đã lưu khi đăng ký)
+        const email = sessionStorage.getItem('registerEmail');
+
+        // Xử lý xác thực
+        document.getElementById('verificationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = Array.from(codeInputs).map(input => input.value).join('');
+            verifyBtn.textContent = 'Đang xác thực...';
+            verifyBtn.disabled = true;
+            try {
+                const res = await fetch('/api/auth/verify-email-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, code: code })
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    successMessage.style.display = 'block';
+                    errorMessage.style.display = 'none';
+                    setTimeout(() => {
+                        window.location.href = '/Users/Login';
+                    }, 2000);
+                } else {
+                    errorMessage.textContent = result.message || 'Mã xác nhận không đúng. Vui lòng kiểm tra lại.';
+                    errorMessage.style.display = 'block';
+                    successMessage.style.display = 'none';
+                    codeInputs.forEach(input => {
+                        input.value = '';
+                        input.classList.remove('filled');
+                    });
+                    codeInputs[0].focus();
+                }
+            } catch (err) {
+                errorMessage.textContent = 'Có lỗi xảy ra khi xác thực.';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+            verifyBtn.textContent = 'Xác thực tài khoản';
+            verifyBtn.disabled = false;
+            updateVerifyButton();
+        });
+
+        // Xử lý gửi lại mã
+        resendBtn.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/auth/resend-email-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    showNotification('Mã xác nhận mới đã được gửi đến email của bạn!', 'success');
+                
+                } else {
+                
+                    showNotification("Không gửi lại được mã xác nhận..", 'error');
+                }
+            } catch (err) {
+                showNotification("Có lỗi xảy ra khi gửi lại mã xác nhận.", 'error');
+               
+            }
+            startTimer();
+            codeInputs.forEach(input => {
+                input.value = '';
+                input.classList.remove('filled');
+            });
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            codeInputs[0].focus();
+            updateVerifyButton();
+        });
+        function showNotification(message, type, duration = 5000) {
+            const notification = document.getElementById('live-notification');
+            notification.querySelector('.message').textContent = message;
+            notification.className = ''; // Clear all classes
+            notification.classList.add(type); // Add type class (success, error, info, warning)
+            notification.classList.add('show');
+
+            // Clear any existing timeout
+            if (window.notificationTimeout) {
+                clearTimeout(window.notificationTimeout);
+            }
+
+            // Auto dismiss
+            window.notificationTimeout = setTimeout(() => {
+                notification.classList.add('remove');
+                setTimeout(() => {
+                    notification.classList.remove('show', 'remove');
+                    notification.classList.add('hidden');
+                }, 300);
+            }, duration);
+
+            // Close button functionality
+            notification.querySelector('.close-btn').addEventListener('click', function () {
+                clearTimeout(window.notificationTimeout);
+                notification.classList.add('remove');
+                setTimeout(() => {
+                    notification.classList.remove('show', 'remove');
+                    notification.classList.add('hidden');
+                }, 300);
+            }, { once: true });
+        }
+        function startTimer() {
+            timeLeft = 60;
+            resendBtn.disabled = true;
+            resendBtn.style.display = 'none';
+            timer.style.display = 'block';
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                countdown.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    resendBtn.disabled = false;
+                    resendBtn.style.display = 'inline';
+                    timer.style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        // Tự động focus vào ô đầu tiên khi trang load
+        window.addEventListener('load', () => {
+            codeInputs[0].focus();
+        });
+
+        // Bắt đầu timer khi trang load
+        startTimer();
+    </script>
+</body>
+</html>

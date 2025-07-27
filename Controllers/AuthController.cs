@@ -12,6 +12,12 @@ using System.Text.Json.Serialization;
 using static Ql_NhaTro_jun.Controllers.AdminController;
 using MailKit.Net.Smtp;
 using MimeKit;
+using Ql_NhaTro_jun.Controllers;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
+using Microsoft.AspNetCore.Http;
+using Org.BouncyCastle.Ocsp;
+using Microsoft.AspNetCore.Authentication.Google;
 
 namespace Api_Ql_nhatro.Controllers
 {
@@ -22,15 +28,13 @@ namespace Api_Ql_nhatro.Controllers
 
         private readonly ILogger<AuthController> _logger;
         QlNhatroContext _context;
-        public AuthController(ILogger<AuthController> logger, QlNhatroContext cc)
+        private readonly IEmailService _emailService;
+        public AuthController(ILogger<AuthController> logger, QlNhatroContext cc, IEmailService emailService)
         {
             _logger = logger; _context = cc;
+            _emailService = emailService;
         }
         #region login and Register
-        public class EmailRequest
-        {
-            public string Email { get; set; }
-        }
         // POST: api/auth/get-aes-key
         [HttpPost("juntech")]
         public IActionResult GetAesKey([FromBody] EmailRequest request)
@@ -128,52 +132,54 @@ namespace Api_Ql_nhatro.Controllers
                 return BadRequest(new { message = "Xác minh reCAPTCHA thất bại!" });
             }
             model.VaiTro = "0";
-            // Sinh mã xác thực email
-            var code = new Random().Next(100000, 999999).ToString();
-            model.IsEmailConfirmed = false;
-            model.EmailConfirmationCode = code;
-            _context.Add(model);
-            HttpContext.Session.Remove($"AES_{model.Email}_Key");
-            HttpContext.Session.Remove($"AES_{model.Email}_IV");
-            try
-            {
-                await _context.SaveChangesAsync();
-                // Gửi email xác thực
-                var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("QL Nhà Trọ", "your_email@gmail.com"));
-                emailMessage.To.Add(new MailboxAddress(model.HoTen, model.Email));
-                emailMessage.Subject = "Mã xác thực đăng ký tài khoản";
-                emailMessage.Body = new TextPart("plain")
-                {
-                    Text = $"Xin chào {model.HoTen},\n\nMã xác thực đăng ký tài khoản của bạn là: {code}\nVui lòng nhập mã này để hoàn tất đăng ký.\n\nTrân trọng!"
-                };
-                using (var smtpClient = new SmtpClient())
-                {
-                    await smtpClient.ConnectAsync("smtp.gmail.com", 587, false);
-                    await smtpClient.AuthenticateAsync("your_email@gmail.com", "your_app_password");
-                    await smtpClient.SendAsync(emailMessage);
-                    await smtpClient.DisconnectAsync(true);
-                }
-            }
-            catch (Exception EE) { }
-            return Ok(new { Success = true, message = "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản." });
+            var confirmationCode = new Random().Next(100000, 999999).ToString();
+            HttpContext.Session.SetString("code", confirmationCode);
+            HttpContext.Session.SetString("Email", model.Email);
+            // Lưu model vào session (serialize)
+            HttpContext.Session.SetString("RegisterModel", JsonSerializer.Serialize(model));
+            var body = $@"<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'><div style='background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'><div style='text-align: center; margin-bottom: 30px;'><h2 style='color: #2c3e50; margin: 0; font-size: 24px;'>🏠 Xác thực tài khoản Nhà trọ</h2></div><div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff; margin: 20px 0;'><p style='color: #495057; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;'>Chào mừng bạn đến với hệ thống phòng trọ sô 1 Việt nam!</p><p style='color: #495057; font-size: 16px; line-height: 1.6; margin: 0;'>Để hoàn tất quá trình đăng ký, vui lòng sử dụng mã xác nhận bên dưới:</p></div><div style='text-align: center; margin: 30px 0;'><div style='background: linear-gradient(135deg, #3182ce 0%, #63b3ed 100%); color: white; padding: 20px; border-radius: 10px; display: inline-block; min-width: 200px;'><p style='margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;'>MÃ XÁC NHẬN</p><p style='margin: 0; font-size: 32px; font-weight: bold; letter-spacing: 3px; font-family: monospace;'>{confirmationCode}</p></div></div><div style='background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;'><p style='color: #856404; font-size: 14px; margin: 0; text-align: center;'>⚠️ Mã này có hiệu lực trong 15 phút. Vui lòng không chia sẻ mã với bất kỳ ai.</p></div><div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;'><p style='color: #6c757d; font-size: 14px; margin: 0;'>Nếu bạn không yêu cầu xác thực này, vui lòng bỏ qua email này.</p><p style='color: #6c757d; font-size: 14px; margin: 10px 0 0 0;'>© 2025 Hệ thống quản lý Nhà trọ</p></div></div></div>";
+            await _emailService.SendEmailAsync(model.Email, "Mã xác thực tài khoản", body);
+            return Ok(new { Success = true, message = "Đăng Ký thành công vui lòng xác thực gmail !" });
         }
+
+        [HttpPost("resend-email-code")]
+        public async Task<IActionResult> ResendEmailCode([FromBody] EmailRequest req)
+        {
+            var email = req.Email;
+            var code = new Random().Next(100000, 999999).ToString();
+            HttpContext.Session.SetString("code", code);
+            HttpContext.Session.SetString("Email", email);
+            var body = $@"<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'><div style='background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'><div style='text-align: center; margin-bottom: 30px;'><h2 style='color: #2c3e50; margin: 0; font-size: 24px;'>🏠 Xác thực tài khoản Nhà trọ</h2></div><div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff; margin: 20px 0;'><p style='color: #495057; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;'>Chào mừng bạn đến với hệ thống phòng trọ sô 1 Việt nam!</p><p style='color: #495057; font-size: 16px; line-height: 1.6; margin: 0;'>Để hoàn tất quá trình đăng ký, vui lòng sử dụng mã xác nhận bên dưới:</p></div><div style='text-align: center; margin: 30px 0;'><div style='background: linear-gradient(135deg, #3182ce 0%, #63b3ed 100%); color: white; padding: 20px; border-radius: 10px; display: inline-block; min-width: 200px;'><p style='margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;'>MÃ XÁC NHẬN</p><p style='margin: 0; font-size: 32px; font-weight: bold; letter-spacing: 3px; font-family: monospace;'>{code}</p></div></div><div style='background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;'><p style='color: #856404; font-size: 14px; margin: 0; text-align: center;'>⚠️ Mã này có hiệu lực trong 15 phút. Vui lòng không chia sẻ mã với bất kỳ ai.</p></div><div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;'><p style='color: #6c757d; font-size: 14px; margin: 0;'>Nếu bạn không yêu cầu xác thực này, vui lòng bỏ qua email này.</p><p style='color: #6c757d; font-size: 14px; margin: 10px 0 0 0;'>© 2025 Hệ thống quản lý Nhà trọ</p></div></div></div>";
+            await _emailService.SendEmailAsync(email, "Mã xác thực tài khoản", body);
+            return Ok(new { message = "Mã xác thực mới đã được gửi đến email của bạn!" });
+        }
+
         [HttpPost("verify-email-code")]
         public async Task<IActionResult> VerifyEmailCode([FromBody] VerifyEmailCodeRequest req)
         {
-            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == req.Email);
-            if (user == null)
+            var email = HttpContext.Session.GetString("Email");
+            var code = HttpContext.Session.GetString("code");
+            if (string.IsNullOrEmpty(email))
                 return NotFound(new { message = "Không tìm thấy tài khoản" });
-            if (user.IsEmailConfirmed)
-                return BadRequest(new { message = "Email đã được xác thực trước đó" });
-            if (user.EmailConfirmationCode != req.Code)
+            if (code != req.Code)
                 return BadRequest(new { message = "Mã xác thực không đúng" });
-            user.IsEmailConfirmed = true;
-            user.EmailConfirmationCode = null;
-            await _context.SaveChangesAsync();
+            var modelStr = HttpContext.Session.GetString("RegisterModel");
+            if (string.IsNullOrEmpty(modelStr))
+                return BadRequest(new { message = "Thông tin đăng ký không hợp lệ" });
+            var model = JsonSerializer.Deserialize<NguoiDung>(modelStr);
+            _context.Add(model);
+            HttpContext.Session.Remove($"AES_{model.Email}_Key");
+            HttpContext.Session.Remove($"AES_{model.Email}_IV");
+            HttpContext.Session.Remove("code");
+            HttpContext.Session.Remove("Email");
+            HttpContext.Session.Remove("RegisterModel");
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception EE) { }
             return Ok(new { message = "Xác thực email thành công!" });
         }
-
         public class VerifyEmailCodeRequest
         {
             public string Email { get; set; }
@@ -258,13 +264,18 @@ namespace Api_Ql_nhatro.Controllers
             var userName = User.Identity.Name;
             if (userName == null)
             {
+             
                 return Unauthorized(new { message = "Bạn chưa đăng nhập" });
             }
 
             var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
             if (user == null)
             {
-                return NotFound(new { message = "Người dùng không tồn tại" });
+                user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
+                if (user == null)
+                {
+                    return NotFound(new { message = "Người dùng không tồn tại" });
+                }
             }
            
             return Ok(ApiResponse<object>.CreateSuccess("Lấy thông tin thành công", new
@@ -1091,5 +1102,116 @@ namespace Api_Ql_nhatro.Controllers
             public decimal TyLeThayDoinuoc { get; set; }
             public decimal TyLeThayDoidien { get; set; }
         }
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] EmailRequest req)
+        {
+            var email = req.Email;
+            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+                return NotFound(new { message = "Không tìm thấy tài khoản với email này." });
+            var code = new Random().Next(100000, 999999).ToString();
+            HttpContext.Session.SetString($"reset_code_{email}", code);
+            HttpContext.Session.SetString($"reset_code_time_{email}", DateTime.UtcNow.ToString("o"));
+            var body = $@"<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;'><div style='background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'><div style='text-align: center; margin-bottom: 30px;'><h2 style='color: #2c3e50; margin: 0; font-size: 24px;'>🔑 Đặt lại mật khẩu Nhà trọ</h2></div><div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff; margin: 20px 0;'><p style='color: #495057; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;'>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản hệ thống phòng trọ.</p><p style='color: #495057; font-size: 16px; line-height: 1.6; margin: 0;'>Mã xác nhận đặt lại mật khẩu của bạn là:</p></div><div style='text-align: center; margin: 30px 0;'><div style='background: linear-gradient(135deg, #3182ce 0%, #63b3ed 100%); color: white; padding: 20px; border-radius: 10px; display: inline-block; min-width: 200px;'><p style='margin: 0 0 10px 0; font-size: 14px; opacity: 0.9;'>MÃ XÁC NHẬN</p><p style='margin: 0; font-size: 32px; font-weight: bold; letter-spacing: 3px; font-family: monospace;'>{code}</p></div></div><div style='background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;'><p style='color: #856404; font-size: 14px; margin: 0; text-align: center;'>⚠️ Mã này có hiệu lực trong 3 phút. Vui lòng không chia sẻ mã với bất kỳ ai.</p></div><div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;'><p style='color: #6c757d; font-size: 14px; margin: 0;'>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p><p style='color: #6c757d; font-size: 14px; margin: 10px 0 0 0;'>© 2025 Hệ thống quản lý Nhà trọ</p></div></div></div>";
+            await _emailService.SendEmailAsync(email, "Mã xác nhận đặt lại mật khẩu", body);
+            return Ok(new { message = "Mã xác nhận đã được gửi đến email của bạn!" });
+        }
+
+        [HttpPost("verify-reset-code")]
+        public async Task<IActionResult> VerifyResetCode([FromBody] VerifyResetCodeRequest req)
+        {
+            var email = req.Email;
+            var code = HttpContext.Session.GetString($"reset_code_{email}");
+            var timeStr = HttpContext.Session.GetString($"reset_code_time_{email}");
+            if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(timeStr))
+                return NotFound(new { message = "Không tìm thấy mã xác nhận hoặc email." });
+            if (code != req.Code)
+                return BadRequest(new { message = "Mã xác nhận không đúng." });
+            if (DateTime.UtcNow - DateTime.Parse(timeStr) > TimeSpan.FromMinutes(3))
+                return BadRequest(new { message = "Mã xác nhận đã hết hạn. Vui lòng gửi lại mã mới." });
+            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+                return NotFound(new { message = "Không tìm thấy tài khoản." });
+            if(req.NewPassword== "___dummy___")
+            {
+                return Ok(new { message = "Xác thực code thành công!" });
+            }
+            user.MatKhau = req.NewPassword;
+            HttpContext.Session.Remove($"reset_code_{email}");
+            HttpContext.Session.Remove($"reset_code_time_{email}");
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đổi mật khẩu thành công!" });
+        }
+        public class VerifyResetCodeRequest
+        {
+            public string Email { get; set; }
+            public string Code { get; set; }
+            public string NewPassword { get; set; }
+        }
+        #region Google Login
+        [HttpGet("login-google")]
+        public IActionResult LoginWithGoogle()
+        {
+            var redirectUrl = Url.Action("GoogleResponse", "Auth");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("google-response")]
+        public async Task<IActionResult> GoogleResponse()
+        {
+            var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            if (!result.Succeeded)
+            {
+                return Unauthorized(new { message = "Google authentication failed." });
+            }
+            var principal = result.Principal;
+            var email = principal?.FindFirst(ClaimTypes.Email)?.Value;
+            var name = principal?.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest(new { message = "Không lấy được email từ Google." });
+            }
+            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                var newUser = new NguoiDung
+                {
+                    HoTen = name,
+                    Email = email,
+                    VaiTro = "0"
+                };
+                _context.NguoiDungs.Add(newUser);
+                await _context.SaveChangesAsync();
+                // Đăng nhập user mới
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, email ?? ""),
+                    new Claim(ClaimTypes.Email, email ?? ""),
+                      new Claim("MaNguoiDung", newUser.MaNguoiDung.ToString())
+                };
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principalNew = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principalNew);
+                return Redirect("/");
+            }
+            else
+            {
+                // Đăng nhập user đã tồn tại
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.Email ?? ""),
+                    new Claim(ClaimTypes.Email, user.Email ?? ""),
+                      new Claim("MaNguoiDung", user.MaNguoiDung.ToString())
+                };
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principalExist = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principalExist);
+                return Redirect("/");
+            }
+        }
+        #endregion
     } 
 }
+
+public class EmailRequest { public string Email { get; set; } }

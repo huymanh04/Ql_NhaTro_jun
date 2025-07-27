@@ -27,7 +27,16 @@ namespace Ql_NhaTro_jun.Controllers
                 return RedirectToAction("index", "Home");
             }
             return View();
-        } public async Task<IActionResult> Contract()
+        } 
+        public IActionResult Verycode()
+        {
+            return View();
+        }
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+        public async Task<IActionResult> Contract()
         {
            
             return View();

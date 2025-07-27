@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Ql_NhaTro_jun.Models;
 using Ql_NhaTro_jun.Hubs;
+using Ql_NhaTro_jun.Controllers;
+using Microsoft.AspNetCore.Authentication.Google;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDistributedMemoryCache();
@@ -14,11 +16,13 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(5);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax; // Thêm dòng này để đồng bộ với CookiePolicy
 });
-builder.Services.AddControllers()
+builder.Services.AddControllersWithViews()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -37,19 +41,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
               return Task.CompletedTask;
           }
       };
+  })
+  .AddGoogle(options =>
+  {
+      options.ClientId = "496423344091-9g7qvpmd6irtct4lpbjk1pcns9baiqr7.apps.googleusercontent.com";
+      options.ClientSecret = "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";
+      options.CallbackPath = "/signin-google";
   });
 
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-    });
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen(c =>
@@ -69,10 +70,14 @@ builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 104857600; // 100 MB
 });
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 var app = builder.Build();
 
-app.UseCors("AllowAll");
+// Thêm cấu hình CookiePolicy để tránh lỗi SameSite khi dùng Google OAuth
+// XÓA cấu hình AddGoogle và app.UseCookiePolicy liên quan đến Google OAuth
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -90,6 +95,9 @@ app.UseSwaggerUI(c =>
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSession();
+
+
+
 app.UseRouting();
 
 app.UseAuthentication();   // ✅ Cần thêm dòng này
