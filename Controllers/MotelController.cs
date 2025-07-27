@@ -34,6 +34,7 @@ namespace Ql_NhaTro_jun.Controllers
          MaKhuVuc = t.MaKhuVuc,
          MoTa = t.MoTa,
          NgayTao = t.NgayTao,
+         gg_map = t.gg_map,
 
          // Chú ý: Navigation cần chọn lại từng field nếu không trả về full entity
          MaChuTroNavigation = t.MaChuTroNavigation == null ? null : new NguoiDung
@@ -82,7 +83,7 @@ namespace Ql_NhaTro_jun.Controllers
                 {
                     return BadRequest(ApiResponse<NhaTro>.CreateError("Tên nhà trọ đã tồn tại"));
                 }
-               var nhatro=new NhaTro { TenNhaTro = normalizedName, DiaChi = dto.DiaChi?.Trim(), MaTinh = dto.MaTinh, MaKhuVuc = dto.MaKhuVuc, MoTa = dto.MoTa, MaChuTro = dto.MaChuTro,NgayTao=DateTime.Now };
+               var nhatro=new NhaTro { TenNhaTro = normalizedName, DiaChi = dto.DiaChi?.Trim(), MaTinh = dto.MaTinh, MaKhuVuc = dto.MaKhuVuc, MoTa = dto.MoTa, MaChuTro = dto.MaChuTro,NgayTao=DateTime.Now ,gg_map=dto.gg_map};
                 await _context.NhaTros.AddAsync(nhatro);
                 await _context.SaveChangesAsync();
 
@@ -135,6 +136,7 @@ namespace Ql_NhaTro_jun.Controllers
                 nhaTro.MaTinh = dto.MaTinh;
                 nhaTro.MaKhuVuc = dto.MaKhuVuc;
                 nhaTro.MoTa = dto.MoTa;
+                nhaTro.gg_map = dto.gg_map;
                 await _context.SaveChangesAsync();
 
                 return Ok(ApiResponse<NhaTro>.CreateSuccess("Sửa nhà trọ thành công", nhaTro));
@@ -232,6 +234,7 @@ namespace Ql_NhaTro_jun.Controllers
             public int MaKhuVuc { get; set; }
 
             public string MoTa { get; set; }
+            public string gg_map { get; set; }
         }
     }
 }

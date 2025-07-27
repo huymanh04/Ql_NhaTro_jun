@@ -171,6 +171,24 @@
                         </li>
                         @if (role.ToString() == "2")
                         {
+                                                            <li role="none">
+                                    <a href="/vitri/TinhThanh" role="menuitem">
+                                        <div class="menu-icon-wrapper">
+                                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                                        </div>
+                                        <span>Quản lý Tỉnh thành</span>
+                                    </a>
+                                </li>
+
+                                <li role="none">
+                                    <a href="/vitri/KhuVuc" role="menuitem">
+                                        <div class="menu-icon-wrapper">
+                                            <i class="fas fa-map" aria-hidden="true"></i>
+                                        </div>
+                                        <span>Quản lý Khu vực</span>
+                                    </a>
+                                </li>
+
                             <li role="none">
                                 <a href="@Url.Action("Index", "MotelManagement")" role="menuitem">
                                 <div class="menu-icon-wrapper">
@@ -263,6 +281,7 @@
                                 <span>Hòm thư</span>
                             </a>
                         </li>
+                       
                     }
                 </ul>
             </div>

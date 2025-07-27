@@ -1,0 +1,123 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Fetch danh sách tỉnh thành
+let tinhData = [], currentPage = 1, pageSize = 10, searchValue = '';
+const loadingOverlay = document.getElementById('loadingOverlay');
+async function loadTinhThanh() {
+    loadingOverlay.classList.remove('d-none');
+    const res = await fetch('/api/Location/Tinh-thanh');
+    const data = await res.json();
+    tinhData = data.success && data.data ? data.data : [];
+    renderTinhTable();
+    loadingOverlay.classList.add('d-none');
+}
+function renderTinhTable() {
+    let filtered = tinhData.filter(t => t.tenTinh.toLowerCase().includes(searchValue.toLowerCase()));
+    const total = filtered.length;
+    const totalPages = Math.ceil(total / pageSize);
+    if (currentPage > totalPages) currentPage = totalPages || 1;
+    const start = (currentPage - 1) * pageSize;
+    const pageData = filtered.slice(start, start + pageSize);
+    const tbody = document.getElementById('tinhTableBody');
+    tbody.innerHTML = '';
+    pageData.forEach((t, i) => {
+        tbody.innerHTML += `<tr>
+            <td>${start + i + 1}</td>
+            <td>${t.tenTinh}</td>
+            <td>${t.soLuongKhuVuc}</td>
+            <td>
+                <button class='btn btn-sm btn-warning' onclick='editTinh(${t.maTinh}, "${t.tenTinh}")'><i class='fas fa-edit'></i></button>
+                <button class='btn btn-sm btn-danger' onclick='showDeleteTinhModal(${t.maTinh}, "${t.tenTinh}")'><i class='fas fa-trash'></i></button>
+            </td>
+        </tr>`;
+    });
+    // Phân trang
+    const pagi = document.getElementById('tinhPagination');
+    pagi.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+        pagi.innerHTML += `<li class="page-item${i === currentPage ? ' active' : ''}"><a class="page-link" href="#" onclick="gotoTinhPage(${i})">${i}</a></li>`;
+    }
+}
+function gotoTinhPage(p) { currentPage = p; renderTinhTable(); }
+document.getElementById('searchTinh').oninput = function() {
+    searchValue = this.value;
+    currentPage = 1;
+    renderTinhTable();
+};
+// Thêm tỉnh
+const btnAddTinh = document.getElementById('btnAddTinh');
+const tinhModal = new bootstrap.Modal(document.getElementById('tinhModal'));
+btnAddTinh.onclick = () => {
+    document.getElementById('tinhModalTitle').innerText = 'Thêm tỉnh thành';
+    document.getElementById('tinhId').value = '';
+    document.getElementById('tenTinh').value = '';
+    tinhModal.show();
+};
+document.getElementById('saveTinhBtn').onclick = async function() {
+    const id = document.getElementById('tinhId').value;
+    const tenTinh = document.getElementById('tenTinh').value.trim();
+    if (!tenTinh) {
+        document.getElementById('tenTinh').classList.add('is-invalid');
+        return;
+    }
+    document.getElementById('tenTinh').classList.remove('is-invalid');
+    let url = '/api/Location/add-tinh-thanh';
+    let method = 'POST';
+    if (id) {
+        url = `/api/Location/edit-tinh-thanh/${id}`;
+        method = 'PUT';
+    }
+    loadingOverlay.classList.remove('d-none');
+    const res = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenTinh })
+    });
+    const data = await res.json();
+    loadingOverlay.classList.add('d-none');
+    if (data.success) {
+        tinhModal.hide();
+        loadTinhThanh();
+        showAlert('success', data.message);
+    } else {
+        showAlert('danger', data.message);
+    }
+};
+window.editTinh = function(id, tenTinh) {
+    document.getElementById('tinhModalTitle').innerText = 'Sửa tỉnh thành';
+    document.getElementById('tinhId').value = id;
+    document.getElementById('tenTinh').value = tenTinh;
+    tinhModal.show();
+};
+// Modal xác nhận xóa
+let deleteTinhId = null;
+window.showDeleteTinhModal = function(id, tenTinh) {
+    deleteTinhId = id;
+    document.getElementById('deleteTinhName').innerText = tenTinh;
+    new bootstrap.Modal(document.getElementById('deleteTinhModal')).show();
+};
+document.getElementById('confirmDeleteTinhBtn').onclick = async function() {
+    if (!deleteTinhId) return;
+    loadingOverlay.classList.remove('d-none');
+    const res = await fetch(`/api/Location/delete-tinh-thanh/${deleteTinhId}`, { method: 'DELETE' });
+    const data = await res.json();
+    loadingOverlay.classList.add('d-none');
+    if (data.success) {
+        loadTinhThanh();
+        showAlert('success', data.message);
+    } else {
+        showAlert('danger', data.message);
+    }
+    deleteTinhId = null;
+    bootstrap.Modal.getInstance(document.getElementById('deleteTinhModal')).hide();
+};
+function showAlert(type, message) {
+    document.getElementById('alertTinh').innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>`;
+    setTimeout(() => { document.getElementById('alertTinh').innerHTML = ''; }, 3000);
+}
+loadTinhThanh();
+});
+</script> 

@@ -455,6 +455,7 @@ class MotelManagement {
         document.getElementById('maTinh').value = motel.maTinh || '';
         document.getElementById('maChuTro').value = motel.maChuTro || '';
         document.getElementById('moTa').value = motel.moTa || '';
+        document.getElementById('gg_map').value = motel.gg_map || '';
         
         // Set area value after areas are loaded
         setTimeout(() => {
@@ -589,7 +590,8 @@ class MotelManagement {
             maTinh: parseInt(document.getElementById('maTinh').value),
             maKhuVuc: parseInt(document.getElementById('maKhuVuc').value),
             maChuTro: parseInt(document.getElementById('maChuTro').value),
-            moTa: document.getElementById('moTa').value.trim()
+            moTa: document.getElementById('moTa').value.trim(),
+            gg_map: document.getElementById('gg_map').value.trim()
         };
     }
 

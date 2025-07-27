@@ -1,0 +1,120 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Khu vực";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+<div class="motel-management">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-map"></i> Quản lý Khu vực</h1>
+                <p>Thêm, sửa, xóa và quản lý các khu vực</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="btnAddKhuVuc"><i class="fas fa-plus"></i> Thêm khu vực</button>
+            </div>
+        </div>
+    </div>
+    <div class="filters-section">
+        <div class="filters-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchKhuVuc" placeholder="Tìm kiếm khu vực...">
+            </div>
+            <div class="filter-group">
+                <select class="form-select" id="filterTinh">
+                    <option value="">-- Lọc theo tỉnh thành --</option>
+                </select>
+                <button class="btn btn-secondary" id="clearFiltersBtn">
+                    <i class="fas fa-times"></i> Xóa bộ lọc
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="alertContainer"></div>
+    <div class="table-section">
+        <div class="table-container">
+            <div class="table-responsive position-relative">
+                <div id="loadingOverlayKV" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background:rgba(255,255,255,0.7);z-index:10;display:flex;align-items:center;justify-content:center;">
+                    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                </div>
+                <table class="motels-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên khu vực</th>
+                            <th>Tỉnh thành</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="khuVucTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span id="paginationInfo">Hiển thị 0 - 0 của 0 khu vực</span>
+            </div>
+            <div class="pagination-controls">
+                <button class="btn btn-outline" id="prevPageBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Trước
+                </button>
+                <div class="page-numbers" id="pageNumbers"></div>
+                <button class="btn btn-outline" id="nextPageBtn" disabled>
+                    Sau <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Thêm/Sửa khu vực -->
+<div class="modal" id="khuVucModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="khuVucModalTitle"><i class="fas fa-map"></i> <span id="modalTitleText">Thêm khu vực</span></h2>
+            <button class="modal-close" id="closeModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="khuVucForm" class="modal-body">
+            <input type="hidden" id="khuVucId" />
+            <div class="form-group">
+                <label for="tenKhuVuc">Tên khu vực <span class="required">*</span></label>
+                <input type="text" id="tenKhuVuc" name="tenKhuVuc" required maxlength="100" placeholder="Nhập tên khu vực">
+                <div class="error-message" id="tenKhuVucError"></div>
+            </div>
+            <div class="form-group">
+                <label for="maTinh">Tỉnh thành <span class="required">*</span></label>
+                <select class="form-select" id="maTinh" required></select>
+                <div class="error-message" id="maTinhError"></div>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelModalBtn"><i class="fas fa-times"></i> Hủy</button>
+            <button type="button" class="btn btn-primary" id="saveKhuVucBtn"><i class="fas fa-save"></i> Lưu</button>
+        </div>
+    </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content delete-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-exclamation-triangle text-danger"></i> Xác nhận xóa</h2>
+            <button class="modal-close" id="closeDeleteModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <p>Bạn có chắc chắn muốn xóa khu vực <strong id="deleteKhuVucName"></strong> không?</p>
+            <p class="text-danger"><i class="fas fa-warning"></i> Hành động này không thể hoàn tác!</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelDeleteBtn"><i class="fas fa-times"></i> Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="fas fa-trash"></i> Xóa</button>
+        </div>
+    </div>
+</div>
+<!-- Loading Overlay -->
+<div id="loadingOverlayModal" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Đang xử lý...</p>
+    </div>
+</div>
+<link href="~/css/motel-management.css?@DateTime.Now" rel="stylesheet">
+<script src="~/js/khuvuc-management.js?@DateTime.Now"></script> 

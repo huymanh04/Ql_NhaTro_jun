@@ -1,0 +1,112 @@
+﻿@{
+    ViewData["Title"] = "Quản lý Tỉnh thành";
+    Layout = "~/Views/Shared/_Layoutadmin.cshtml";
+}
+<div class="motel-management">
+    <div class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1><i class="fas fa-map-marker-alt"></i> Quản lý Tỉnh thành</h1>
+                <p>Thêm, sửa, xóa và quản lý các tỉnh thành</p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="btnAddTinh"><i class="fas fa-plus"></i> Thêm tỉnh thành</button>
+            </div>
+        </div>
+    </div>
+    <div class="filters-section">
+        <div class="filters-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchTinh" placeholder="Tìm kiếm theo tên tỉnh thành...">
+            </div>
+            <div class="filter-group">
+                <button class="btn btn-secondary" id="clearFiltersBtn">
+                    <i class="fas fa-times"></i> Xóa bộ lọc
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="alertContainer"></div>
+    <div class="table-section">
+        <div class="table-container">
+            <div class="table-responsive position-relative">
+                <div id="loadingOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background:rgba(255,255,255,0.7);z-index:10;display:flex;align-items:center;justify-content:center;">
+                    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                </div>
+                <table class="motels-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên tỉnh thành</th>
+                            <th>Số khu vực</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tinhTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span id="paginationInfo">Hiển thị 0 - 0 của 0 tỉnh thành</span>
+            </div>
+            <div class="pagination-controls">
+                <button class="btn btn-outline" id="prevPageBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Trước
+                </button>
+                <div class="page-numbers" id="pageNumbers"></div>
+                <button class="btn btn-outline" id="nextPageBtn" disabled>
+                    Sau <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Thêm/Sửa tỉnh thành -->
+<div class="modal" id="tinhModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="tinhModalTitle"><i class="fas fa-map-marker-alt"></i> <span id="modalTitleText">Thêm tỉnh thành</span></h2>
+            <button class="modal-close" id="closeModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="tinhForm" class="modal-body">
+            <input type="hidden" id="tinhId" />
+            <div class="form-group">
+                <label for="tenTinh">Tên tỉnh thành <span class="required">*</span></label>
+                <input type="text" id="tenTinh" name="tenTinh" required maxlength="100" placeholder="Nhập tên tỉnh thành">
+                <div class="error-message" id="tenTinhError"></div>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelModalBtn"><i class="fas fa-times"></i> Hủy</button>
+            <button type="button" class="btn btn-primary" id="saveTinhBtn"><i class="fas fa-save"></i> Lưu</button>
+        </div>
+    </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-content delete-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-exclamation-triangle text-danger"></i> Xác nhận xóa</h2>
+            <button class="modal-close" id="closeDeleteModalBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <p>Bạn có chắc chắn muốn xóa tỉnh thành <strong id="deleteTinhName"></strong> không?</p>
+            <p class="text-danger"><i class="fas fa-warning"></i> Hành động này không thể hoàn tác!</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelDeleteBtn"><i class="fas fa-times"></i> Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="fas fa-trash"></i> Xóa</button>
+        </div>
+    </div>
+</div>
+<!-- Loading Overlay -->
+<div id="loadingOverlayModal" class="loading-overlay" style="display: none;">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Đang xử lý...</p>
+    </div>
+</div>
+<link href="~/css/motel-management.css?@DateTime.Now" rel="stylesheet">
+<script src="~/js/tinhthanh-management.js?@DateTime.Now"></script> 
