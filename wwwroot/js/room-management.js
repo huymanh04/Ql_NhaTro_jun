@@ -98,18 +98,31 @@ class RoomManagement {
             if (this.currentPage > 1) {
                 this.currentPage--;
                 this.renderTable();
-                this.renderPagination();
             }
         });
-
+        
         document.getElementById('nextPageBtn').addEventListener('click', () => {
             const totalPages = Math.ceil(this.filteredRooms.length / this.itemsPerPage);
             if (this.currentPage < totalPages) {
                 this.currentPage++;
                 this.renderTable();
-                this.renderPagination();
             }
         });
+
+        // Camera modal events
+        document.getElementById('closeCameraModalBtn').addEventListener('click', () => {
+            this.closeCameraModal();
+        });
+        
+        document.getElementById('closeCameraBtn').addEventListener('click', () => {
+            this.closeCameraModal();
+        });
+        
+        document.getElementById('refreshCameraBtn').addEventListener('click', () => {
+            this.refreshCamera();
+        });
+
+        // Modal click outside to close
 
         // Modal click outside to close
         document.getElementById('roomModal').addEventListener('click', (e) => {
@@ -126,6 +139,12 @@ class RoomManagement {
 
         // Event delegation for dynamic buttons
         document.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-camera')) {
+                e.preventDefault();
+                const roomId = parseInt(e.target.closest('.btn-camera').dataset.id);
+                this.openCameraModal(roomId);
+            }
+            
             if (e.target.closest('.btn-edit')) {
                 e.preventDefault();
                 const roomId = parseInt(e.target.closest('.btn-edit').dataset.id);
@@ -350,6 +369,9 @@ class RoomManagement {
                     </td>
                     <td>
                         <div class="action-buttons">
+                            <button class="btn-action btn-camera" data-id="${room.maPhong}" title="Xem Camera">
+                                <i class="fas fa-video"></i>
+                            </button>
                             <button class="btn-action btn-edit" data-id="${room.maPhong}">
                                 <i class="fas fa-edit"></i> Sửa
                             </button>
@@ -412,6 +434,9 @@ class RoomManagement {
                         </div>
                     </div>
                     <div class="mobile-card-actions">
+                        <button class="btn-action btn-camera" data-id="${room.maPhong}" title="Xem Camera">
+                            <i class="fas fa-video"></i> Camera
+                        </button>
                         <button class="btn-action btn-edit" data-id="${room.maPhong}">
                             <i class="fas fa-edit"></i> Sửa
                         </button>
@@ -870,9 +895,256 @@ class RoomManagement {
             }
         }, 5000);
     }
+
+    // Camera methods
+    openCameraModal(roomId) {
+        const room = this.rooms.find(r => r.maPhong === roomId);
+        if (!room) {
+            this.showAlert('Không tìm thấy thông tin phòng', 'error');
+            return;
+        }
+
+        // Set room info
+        document.getElementById('cameraRoomName').textContent = room.tenPhong;
+        
+        // Generate camera URL (example)
+        const cameraUrl = `rtsp://192.168.1.${100 + (roomId % 50)}:554/stream`;
+        document.getElementById('cameraUrl').value = cameraUrl;
+        
+        // Set video source
+        const video = document.getElementById('cameraVideo');
+        const videoSource = document.getElementById('cameraVideoSource');
+        videoSource.src = cameraUrl;
+        
+        // Try to load video
+        video.load();
+        
+        // Check if browser supports RTSP
+        setTimeout(() => {
+            if (video.readyState === 0) {
+                // Video failed to load, show fallback
+                document.getElementById('cameraFallback').style.display = 'flex';
+                document.getElementById('cameraStatus').textContent = 'Camera không khả dụng';
+                document.getElementById('cameraStatus').className = 'status-offline';
+                document.getElementById('connectionStatus').textContent = 'Không kết nối';
+                document.getElementById('connectionStatus').className = 'status-badge status-offline';
+            } else {
+                // Video loaded successfully
+                document.getElementById('cameraFallback').style.display = 'none';
+                document.getElementById('cameraStatus').textContent = 'Camera đang hoạt động';
+                document.getElementById('cameraStatus').className = 'status-online';
+                document.getElementById('connectionStatus').textContent = 'Kết nối';
+                document.getElementById('connectionStatus').className = 'status-badge status-online';
+            }
+        }, 3000);
+
+        // Show modal
+        document.getElementById('cameraModal').style.display = 'flex';
+        this.scrollToModal();
+    }
+
+    closeCameraModal() {
+        const video = document.getElementById('cameraVideo');
+        const youtubeVideo = document.getElementById('youtubeVideo');
+        const youtubeContainer = document.getElementById('youtubeContainer');
+        
+        video.pause();
+        video.src = '';
+        youtubeVideo.src = '';
+        youtubeContainer.style.display = 'none';
+        video.style.display = 'block';
+        
+        document.getElementById('cameraModal').style.display = 'none';
+    }
+
+    refreshCamera() {
+        const video = document.getElementById('cameraVideo');
+        const currentSrc = video.src;
+        
+        // Show connecting status
+        document.getElementById('connectionStatus').textContent = 'Đang kết nối...';
+        document.getElementById('connectionStatus').className = 'status-badge status-connecting';
+        
+        // Reload video
+        video.load();
+        
+        // Check connection after 3 seconds
+        setTimeout(() => {
+            if (video.readyState > 0) {
+                document.getElementById('connectionStatus').textContent = 'Kết nối';
+                document.getElementById('connectionStatus').className = 'status-badge status-online';
+                document.getElementById('cameraStatus').textContent = 'Camera đang hoạt động';
+                document.getElementById('cameraStatus').className = 'status-online';
+            } else {
+                document.getElementById('connectionStatus').textContent = 'Không kết nối';
+                document.getElementById('connectionStatus').className = 'status-badge status-offline';
+                document.getElementById('cameraStatus').textContent = 'Camera không khả dụng';
+                document.getElementById('cameraStatus').className = 'status-offline';
+            }
+        }, 3000);
+    }
+}
+
+// Global functions for camera modal
+function openCameraApp() {
+    const cameraUrl = document.getElementById('cameraUrl').value;
+    if (cameraUrl) {
+        // Try to open in new window/tab
+        window.open(cameraUrl, '_blank');
+    }
+}
+
+function copyCameraUrl() {
+    const cameraUrl = document.getElementById('cameraUrl');
+    cameraUrl.select();
+    cameraUrl.setSelectionRange(0, 99999); // For mobile devices
+    
+    try {
+        document.execCommand('copy');
+        // Show success message
+        const roomManagement = window.roomManagement;
+        if (roomManagement) {
+            roomManagement.showAlert('Đã sao chép URL camera', 'success');
+        }
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+    }
+}
+
+function loadCustomCamera() {
+    const customUrl = document.getElementById('customCameraUrl').value.trim();
+    
+    if (!customUrl) {
+        if (window.roomManagement) {
+            window.roomManagement.showAlert('Vui lòng nhập URL camera', 'error');
+        }
+        return;
+    }
+    
+    // Check if it's a YouTube URL
+    if (customUrl.includes('youtube.com') || customUrl.includes('youtu.be')) {
+        loadYouTubeVideo(customUrl);
+        return;
+    }
+    
+    // Validate URL format
+    if (!customUrl.startsWith('rtsp://') && !customUrl.startsWith('http://') && !customUrl.startsWith('https://')) {
+        if (window.roomManagement) {
+            window.roomManagement.showAlert('URL không hợp lệ. Vui lòng sử dụng rtsp://, http:// hoặc https://', 'error');
+        }
+        return;
+    }
+    
+    // Update camera URL display
+    document.getElementById('cameraUrl').value = customUrl;
+    
+    // Hide demo video and show real video
+    document.getElementById('demoVideo').style.display = 'none';
+    document.getElementById('cameraVideo').style.display = 'block';
+    document.getElementById('cameraFallback').style.display = 'none';
+    
+    // Set video source
+    const video = document.getElementById('cameraVideo');
+    const videoSource = document.getElementById('cameraVideoSource');
+    
+    // Determine video type based on URL
+    let videoType = 'video/mp4';
+    if (customUrl.startsWith('rtsp://')) {
+        videoType = 'application/x-rtsp';
+    } else if (customUrl.includes('.m3u8')) {
+        videoType = 'application/x-mpegURL';
+    } else if (customUrl.includes('.webm')) {
+        videoType = 'video/webm';
+    }
+    
+    videoSource.src = customUrl;
+    videoSource.type = videoType;
+    
+    // Update status to connecting
+    document.getElementById('cameraStatus').textContent = 'Đang kết nối...';
+    document.getElementById('cameraStatus').className = 'status-connecting';
+    document.getElementById('connectionStatus').textContent = 'Đang kết nối...';
+    document.getElementById('connectionStatus').className = 'status-badge status-connecting';
+    
+    // Try to load video
+    video.load();
+    
+    // Check connection after 5 seconds
+    setTimeout(() => {
+        if (video.readyState > 0) {
+            // Video loaded successfully
+            document.getElementById('cameraStatus').textContent = 'Camera đang hoạt động';
+            document.getElementById('cameraStatus').className = 'status-online';
+            document.getElementById('connectionStatus').textContent = 'Kết nối';
+            document.getElementById('connectionStatus').className = 'status-badge status-online';
+            
+            if (window.roomManagement) {
+                window.roomManagement.showAlert('Kết nối camera thành công!', 'success');
+            }
+        } else {
+            // Video failed to load
+            document.getElementById('cameraFallback').style.display = 'flex';
+            document.getElementById('cameraVideo').style.display = 'none';
+            document.getElementById('cameraStatus').textContent = 'Camera không khả dụng';
+            document.getElementById('cameraStatus').className = 'status-offline';
+            document.getElementById('connectionStatus').textContent = 'Không kết nối';
+            document.getElementById('connectionStatus').className = 'status-badge status-offline';
+            
+            if (window.roomManagement) {
+                window.roomManagement.showAlert('Không thể kết nối camera. Vui lòng kiểm tra URL và thử lại.', 'error');
+            }
+        }
+    }, 5000);
+}
+
+function loadDemoUrl(url) {
+    document.getElementById('customCameraUrl').value = url;
+    loadCustomCamera();
+}
+
+function loadYouTubeVideo(youtubeUrl) {
+    // Extract video ID from YouTube URL
+    const videoId = extractYouTubeVideoId(youtubeUrl);
+    if (!videoId) {
+        if (window.roomManagement) {
+            window.roomManagement.showAlert('URL YouTube không hợp lệ', 'error');
+        }
+        return;
+    }
+    
+    // Update camera URL display
+    document.getElementById('cameraUrl').value = youtubeUrl;
+    
+    // Hide other video containers
+    document.getElementById('cameraVideo').style.display = 'none';
+    document.getElementById('demoVideo').style.display = 'none';
+    document.getElementById('cameraFallback').style.display = 'none';
+    
+    // Show YouTube container
+    const youtubeContainer = document.getElementById('youtubeContainer');
+    const youtubeVideo = document.getElementById('youtubeVideo');
+    
+    youtubeContainer.style.display = 'block';
+    youtubeVideo.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+    
+    // Update status
+    document.getElementById('cameraStatus').textContent = 'YouTube Video đang phát';
+    document.getElementById('cameraStatus').className = 'status-online';
+    document.getElementById('connectionStatus').textContent = 'YouTube';
+    document.getElementById('connectionStatus').className = 'status-badge status-online';
+    
+    if (window.roomManagement) {
+        window.roomManagement.showAlert('Đã tải YouTube video thành công!', 'success');
+    }
+}
+
+function extractYouTubeVideoId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new RoomManagement();
+    window.roomManagement = new RoomManagement();
 }); 

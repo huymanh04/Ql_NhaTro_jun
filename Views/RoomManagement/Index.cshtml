@@ -247,6 +247,137 @@
     </div>
 </div>
 
+<!-- Camera View Modal -->
+<div class="modal" id="cameraModal">
+    <div class="modal-content camera-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-video"></i> Xem Camera</h2>
+            <button class="modal-close" id="closeCameraModalBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="camera-container">
+                <div class="camera-info">
+                    <h4 id="cameraRoomName">Phòng A101</h4>
+                    <p id="cameraStatus" class="status-online">Camera đang hoạt động</p>
+                </div>
+                
+                <div class="video-container">
+                    <video id="cameraVideo" controls autoplay muted>
+                        <source id="cameraVideoSource" src="" type="video/mp4">
+                        Trình duyệt của bạn không hỗ trợ video tag.
+                    </video>
+                    
+                    <!-- YouTube Video Container -->
+                    <div id="youtubeContainer" class="youtube-container" style="display: none;">
+                        <iframe id="youtubeVideo" 
+                                width="100%" 
+                                height="400" 
+                                src="" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                    
+                    <!-- Demo video for testing -->
+                    <div id="demoVideo" class="demo-video" style="display: none;">
+                        <video controls autoplay muted loop>
+                            <source src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4" type="video/mp4">
+                            Demo video không khả dụng.
+                        </video>
+                        <div class="demo-overlay">
+                            <div class="demo-info">
+                                <i class="fas fa-play-circle"></i>
+                                <h5>Demo Camera Stream</h5>
+                                <p>Đây là video demo để test giao diện camera</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fallback for browsers that don't support RTSP -->
+                    <div id="cameraFallback" class="camera-fallback" style="display: none;">
+                        <div class="fallback-content">
+                            <i class="fas fa-video-slash"></i>
+                            <h5>Không thể hiển thị video trực tiếp</h5>
+                            <p>Trình duyệt không hỗ trợ RTSP stream. Vui lòng sử dụng ứng dụng camera riêng.</p>
+                            <div class="camera-actions">
+                                <button class="btn btn-primary" onclick="openCameraApp()">
+                                    <i class="fas fa-external-link-alt"></i> Mở ứng dụng camera
+                                </button>
+                                <button class="btn btn-secondary" onclick="copyCameraUrl()">
+                                    <i class="fas fa-copy"></i> Sao chép URL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="camera-controls">
+                    <div class="control-group">
+                        <label>Camera URL:</label>
+                        <div class="url-display">
+                            <input type="text" id="cameraUrl" readonly value="rtsp://192.168.1.100:554/stream">
+                            <button class="btn btn-sm btn-outline-primary" onclick="copyCameraUrl()">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label>Trạng thái:</label>
+                        <span id="connectionStatus" class="status-badge status-online">Kết nối</span>
+                    </div>
+                </div>
+                
+                <!-- Camera URL Input -->
+                <div class="camera-url-input">
+                    <div class="input-group">
+                        <label for="customCameraUrl">Thêm URL Camera:</label>
+                        <div class="url-input-container">
+                            <input type="text" id="customCameraUrl" placeholder="Nhập URL camera (rtsp://, http://, https://)">
+                            <button class="btn btn-primary" onclick="loadCustomCamera()">
+                                <i class="fas fa-play"></i> Tải
+                            </button>
+                        </div>
+                        <small class="url-help">
+                            Ví dụ: rtsp://192.168.1.100:554/stream hoặc http://camera-ip:8080/video
+                        </small>
+                        <div class="demo-urls">
+                            <small><strong>URL Demo để test:</strong></small>
+                            <div class="demo-url-buttons">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="loadDemoUrl('https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4')">
+                                    Demo MP4
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="loadDemoUrl('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4')">
+                                    Demo Video 2
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="loadDemoUrl('https://www.w3schools.com/html/mov_bbb.mp4')">
+                                    Demo Video 3
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="loadYouTubeVideo('https://www.youtube.com/watch?v=--INr5Q55MQ')">
+                                    🎥 YouTube Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="closeCameraBtn">
+                <i class="fas fa-times"></i> Đóng
+            </button>
+            <button type="button" class="btn btn-primary" id="refreshCameraBtn">
+                <i class="fas fa-sync-alt"></i> Làm mới
+            </button>
+        </div>
+    </div>
+</div>
+
 <style>
     /* Ensure modal is properly displayed */
     .modal {
@@ -298,6 +429,314 @@
         .modal-content {
             width: 700px !important;
             max-width: 90vw !important;
+        }
+        
+        .camera-modal {
+            width: 900px !important;
+            max-width: 95vw !important;
+        }
+    }
+    
+    /* Camera Modal Styles */
+    .camera-container {
+        padding: 20px;
+    }
+    
+    .camera-info {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .camera-info h4 {
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .camera-info p {
+        color: #666;
+        margin: 0;
+    }
+    
+    .video-container {
+        position: relative;
+        background: #000;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        min-height: 300px;
+    }
+    
+    #cameraVideo {
+        width: 100%;
+        height: 400px;
+        background: #000;
+        object-fit: cover;
+    }
+    
+    .camera-fallback {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .demo-video {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        background: #000;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .demo-video video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .demo-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .demo-info {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .demo-info i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #17a2b8;
+    }
+    
+    .demo-info h5 {
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+    }
+    
+    .demo-info p {
+        margin: 0;
+        opacity: 0.8;
+        font-size: 0.9rem;
+    }
+    
+    .youtube-container {
+        width: 100%;
+        height: 400px;
+        background: #000;
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .youtube-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    
+    .fallback-content {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .fallback-content i {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        color: #ffc107;
+    }
+    
+    .fallback-content h5 {
+        margin-bottom: 10px;
+    }
+    
+    .fallback-content p {
+        margin-bottom: 20px;
+        opacity: 0.8;
+    }
+    
+    .camera-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .camera-controls {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 20px;
+        align-items: center;
+    }
+    
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .control-group label {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.9rem;
+    }
+    
+    .url-display {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .url-display input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        background: #f8f9fa;
+    }
+    
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-online {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-offline {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-connecting {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    /* Camera URL Input */
+    .camera-url-input {
+        margin-top: 20px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .camera-url-input .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .camera-url-input label {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.95rem;
+    }
+    
+    .url-input-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .url-input-container input {
+        flex: 1;
+        padding: 10px 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .url-input-container input:focus {
+        border-color: #17a2b8;
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+    
+    .url-input-container .btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+    
+    .url-help {
+        color: #6c757d;
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+    
+    .demo-urls {
+        margin-top: 10px;
+    }
+    
+    .demo-urls small {
+        display: block;
+        margin-bottom: 8px;
+        color: #495057;
+    }
+    
+    .demo-url-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .demo-url-buttons .btn {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+    
+    /* Mobile responsive for camera modal */
+    @@media (max-width: 768px) {
+        .camera-controls {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .camera-actions {
+            flex-direction: column;
+        }
+        
+        .camera-actions .btn {
+            width: 100%;
+        }
+        
+        #cameraVideo {
+            height: 250px;
+        }
+        
+        .url-input-container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .url-input-container .btn {
+            width: 100%;
+        }
+    }
             max-height: 75vh !important;
             margin: 0 auto 50px auto !important;
         }

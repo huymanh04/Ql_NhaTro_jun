@@ -271,6 +271,16 @@
     transform: translateY(-1px);
 }
 
+.btn-camera {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-camera:hover {
+    background: #138496;
+    transform: translateY(-1px);
+}
+
 /* Mobile Cards */
 .mobile-cards {
     display: none;
