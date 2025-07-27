@@ -1,4 +1,5 @@
 ﻿using Api_Ql_nhatro.Controllers;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Ql_NhaTro_jun.Models;
@@ -32,7 +33,9 @@ namespace Ql_NhaTro_jun.Controllers
           NoiDung = d.NoiDung,
           SoTien = d.SoTien ?? 0,
           Nhatro=d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
-          NgayTao = d.NgayTao ?? default(DateTime) 
+          NgayTao = d.NgayTao ?? default(DateTime) ,
+          base64= d.hinhanh != null ? Convert.ToBase64String(d.hinhanh) : null
+
       })
       .ToListAsync();
 
@@ -63,7 +66,8 @@ namespace Ql_NhaTro_jun.Controllers
                             MaHopDong = d.MaHopDong ?? 0,
                             NoiDung = d.NoiDung,
                             SoTien = d.SoTien ?? 0,
-                            NgayTao = d.NgayTao ?? default(DateTime)
+                            NgayTao = d.NgayTao ?? default(DateTime),
+                            base64 = d.hinhanh != null ? Convert.ToBase64String(d.hinhanh) : null
                         })
                         .FirstOrDefaultAsync();
 
@@ -84,7 +88,7 @@ namespace Ql_NhaTro_jun.Controllers
                 }
             }
         [HttpPost("add-denbu")]
-        public async Task<IActionResult> CreateDenbu([FromBody] CompensationCreateDto model)
+        public async Task<IActionResult> CreateDenbu([FromForm] CompensationCreateDto model)
         {
             if (model == null)
                 return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
@@ -97,8 +101,16 @@ namespace Ql_NhaTro_jun.Controllers
                     NoiDung = model.NoiDung,
                     SoTien = model.SoTien,
                     NgayTao = DateTime.Now
-                };
+                }; byte[] imageBytes = null;
+                if (model.hinhanh != null && model.hinhanh.Length > 0)
+                {
+                    using var ms = new MemoryStream();
+                    await model.hinhanh.CopyToAsync(ms);
+                    imageBytes = ms.ToArray();
 
+
+                }
+                denbu.hinhanh = imageBytes;
                 _context.DenBus.Add(denbu);
                 await _context.SaveChangesAsync();
 
@@ -123,7 +135,7 @@ namespace Ql_NhaTro_jun.Controllers
             }
         }
         [HttpPut("edit-denbu/{id}")]
-        public async Task<IActionResult> UpdateDenbu(int id, [FromBody] CompensationCreateDto model)
+        public async Task<IActionResult> UpdateDenbu(int id, [FromForm] CompensationCreateDto model)
         {
             if (model == null)
                 return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
@@ -215,7 +227,8 @@ namespace Ql_NhaTro_jun.Controllers
                         NoiDung = d.NoiDung,
                         SoTien = d.SoTien ?? 0,
                         Nhatro = d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
-                        NgayTao = d.NgayTao ?? default(DateTime)
+                        NgayTao = d.NgayTao ?? default(DateTime),
+                        base64 = d.hinhanh != null ? Convert.ToBase64String(d.hinhanh) : null
                     })
                     .OrderByDescending(d => d.NgayTao)
                     .ToListAsync();
@@ -279,7 +292,8 @@ namespace Ql_NhaTro_jun.Controllers
                         NoiDung = d.NoiDung,
                         SoTien = d.SoTien ?? 0,
                         Nhatro = d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
-                        NgayTao = d.NgayTao ?? default(DateTime)
+                        NgayTao = d.NgayTao ?? default(DateTime),
+                        base64 = d.hinhanh != null ? Convert.ToBase64String(d.hinhanh) : null
                     })
                     .OrderByDescending(d => d.NgayTao)
                     .ToListAsync();
@@ -299,6 +313,7 @@ namespace Ql_NhaTro_jun.Controllers
         }
         public class CompensationCreateDto
         {
+            public IFormFile hinhanh { get; set; }// SoTien
             public int MaHopDong { get; set; }              // MaHopDong
             public string NoiDung { get; set; }              // NoiDung
             public decimal SoTien { get; set; }              // SoTien
@@ -309,7 +324,9 @@ namespace Ql_NhaTro_jun.Controllers
             public int MaDenBu { get; set; }          // MaDenBu
             public int MaHopDong { get; set; }              // MaHopDong
             public string NoiDung { get; set; }              // NoiDung
-            public decimal SoTien { get; set; }              // SoTien
+            public decimal SoTien { get; set; }
+            public string base64 { get; set; }
+            public IFormFile hinhanh { get; set; } // SoTien
             public DateTime NgayTao { get; set; }        // NgayTao
             public string Nhatro { get; set; } // NhaTro
         }

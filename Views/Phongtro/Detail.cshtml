@@ -79,11 +79,17 @@
                             <th>Mô tả</th>
                             <td id="room-shortdesc">--</td>
                         </tr>
+                        <tr>
+                            <th>Google Maps</th>
+                            <td id="room-map">--</td>
+                        </tr>
                     </tbody>
                 </table>
-                <button class="btn btn-primary btn-lg w-100 mb-2" type="button">
-                    <i class="fa fa-phone me-1"></i> Liên hệ
-                </button>
+                <a id="callBtn" class="btn btn-primary">
+                    <i class="fa fa-phone me-1"></i> Liên hệ ngay
+                </a>
+
+
             </div>
         </div>
     </div>
@@ -100,6 +106,8 @@
 @section scripts {
 <script>
     let currentRoom = null;
+    let sdt = null;
+     
     async function loadRoomDetail() {
         document.getElementById('room-loading').style.display = '';
         document.getElementById('room-content').style.display = 'none';
@@ -118,6 +126,9 @@
         document.getElementById('room-nhatro').textContent = room.tenNhaTro || '--';
         document.getElementById('room-theloai').textContent = room.tenTheLoai || '--';
         document.getElementById('room-khuvuc').textContent = room.tenKhuVuc || '--';
+            document.getElementById('room-map').innerHTML = room.gg_map || '--';
+        sdt = room.Sdt_chu;
+            document.getElementById('callBtn').setAttribute('href', 'tel:' + room.Sdt_chu);
         document.getElementById('room-address').innerHTML = '<i class="fa fa-map-marker-alt me-1"></i> ' + (room.diaChi || 'Địa chỉ đang cập nhật');
         document.getElementById('room-shortdesc').textContent = room.moTa ? room.moTa.substring(0, 60) + (room.moTa.length > 60 ? '...' : '') : '';
         document.getElementById('breadcrumb-room-name').textContent = room.tenPhong;
@@ -141,6 +152,7 @@
         document.getElementById('room-content').style.display = '';
         loadRelatedRooms(room.maTheLoai, room.maNhaTro, room.maPhong);
     }
+
     async function loadRelatedRooms(maTheLoai, maNhaTro, excludeId) {
         document.getElementById('related-loading').style.display = '';
         document.getElementById('related-rooms').style.display = 'none';

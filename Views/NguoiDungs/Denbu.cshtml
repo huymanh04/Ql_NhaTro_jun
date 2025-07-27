@@ -53,6 +53,18 @@
                     <input type="number" id="soTien" name="soTien" required min="0" step="1000" placeholder="Nhập số tiền đền bù">
                     <div class="error-message" id="soTienError"></div>
                 </div>
+                <div class="form-group">
+                    <label for="hinhanh">Hình ảnh minh chứng</label>
+                    <input type="file" id="hinhanh" name="hinhanh" accept="image/*">
+                    <div class="file-info">
+                        <small>Chấp nhận: JPG, PNG, GIF. Tối đa 5MB</small>
+                    </div>
+                    <div class="error-message" id="hinhanhError"></div>
+                    <div id="imagePreviewContainer" style="display:none; margin-top:10px;">
+                        <img id="imagePreview" src="#" alt="Preview" style="max-width: 100%; max-height: 200px; border: 1px solid #ccc; border-radius: 6px;" />
+                        <button type="button" id="removeImageBtn" class="btn btn-sm btn-danger" style="margin-top:5px;">Xóa ảnh</button>
+                    </div>
+                </div>
             </form>
             
             <div class="modal-footer">
@@ -152,6 +164,7 @@
                             <th>Nội dung</th>
                             <th>Số tiền</th>
                             <th>Ngày tạo</th>
+                            <th>Hình ảnh</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
@@ -314,7 +327,7 @@ $(document).ready(function() {
     function renderTable(data) {
         $tableBody.empty();
         if (data.length === 0) {
-            $tableBody.html('<tr><td colspan="6" class="text-center">Không tìm thấy dữ liệu phù hợp.</td></tr>');
+            $tableBody.html('<tr><td colspan="7" class="text-center">Không tìm thấy dữ liệu phù hợp.</td></tr>');
             return;
         }
 
@@ -327,7 +340,9 @@ $(document).ready(function() {
             const roomName = contract?.room?.tenPhong;
             const motelName = contract?.room?.motel?.tenNhaTro;
             const roomInfo = roomName && motelName ? `${roomName} (${motelName})` : (roomName || 'Không xác định');
-
+            const imageHtml = item.base64
+                ? `<img src="data:image/jpeg;base64,${item.base64}" alt="Ảnh minh chứng" style="max-width:60px;max-height:60px;border-radius:4px;object-fit:cover;" />`
+                : '<span style="color:#aaa;font-size:12px;">Không có ảnh</span>';
             const row = `
                 <tr>
                     <td>${startIndex + index + 1}</td>
@@ -335,6 +350,7 @@ $(document).ready(function() {
                     <td>${item.noiDung}</td>
                     <td>${item.soTien.toLocaleString('vi-VN')} VNĐ</td>
                     <td>${new Date(item.ngayTao).toLocaleDateString('vi-VN')}</td>
+                    <td>${imageHtml}</td>
                     <td>
                         <div class="btn-group">
                             <button class="btn btn-info btn-sm" onclick="window.viewItem(${item.maDenBu})" title="Xem"><i class="fas fa-eye"></i></button>
@@ -362,6 +378,9 @@ $(document).ready(function() {
         pageData.forEach(item => {
             const contract = allContracts.find(c => c.contractId == item.maHopDong);
             const roomName = contract?.room?.tenPhong || 'N/A';
+            const imageHtml = item.base64
+                ? `<img src="data:image/jpeg;base64,${item.base64}" alt="Ảnh minh chứng" style="max-width:60px;max-height:60px;border-radius:4px;object-fit:cover;display:block;margin-bottom:6px;" />`
+                : '';
             const card = `
                 <div class="compensation-card">
                     <div class="card-header">
@@ -373,6 +392,7 @@ $(document).ready(function() {
                         </div>
                     </div>
                     <div class="card-body">
+                        ${imageHtml}
                         <p><strong>Nội dung:</strong> ${item.noiDung}</p>
                         <p><strong>Số tiền:</strong> ${item.soTien.toLocaleString('vi-VN')} VNĐ</p>
                         <p><strong>Ngày tạo:</strong> ${new Date(item.ngayTao).toLocaleDateString('vi-VN')}</p>
@@ -539,6 +559,10 @@ $(document).ready(function() {
     function openModal(isEdit = false) {
         $compensationForm[0].reset();
         $('.error-message').text('');
+        // Reset file input & preview khi mở modal thêm mới
+        $('#hinhanh').val('');
+        $('#imagePreviewContainer').hide();
+        $('#imagePreview').attr('src', '#');
         if (isEdit) {
             $modalTitleText.text('Sửa đền bù');
             $saveBtnText.text('Cập nhật');
@@ -548,8 +572,8 @@ $(document).ready(function() {
             currentEditId = null;
             // Populate motels when adding
             populateMotelDropdown();
-            $roomSelect.prop('disabled', true).empty().append('<option value="">Chọn nhà trọ trước</option>');
-            $contractSelect.prop('disabled', true).empty().append('<option value="">Chọn phòng trước</option>');
+            $roomSelect.prop('disabled', true).empty().append('<option value="Chọn nhà trọ trước">');
+            $contractSelect.prop('disabled', true).empty().append('<option value="Chọn phòng trước">');
         }
         $compensationModal.fadeIn();
     }
@@ -576,20 +600,25 @@ $(document).ready(function() {
 
         openModal(true);
         currentEditId = id;
-        
+        // Hiển thị preview ảnh nếu có
+        if (item.base64) {
+            $('#imagePreview').attr('src', 'data:image/jpeg;base64,' + item.base64);
+            $('#imagePreviewContainer').show();
+        } else {
+            $('#imagePreview').attr('src', '#');
+            $('#imagePreviewContainer').hide();
+        }
+        $('#hinhanh').val(''); // reset input file, chỉ gửi ảnh mới nếu chọn lại
         try {
             // 1. Populate và chọn nhà trọ
             populateMotelDropdown();
-            
             // Tìm mã nhà trọ từ thông tin phòng
             const motelId = contract.room.maNhaTro || contract.room.nhaTro?.maNhaTro;
             if (motelId) {
                 $motelSelect.val(motelId);
-                
                 // 2. Load và chọn phòng
                 await updateRoomDropdown(motelId);
                 $roomSelect.val(contract.room.maPhong);
-                
                 // 3. Load và chọn hợp đồng  
                 await updateContractDropdown(contract.room.maPhong);
                 $contractSelect.val(item.maHopDong);
@@ -598,12 +627,10 @@ $(document).ready(function() {
                 populateContractFilters();
                 $contractSelect.val(item.maHopDong);
             }
-
             // 4. Set các field khác
             $('#compensationId').val(item.maDenBu);
             $('#noiDung').val(item.noiDung);
             $('#soTien').val(item.soTien);
-            
         } catch (error) {
             console.error('Error loading edit data:', error);
             showAlert('Có lỗi khi tải dữ liệu chỉnh sửa.', 'danger');
@@ -617,7 +644,11 @@ $(document).ready(function() {
              const roomName = contract?.room?.tenPhong;
              const motelName = contract?.room?.motel?.tenNhaTro;
              const roomInfo = roomName && motelName ? `${roomName} (${motelName})` : (roomName || 'Không xác định');
+            const imageHtml = item.base64
+                ? `<div style='margin-bottom:10px;'><img src="data:image/jpeg;base64,${item.base64}" alt="Ảnh minh chứng" style="max-width:100%;max-height:250px;border-radius:6px;object-fit:contain;box-shadow:0 2px 8px #0001;" /></div>`
+                : '';
             const detailsHtml = `
+                ${imageHtml}
                 <p><strong>Mã đền bù:</strong> ${item.maDenBu}</p>
                 <p><strong>Hợp đồng:</strong> #${item.maHopDong} - ${roomInfo}</p>
                 <p><strong>Ngày tạo:</strong> ${new Date(item.ngayTao).toLocaleDateString('vi-VN')}</p>
@@ -657,6 +688,43 @@ $(document).ready(function() {
     $('#closeDeleteModalBtn, #cancelDeleteBtn').on('click', () => closeModal($deleteModal));
 
 
+    // --- IMAGE UPLOAD & PREVIEW ---
+    $('#hinhanh').on('change', function() {
+        const file = this.files[0];
+        const $error = $('#hinhanhError');
+        const $previewContainer = $('#imagePreviewContainer');
+        const $preview = $('#imagePreview');
+        $error.text('');
+        $previewContainer.hide();
+        $preview.attr('src', '#');
+        if (file) {
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (!allowedTypes.includes(file.type.toLowerCase())) {
+                $error.text('Chỉ chấp nhận file ảnh JPG, PNG, GIF.');
+                this.value = '';
+                return;
+            }
+            if (file.size > maxSize) {
+                $error.text('Kích thước ảnh không được vượt quá 5MB.');
+                this.value = '';
+                return;
+            }
+            // Hiển thị preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $preview.attr('src', e.target.result);
+                $previewContainer.show();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    $('#removeImageBtn').on('click', function() {
+        $('#hinhanh').val('');
+        $('#imagePreviewContainer').hide();
+        $('#imagePreview').attr('src', '#');
+    });
+
     $('#saveBtn').on('click', async function() {
         // Simple validation
         let isValid = true;
@@ -672,13 +740,31 @@ $(document).ready(function() {
             $('#soTienError').text('Vui lòng nhập số tiền hợp lệ.'); isValid = false;
         } else { $('#soTienError').text(''); }
 
+        // Validate file nếu có chọn
+        const file = $('#hinhanh')[0].files[0];
+        const $error = $('#hinhanhError');
+        $error.text('');
+        if (file) {
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (!allowedTypes.includes(file.type.toLowerCase())) {
+                $error.text('Chỉ chấp nhận file ảnh JPG, PNG, GIF.');
+                isValid = false;
+            }
+            if (file.size > maxSize) {
+                $error.text('Kích thước ảnh không được vượt quá 5MB.');
+                isValid = false;
+            }
+        }
         if (!isValid) return;
 
-        const data = {
-            maHopDong: $('#contractId').val(),
-            noiDung: $('#noiDung').val(),
-            soTien: $('#soTien').val()
-        };
+        // Sử dụng FormData để gửi đúng chuẩn API backend
+        const formData = new FormData();
+        formData.append('maHopDong', $('#contractId').val());
+        formData.append('noiDung', $('#noiDung').val());
+        formData.append('soTien', $('#soTien').val());
+        // Nếu có file mới thì gửi, nếu không thì giữ ảnh cũ (chỉ gửi khi chọn mới)
+        if (file) formData.append('hinhanh', file);
 
         const isEdit = !!currentEditId;
         const url = isEdit ? `/api/Denbu/edit-denbu/${currentEditId}` : '/api/Denbu/add-denbu';
@@ -688,8 +774,7 @@ $(document).ready(function() {
         try {
             const response = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: formData
             });
             const result = await response.json();
 
@@ -697,20 +782,12 @@ $(document).ready(function() {
                 showAlert(isEdit ? 'Cập nhật thành công.' : 'Thêm mới thành công.', 'success');
                 closeModal($compensationModal);
                 fetchData(); // Refetch all data
+                // Reset file input & preview
+                $('#hinhanh').val('');
+                $('#imagePreviewContainer').hide();
+                $('#imagePreview').attr('src', '#');
             } else {
-                // Try to parse error messages if they are in JSON format
-                let errorMessage = 'Có lỗi xảy ra.';
-                try {
-                     const errorBody = await result.json();
-                     if(errorBody && errorBody.errors) {
-                         errorMessage = Object.values(errorBody.errors).flat().join(' ');
-                     } else if (errorBody.message) {
-                         errorMessage = errorBody.message;
-                     }
-                } catch(e) {
-                     // Response was not json, use the original message
-                     errorMessage = result.message || errorMessage;
-                }
+                let errorMessage = result.message || 'Có lỗi xảy ra.';
                 showAlert(errorMessage, 'danger');
             }
         } catch (error) {

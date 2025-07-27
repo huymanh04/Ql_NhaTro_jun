@@ -29,6 +29,7 @@
                             <th>Mã hợp đồng</th>
                             <th>Nội dung</th>
                             <th>Số tiền</th>
+                            <th>Hình ảnh</th>
                             <th>Ngày tạo</th>
                             <th width="150">Thao tác</th>
                         </tr>
@@ -66,6 +67,22 @@
                         <label class="form-label">Số tiền</label>
                         <input type="number" class="form-control" id="addSoTien" required min="0" step="1000">
                     </div>
+                    <div class="form-group">
+                        <label for="imageFile">Hình ảnh</label>
+                        <input type="file" id="imageFile" name="imageFile" accept="image/*">
+                        <div class="file-info">
+                            <small>Chấp nhận: JPG, PNG, GIF. Tối đa 5MB</small>
+                        </div>
+                        <div class="error-message" id="imageFileError"></div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" class="image-preview" style="display: none;">
+                            <img id="previewImg" src="" alt="Preview">
+                            <button type="button" id="removeImageBtn" class="remove-image-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -100,6 +117,22 @@
                     <div class="mb-3">
                         <label class="form-label">Số tiền</label>
                         <input type="number" class="form-control" id="editSoTien" required min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="imageFile">Hình ảnh</label>
+                        <input type="file" id="imageFile" name="imageFile" accept="image/*">
+                        <div class="file-info">
+                            <small>Chấp nhận: JPG, PNG, GIF. Tối đa 5MB</small>
+                        </div>
+                        <div class="error-message" id="imageFileError"></div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" class="image-preview" style="display: none;">
+                            <img id="previewImg" src="" alt="Preview">
+                            <button type="button" id="removeImageBtn" class="remove-image-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -153,12 +186,17 @@
                         const tbody = $('#denbuTable tbody');
                         tbody.empty();
                         response.data.forEach(denbu => {
+                            const imageHtml = roomType.imageBase64
+                                ? `<img src="data:image/jpeg;base64,${denbu.base64}" class="room-image" alt="${denbu.maDenBu}">`
+                                : `<div class="no-image">Không có ảnh</div>`;
+
                             tbody.append(`
                                 <tr>
                                     <td>${denbu.maDenBu}</td>
                                     <td>#${denbu.maHopDong}</td>
                                     <td>${denbu.noiDung}</td>
                                     <td>${denbu.soTien.toLocaleString('vi-VN')} VNĐ</td>
+                                            <td>${imageHtml}</td>
                                     <td>${new Date(denbu.ngayTao).toLocaleDateString('vi-VN')}</td>
                                     <td>
                                         <div class="btn-group" role="group">
@@ -204,13 +242,14 @@
 
             // Thêm đền bù mới
             $('#saveDenbuBtn').click(function () {
-                const data = {
-                    maHopDong: $('#addMaHopDong').val(),
-                    noiDung: $('#addNoiDung').val(),
-                    soTien: $('#addSoTien').val()
-                };
+                var formData = new FormData();
+                formData.append('maHopDong', $('#addMaHopDong').val());
+                formData.append('noiDung', $('#addNoiDung').val());
+                formData.append('soTien', $('#addSoTien').val());
+                var file = $('#addDenbuForm #imageFile')[0].files[0];
+                if (file) formData.append('hinhanh', file);
 
-                if (!data.maHopDong || !data.noiDung || !data.soTien) {
+                if (!$('#addMaHopDong').val() || !$('#addNoiDung').val() || !$('#addSoTien').val()) {
                     toastr.error('Vui lòng nhập đầy đủ thông tin');
                     return;
                 }
@@ -218,8 +257,9 @@
                 $.ajax({
                     url: '/api/Denbu/add-denbu',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function (response) {
                         if (response.success) {
                             $('#addDenbuModal').modal('hide');
@@ -284,14 +324,15 @@
 
             // Cập nhật đền bù
             $('#updateDenbuBtn').click(function () {
-                const id = $('#editMaDenBu').val();
-                const data = {
-                    maHopDong: $('#editMaHopDong').val(),
-                    noiDung: $('#editNoiDung').val(),
-                    soTien: $('#editSoTien').val()
-                };
+                var id = $('#editMaDenBu').val();
+                var formData = new FormData();
+                formData.append('maHopDong', $('#editMaHopDong').val());
+                formData.append('noiDung', $('#editNoiDung').val());
+                formData.append('soTien', $('#editSoTien').val());
+                var file = $('#editDenbuForm #imageFile')[0].files[0];
+                if (file) formData.append('hinhanh', file);
 
-                if (!data.maHopDong || !data.noiDung || !data.soTien) {
+                if (!$('#editMaHopDong').val() || !$('#editNoiDung').val() || !$('#editSoTien').val()) {
                     toastr.error('Vui lòng nhập đầy đủ thông tin');
                     return;
                 }
@@ -299,8 +340,9 @@
                 $.ajax({
                     url: `/api/Denbu/edit-denbu/${id}`,
                     type: 'PUT',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function (response) {
                         if (response.success) {
                             $('#editDenbuModal').modal('hide');

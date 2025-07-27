@@ -12,6 +12,7 @@ public partial class DenBu
     public string? NoiDung { get; set; }
 
     public decimal? SoTien { get; set; }
+    public byte[] hinhanh { get; set; } = null!;
 
     public DateTime? NgayTao { get; set; }
 

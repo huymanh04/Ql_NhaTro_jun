@@ -16,6 +16,7 @@ class Chatbot {
         this.isFirstLoadMessages = true;
         this.isFirstLoadConversations = true;
         this.justSentMessage = false;
+        this.lastNotifiedMessageId = null; // Lưu id hoặc timestamp tin nhắn cuối đã notify
         window._chatbot = this; // Gán biến toàn cục để debug
         this.init();
     }
@@ -27,6 +28,15 @@ class Chatbot {
         this.bindEvents();
         this.setupPolling();
         this.setupConversationPolling();
+        // 1. Yêu cầu quyền notification khi load trang (ép xin lại nếu denied)
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(function(permission) {
+                    console.log('Notification permission:', permission);
+                });
+            }
+        }
+        requestNotificationPermission();
     }
 
     async getCurrentUserId() {
@@ -228,7 +238,7 @@ class Chatbot {
         const chatMessages = document.getElementById('chatMessages');
         if (this.messages.length === 0) {
             chatMessages.innerHTML = '<div class="empty-chat">Chưa có tin nhắn nào</div>';
-            this.disableChatInput();
+            this.enableChatInput(); // Cho phép nhập/gửi tin nhắn kể cả khi chưa có tin nhắn nào
             return;
         }
         chatMessages.innerHTML = this.messages.map(message => {
@@ -252,6 +262,19 @@ class Chatbot {
             this.justSentMessage = false;
         }
         this.enableChatInput();
+        // --- Notify khi có tin nhắn mới từ người khác, chỉ 1 lần ---
+        if (this.messages.length > 0) {
+            const lastMsg = this.messages[this.messages.length - 1];
+            const isSent = lastMsg.nguoiGuiID == this.currentUserId || lastMsg.NguoiGuiID == this.currentUserId;
+            // Ưu tiên dùng id, nếu không có thì dùng thoiGianGui
+            const msgUnique = lastMsg.id || lastMsg.ID || lastMsg.thoiGianGui || lastMsg.ThoiGianGui;
+            if (!isSent && msgUnique !== this.lastNotifiedMessageId) {
+                const senderName = lastMsg.tenNguoiGui || lastMsg.TenNguoiGui || this.currentRecipientName || 'Người khác';
+                const msgText = lastMsg.noiDung || lastMsg.NoiDung || '';
+                showDesktopNotification('Tin nhắn mới', `Từ ${senderName}: ${msgText}`);
+                this.lastNotifiedMessageId = msgUnique;
+            }
+        }
     }
 
     scrollToBottom() {
@@ -435,6 +458,14 @@ class Chatbot {
             const activeItem = document.querySelector(`.conversation-item[data-conversation-id="${this.currentConversationId}"]`);
             if (activeItem) activeItem.classList.add('active');
         }
+    }
+}
+
+// 2. Hàm show notify
+function showDesktopNotification(title, body) {
+    console.log('Gọi notify:', title, body, Notification.permission);
+    if ("Notification" in window && Notification.permission === "granted") {
+        new Notification(title, { body: body, icon: '/favicon.ico' });
     }
 }
 

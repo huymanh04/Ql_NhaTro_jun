@@ -128,7 +128,7 @@ class DenbuUserManager {
         if (pageData.length === 0) {
             tbody.append(`
                 <tr>
-                    <td colspan="5" class="text-center py-4">
+                    <td colspan="6" class="text-center py-4">
                         <div class="text-muted">
                             <i class="fas fa-inbox fa-3x mb-3"></i>
                             <p class="mb-0">Không có dữ liệu đền bù nào</p>
@@ -137,32 +137,38 @@ class DenbuUserManager {
                 </tr>
             `);
         } else {
+            const tbody = $('#compensationTableBody');
+            tbody.empty();
             pageData.forEach(item => {
+                console.log(item.base64, item); // debug
                 tbody.append(`
-                    <tr>
-                        <td>
-                            <span class="badge bg-primary">#${item.maDenBu}</span>
-                        </td>
-                        <td>
-                            <div class="fw-bold">${item.nhatro}</div>
-                            <small class="text-muted">Hợp đồng #${item.maHopDong}</small>
-                        </td>
-                        <td>
-                            <div class="text-truncate" style="max-width: 200px;" title="${item.noiDung}">
-                                ${item.noiDung}
-                            </div>
-                        </td>
-                        <td>
-                            <span class="fw-bold text-success">
-                                ${item.soTien.toLocaleString('vi-VN')} VNĐ
-                            </span>
-                        </td>
-                        <td>
-                            <div>${new Date(item.ngayTao).toLocaleDateString('vi-VN')}</div>
-                            <small class="text-muted">${new Date(item.ngayTao).toLocaleTimeString('vi-VN')}</small>
-                        </td>
-                    </tr>
-                `);
+        <tr>
+            <td>
+                <span class="badge bg-primary">#${item.maDenBu}</span>
+            </td>
+            <td>
+                <div class="fw-bold">${item.nhatro}</div>
+                <small class="text-muted">Hợp đồng #${item.maHopDong}</small>
+            </td>
+            <td>
+                <div class="text-truncate" style="max-width: 200px;" title="${item.noiDung}">
+                    ${item.noiDung}
+                </div>
+            </td>
+            <td>
+                <span class="fw-bold text-success">
+                    ${item.soTien.toLocaleString('vi-VN')} VNĐ
+                </span>
+            </td>
+            <td>
+                <div>${new Date(item.ngayTao).toLocaleDateString('vi-VN')}</div>
+                <small class="text-muted">${new Date(item.ngayTao).toLocaleTimeString('vi-VN')}</small>
+            </td>
+            <td>
+                ${item.base64 ? `<img src='data:image/jpeg;base64,${item.base64}' alt='Ảnh minh chứng' style='max-width:60px;max-height:60px;border-radius:4px;object-fit:cover;' />` : '<span style="color:#aaa;font-size:12px;">Không có ảnh</span>'}
+            </td>
+        </tr>
+    `);
             });
         }
 
@@ -269,7 +275,11 @@ class DenbuUserManager {
             }
 
             const modalBody = $('#detailModalBody');
+            const imageHtml = compensation.base64
+                ? `<div class='mb-3'><img src='data:image/jpeg;base64,${compensation.base64}' alt='Ảnh minh chứng' style='max-width:100%;max-height:250px;border-radius:6px;object-fit:contain;box-shadow:0 2px 8px #0001;' /></div>`
+                : '';
             modalBody.html(`
+                ${imageHtml}
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">

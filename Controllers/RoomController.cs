@@ -31,21 +31,26 @@ namespace Ql_NhaTro_jun.Controllers
             {
                 try
                 {
-                    var tinhThanhs= await _context.PhongTros
-                     .Select(p => new PhongTroDTO
-                     {
-                         MaPhong = p.MaPhong,
-                         MaNhaTro = (int)p.MaNhaTro,
-                         MaTheLoai = p.MaTheLoai,
-                         TenPhong = p.TenPhong,
-                         Gia = (decimal)p.Gia,
-                         DienTich = (float)p.DienTich,
-                         ConTrong = (bool)p.ConTrong,
-                         MoTa = p.MoTa
-                     })
-                     .ToListAsync();
-               
-                    var img = await _context.HinhAnhPhongTros
+                                var tinhThanhs = await (
+                   from p in _context.PhongTros
+                   join nt in _context.NhaTros on p.MaNhaTro equals nt.MaNhaTro
+                   select new PhongTroDTO
+                   {
+                       MaPhong = p.MaPhong,
+                       MaNhaTro = (int)p.MaNhaTro,
+                       MaTheLoai = p.MaTheLoai,
+                       TenPhong = p.TenPhong,
+                       Gia = (decimal)p.Gia,
+                       DienTich = (float)p.DienTich,
+                       ConTrong = (bool)p.ConTrong,
+                       MoTa = p.MoTa,
+                       Sdt_chu = nt.MaChuTroNavigation.SoDienThoai,
+                       gg_map = nt.gg_map
+                   }
+                ).ToListAsync();
+
+
+                var img = await _context.HinhAnhPhongTros
 
                         .Select(i => new HinhAnhPhongDto
                         {
@@ -220,7 +225,9 @@ namespace Ql_NhaTro_jun.Controllers
                         TenTheLoai = p.MaTheLoaiNavigation.TenTheLoai,
                         TenNhaTro = p.MaNhaTroNavigation.TenNhaTro,
                         DiaChi = p.MaNhaTroNavigation.DiaChi,
-                        TenKhuVuc = p.MaNhaTroNavigation.MaKhuVucNavigation.TenKhuVuc
+                        TenKhuVuc = p.MaNhaTroNavigation.MaKhuVucNavigation.TenKhuVuc,
+                        gg_map=p.MaNhaTroNavigation.gg_map,
+                        Sdt_chu=p.MaNhaTroNavigation.MaChuTroNavigation.SoDienThoai
                     })
                     .FirstOrDefaultAsync();
 
@@ -736,6 +743,8 @@ namespace Ql_NhaTro_jun.Controllers
         public float DienTich { get; set; }
         public bool ConTrong { get; set; }
         public string MoTa { get; set; }
+        public string Sdt_chu {  get; set; }
+        public string gg_map {  get; set; }
     }
     public class PhongVaHinhDto
     {
