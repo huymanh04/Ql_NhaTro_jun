@@ -5,6 +5,7 @@ namespace Ql_NhaTro_jun.Models;
 
 public partial class Bank
 {
+    //hihi
     public int Id { get; set; }
 
     public string Ten { get; set; } = null!;
