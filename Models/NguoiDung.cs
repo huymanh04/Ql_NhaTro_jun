@@ -19,7 +19,7 @@ public partial class NguoiDung
 
     public string? VaiTro { get; set; }
 
-    public string so_cccd { get; set; } = string.Empty;
+    public string? so_cccd { get; set; }
 
     [NotMapped]
     [JsonPropertyName("g-recaptcha-response")]

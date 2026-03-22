@@ -767,9 +767,9 @@ namespace Ql_NhaTro_jun.Controllers
                 // Tìm kiếm
                 if (!string.IsNullOrEmpty(search))
                 {
-                    query = query.Where(u => u.HoTen.Contains(search) || 
-                                           u.Email.Contains(search) || 
-                                           u.SoDienThoai.Contains(search));
+                    query = query.Where(u => (u.HoTen ?? "").Contains(search) || 
+                                           (u.Email ?? "").Contains(search) || 
+                                           (u.SoDienThoai ?? "").Contains(search));
                 }
 
                 // Lọc theo vai trò

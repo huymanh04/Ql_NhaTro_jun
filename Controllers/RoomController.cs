@@ -45,7 +45,7 @@ namespace Ql_NhaTro_jun.Controllers
                        ConTrong = (bool)p.ConTrong,
                        MoTa = p.MoTa,
                        Sdt_chu = nt.MaChuTroNavigation.SoDienThoai,
-                       gg_map = nt.gg_map
+                       gg_map = null
                    }
                 ).ToListAsync();
 
@@ -226,7 +226,7 @@ namespace Ql_NhaTro_jun.Controllers
                         TenNhaTro = p.MaNhaTroNavigation.TenNhaTro,
                         DiaChi = p.MaNhaTroNavigation.DiaChi,
                         TenKhuVuc = p.MaNhaTroNavigation.MaKhuVucNavigation.TenKhuVuc,
-                        gg_map=p.MaNhaTroNavigation.gg_map,
+                        gg_map = (string?)null,
                         Sdt_chu=p.MaNhaTroNavigation.MaChuTroNavigation.SoDienThoai
                     })
                     .FirstOrDefaultAsync();

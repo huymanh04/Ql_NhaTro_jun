@@ -34,7 +34,7 @@ namespace Ql_NhaTro_jun.Controllers
          MaKhuVuc = t.MaKhuVuc,
          MoTa = t.MoTa,
          NgayTao = t.NgayTao,
-         gg_map = t.gg_map,
+         gg_map = null,
 
          // Chú ý: Navigation cần chọn lại từng field nếu không trả về full entity
          MaChuTroNavigation = t.MaChuTroNavigation == null ? null : new NguoiDung

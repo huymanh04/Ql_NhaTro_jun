@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
@@ -22,52 +23,42 @@ namespace Ql_NhaTro_jun.Models
         {
             var _context = context.RequestServices.GetRequiredService<QlNhatroContext>();
             var path = context.Request.Path;
-            var request = context.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}";
 
             // Chỉ xử lý các trang chính, bỏ qua static file, login, v.v.
             if (!path.StartsWithSegments("/api") && !path.StartsWithSegments("/css") && !path.StartsWithSegments("/js"))
             {
-                var handler = new HttpClientHandler
-                {
-                    UseCookies = true,
-                    CookieContainer = new CookieContainer()
-                };
-               
-                foreach (var cookie in context.Request.Cookies)
-                {
-                    handler.CookieContainer.Add(new Uri(baseUrl), new System.Net.Cookie(cookie.Key, cookie.Value));
-                }
-
-                using var client = new HttpClient(handler);
-                client.BaseAddress = new Uri(baseUrl);
-
                 try
                 {
-                    var response = await client.GetAsync("/api/Auth/get-user-info");
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var json = await response.Content.ReadAsStringAsync();
-                        var user = Regex.Match(json, @"""hoTen"":""(.*?)""").Groups[1].Value;
-                        var Email = Regex.Match(json, @"""email"":""(.*?)""").Groups[1].Value;
-                        context.Items["CurrentUser"] = user;
-                        context.Items["Email"] = Email;
+                    NguoiDung? currentUser = null;
 
-                        var manh = await _context.NguoiDungs.FirstOrDefaultAsync(t => t.Email == Email);
-                        if (manh != null)
+                    var userIdClaim = context.User.FindFirst("MaNguoiDung")?.Value;
+                    if (int.TryParse(userIdClaim, out var userId))
+                    {
+                        currentUser = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.MaNguoiDung == userId);
+                    }
+
+                    if (currentUser == null && context.User.Identity?.IsAuthenticated == true)
+                    {
+                        var loginName = context.User.Identity?.Name;
+                        if (!string.IsNullOrWhiteSpace(loginName))
                         {
-                            context.Items["role"] = manh.VaiTro;
-                            context.Items["id"] = manh.MaNguoiDung;
-                            JunTech.id = manh.MaNguoiDung;
-                            JunTech.nguoiDung = manh;
+                            currentUser = await _context.NguoiDungs
+                                .FirstOrDefaultAsync(u => u.SoDienThoai == loginName || u.Email == loginName);
                         }
                     }
 
-
+                    if (currentUser != null)
+                    {
+                        context.Items["CurrentUser"] = currentUser.HoTen;
+                        context.Items["Email"] = currentUser.Email;
+                        context.Items["role"] = currentUser.VaiTro;
+                        context.Items["id"] = currentUser.MaNguoiDung;
+                        JunTech.id = currentUser.MaNguoiDung;
+                        JunTech.nguoiDung = currentUser;
+                    }
                 }
                 catch
                 {
-                  
                 }
 
           

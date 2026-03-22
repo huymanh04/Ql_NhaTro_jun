@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -23,19 +24,43 @@ namespace Ql_NhaTro_jun.Controllers
         // GET: NguoiDungs - Personal Profile
         public async Task<IActionResult> Index()
         {
-            if (!User.Identity.IsAuthenticated)
+            if (!User!.Identity!.IsAuthenticated)
             {
                 return RedirectToAction("Login", "Users");
             }
 
-            // Get current user from UserInfo middleware
-            var currentUserId = HttpContext.Items["id"];
-            if (currentUserId == null)
+            var parsedUserId = GetCurrentUserId();
+            if (!parsedUserId.HasValue)
             {
                 return RedirectToAction("Login", "Users");
             }
 
-            var nguoiDung = await _context.NguoiDungs.FindAsync((int)currentUserId);
+            var userSummary = await _context.NguoiDungs
+                .AsNoTracking()
+                .Where(u => u.MaNguoiDung == parsedUserId.Value)
+                .Select(u => new { u.MaNguoiDung, u.VaiTro })
+                .FirstOrDefaultAsync();
+
+            if (userSummary == null)
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
+            var nguoiDung = await _context.NguoiDungs
+                .AsNoTracking()
+                .Where(u => u.MaNguoiDung == parsedUserId.Value)
+                .Select(u => new NguoiDung
+                {
+                    MaNguoiDung = u.MaNguoiDung,
+                    HoTen = u.HoTen,
+                    SoDienThoai = u.SoDienThoai,
+                    Email = u.Email,
+                    MatKhau = null,
+                    VaiTro = u.VaiTro,
+                    so_cccd = u.so_cccd ?? string.Empty
+                })
+                .FirstOrDefaultAsync();
+
             if (nguoiDung == null)
             {
                 return NotFound();
@@ -56,7 +81,7 @@ namespace Ql_NhaTro_jun.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateProfile([Bind("MaNguoiDung,HoTen,MatKhau")] NguoiDung nguoiDung)
         {
-            if (!User.Identity.IsAuthenticated)
+            if (!User!.Identity!.IsAuthenticated)
             {
                 return RedirectToAction("Login", "Users");
             }
@@ -107,50 +132,57 @@ namespace Ql_NhaTro_jun.Controllers
 
         public async Task<IActionResult> Dashborad()
         {
-            if (!User.Identity.IsAuthenticated)
+            if (!User!.Identity!.IsAuthenticated)
             {
                 return RedirectToAction("Login", "Users");
             }
-            #region check quyền và login
-            var userName = User.Identity.Name;
-            if (userName == null)
+
+            var parsedUserId = GetCurrentUserId();
+            if (!parsedUserId.HasValue)
             {
-                return Unauthorized(new { message = "Bạn chưa đăng nhập" });
+                return RedirectToAction("Login", "Users");
             }
-            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
+
+            var user = await _context.NguoiDungs
+                .AsNoTracking()
+                .Where(u => u.MaNguoiDung == parsedUserId.Value)
+                .Select(u => new { u.MaNguoiDung, u.VaiTro })
+                .FirstOrDefaultAsync();
+
             if (user == null)
             {
-                user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
+                return RedirectToAction("Login", "Users");
             }
-            if (user == null)
-            {
-                return Unauthorized(new { message = "Người dùng không tồn tại" });
-            }
+
             if (user.VaiTro == "0") // Kiểm tra quyền người dùng
             {
                 return View("~/Views/Users/Dashborad.cshtml");
             }
-            #endregion
+
             return View();
         }
 
         // GET: Account Management
         public async Task<IActionResult> QuanlyUser()
         {
-            if (!User.Identity.IsAuthenticated)
+            if (!User!.Identity!.IsAuthenticated)
             {
                 return RedirectToAction("Login", "Users");
             }
 
-            // Get current user from UserInfo middleware
-            var currentUserId = HttpContext.Items["id"];
-            if (currentUserId == null)
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
             {
                 return RedirectToAction("Login", "Users");
             }
 
-            // Get current user to check role
-            var currentUser = await _context.NguoiDungs.FindAsync((int)currentUserId);
+            // Get current user to check role (project only needed fields).
+            var currentUser = await _context.NguoiDungs
+                .AsNoTracking()
+                .Where(u => u.MaNguoiDung == currentUserId.Value)
+                .Select(u => new { u.MaNguoiDung, u.VaiTro })
+                .FirstOrDefaultAsync();
+
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Users");
@@ -163,8 +195,30 @@ namespace Ql_NhaTro_jun.Controllers
             }
 
             // Get all users
-            var users = await _context.NguoiDungs.ToListAsync();
+            var users = await _context.NguoiDungs
+                .AsNoTracking()
+                .Select(u => new NguoiDung
+                {
+                    MaNguoiDung = u.MaNguoiDung,
+                    HoTen = u.HoTen,
+                    SoDienThoai = u.SoDienThoai,
+                    Email = u.Email,
+                    VaiTro = u.VaiTro,
+                    so_cccd = u.so_cccd ?? string.Empty
+                })
+                .ToListAsync();
             return View(users);
+        }
+
+        private int? GetCurrentUserId()
+        {
+            if (HttpContext.Items["id"] is int idFromItems)
+            {
+                return idFromItems;
+            }
+
+            var claimValue = User.FindFirst("MaNguoiDung")?.Value;
+            return int.TryParse(claimValue, out var idFromClaim) ? idFromClaim : null;
         }
 
         // GET: NguoiDungs/Details/5

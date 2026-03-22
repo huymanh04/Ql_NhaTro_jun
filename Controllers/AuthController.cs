@@ -61,14 +61,35 @@ namespace Api_Ql_nhatro.Controllers
                 if (key == null || iv == null)
                     return BadRequest(new { message = "Phiên đã hết hạn hoặc không tồn tại AES Key" });
                 var decryptedPassword = AesHelper.Decrypt(model.Password, key, iv);
-                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == model.SoDienThoai);
+                var user = await _context.NguoiDungs
+                    .AsNoTracking()
+                    .Where(u => u.SoDienThoai == model.SoDienThoai)
+                    .Select(u => new LoginUserInfo
+                    {
+                        MaNguoiDung = u.MaNguoiDung,
+                        SoDienThoai = u.SoDienThoai,
+                        Email = u.Email,
+                        MatKhau = u.MatKhau
+                    })
+                    .FirstOrDefaultAsync();
 
-                if (user == null || user.MatKhau != decryptedPassword)
+                if (user == null || !string.Equals(user.MatKhau, decryptedPassword, StringComparison.Ordinal))
                 {
                     if (model.SoDienThoai.Contains("@"))
                     {
-                        user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == model.SoDienThoai&& u.MatKhau== decryptedPassword);
-                        if (user == null)
+                        user = await _context.NguoiDungs
+                            .AsNoTracking()
+                            .Where(u => u.Email == model.SoDienThoai)
+                            .Select(u => new LoginUserInfo
+                            {
+                                MaNguoiDung = u.MaNguoiDung,
+                                SoDienThoai = u.SoDienThoai,
+                                Email = u.Email,
+                                MatKhau = u.MatKhau
+                            })
+                            .FirstOrDefaultAsync();
+
+                        if (user == null || !string.Equals(user.MatKhau, decryptedPassword, StringComparison.Ordinal))
                         {
                             return Unauthorized(new { message = "Email hoặc mật khẩu không đúng" });
                         }
@@ -82,9 +103,10 @@ namespace Api_Ql_nhatro.Controllers
 
                 HttpContext.Session.Remove($"AES_{model.SoDienThoai}_Key");
                 HttpContext.Session.Remove($"AES_{model.SoDienThoai}_IV");
+                var loginName = user.SoDienThoai ?? user.Email ?? model.SoDienThoai;
                 var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.SoDienThoai),
+                new Claim(ClaimTypes.Name, loginName),
                 new Claim("MaNguoiDung", user.MaNguoiDung.ToString())
             };
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -100,8 +122,20 @@ namespace Api_Ql_nhatro.Controllers
 
                 await _context.SaveChangesAsync();
             }
-            catch (Exception eee) { return BadRequest(new { message = "Phiên đã hết hạn hoặc không tồn tại AES Key" }); }
+            catch (Exception eee) 
+            {
+                _logger.LogError(eee, "Đăng nhập thất bại do lỗi hệ thống");
+                return BadRequest(new { message = "Đăng nhập thất bại, vui lòng thử lại" });
+            }
             return Ok(new { message = "Đăng nhập thành công!" });
+        }
+
+        private sealed class LoginUserInfo
+        {
+            public int MaNguoiDung { get; set; }
+            public string? SoDienThoai { get; set; }
+            public string? Email { get; set; }
+            public string? MatKhau { get; set; }
         }
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] NguoiDung model)
@@ -284,6 +318,7 @@ namespace Api_Ql_nhatro.Controllers
                 phone = user.SoDienThoai,
                 email = user.Email,
                 MaNguoidung = user.MaNguoiDung,
+                VaiTro = user.VaiTro,
                
             }));
 

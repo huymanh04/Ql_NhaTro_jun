@@ -122,9 +122,25 @@
                     if (loginRes.ok) {
                         showNotification(result.message, 'success');
 
+                        const infoRes = await fetch('/api/Auth/get-user-info', {
+                            method: 'GET',
+                            credentials: 'include'
+                        });
+
+                        let redirectUrl = '/Home';
+                        if (infoRes.ok) {
+                            const info = await infoRes.json();
+                            const role = info?.data?.vaiTro;
+                            if (role === '1' || role === '2') {
+                                redirectUrl = '/NguoiDungs/Dashborad';
+                            } else if (role === '0') {
+                                redirectUrl = '/Users/Dashborad';
+                            }
+                        }
+
                         setTimeout(() => {
-            window.location.href = '/Home';
-            }, 5000);
+                            window.location.href = redirectUrl;
+                        }, 1200);
                         } else { showNotification(result.message, 'warning');
 
 
