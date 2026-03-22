@@ -100,9 +100,10 @@
                 display: none;
             }
 
-            .register-form-container .recaptcha {
-                margin-bottom: 20px;
-            }
+            <!-- <div class="recaptcha">
+                <div id="recaptcha" class="g-recaptcha" data-sitekey="<CAPTCHA_SITE_KEY_HIDDEN>"></div>
+                <div class="error-message" id="recaptchaError"></div>
+            </div> -->
 
             .register-form-container .btn {
                 display: block;
@@ -212,10 +213,10 @@
                     <label for="terms">Tôi đã đọc và đồng ý với <a href="#">điều khoản sử dụng</a></label>
                 </div>
 
-                <div class="recaptcha">
-                    <div id="recaptcha" class="g-recaptcha" data-sitekey="6LcQdhUrAAAAACbFTMK9PJEoCq1yoKf3esqJShB2"></div>
+                <!-- <div class="recaptcha">
+                    <div id="recaptcha" class="g-recaptcha" data-sitekey="<CAPTCHA_SITE_KEY_HIDDEN>"></div>
                     <div class="error-message" id="recaptchaError"></div>
-                </div>
+                </div> -->
 
                 <button type="submit" class="btn">Đăng Ký</button>
             </form>
@@ -228,7 +229,7 @@
         </div>
     </div>
 
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <!-- <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
     <script>
         function togglePassword(inputId) {
             const passwordInput = document.getElementById(inputId);
@@ -296,12 +297,12 @@
                 isValid = false;
         }
             // Validate reCAPTCHA
-            const recaptchaResponse = grecaptcha.getResponse();
-            if (recaptchaResponse.length === 0) {
-                document.getElementById('recaptchaError').textContent = 'Vui lòng xác nhận bạn không phải robot';
-                document.getElementById('recaptchaError').style.display = 'block';
-                isValid = false;
-            }
+            //const recaptchaResponse = grecaptcha.getResponse();
+            //if (recaptchaResponse.length === 0) {
+               // document.getElementById('recaptchaError').textContent = 'Vui lòng xác nhận bạn không phải robot';
+                //document.getElementById('recaptchaError').style.display = 'block';
+                //isValid = false;
+            //}
 
             return isValid;
         }
@@ -349,7 +350,7 @@
                     const email = document.getElementById("email").value;
                     const password = document.getElementById("password").value;
                     const SoDienThoai = document.getElementById("SoDienThoai").value;
-                    const captchaToken = document.querySelector('[name="g-recaptcha-response"]').value;
+                    //const captchaToken = document.querySelector('[name="g-recaptcha-response"]').value;
 
                     const HoTen = document.getElementById("HoTen").value;
 
@@ -379,7 +380,7 @@
                     }, credentials: 'include',
                             body: JSON.stringify({
                                 email: email,
-                        MatKhau: encrypted, SoDienThoai: SoDienThoai, HoTen: HoTen, "g-recaptcha-response": captchaToken
+                        MatKhau: encrypted, SoDienThoai: SoDienThoai, HoTen: HoTen //,"g-recaptcha-response": captchaToken
                     })
                         });
 

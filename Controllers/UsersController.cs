@@ -6,6 +6,13 @@ namespace Ql_NhaTro_jun.Controllers
 {
     public class UsersController : Controller
     {
+        private readonly QlNhatroContext _context;
+
+        public UsersController(QlNhatroContext context)
+        {
+            _context = context;
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -49,7 +56,7 @@ namespace Ql_NhaTro_jun.Controllers
         }
         public async Task<IActionResult> Dashborad()
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated != true)
             {
                 return RedirectToAction("Login", "Users");
             }
@@ -62,33 +69,29 @@ namespace Ql_NhaTro_jun.Controllers
             }
 
             // Lấy thông tin user từ database để kiểm tra vai trò
-            using (var context = new Models.QlNhatroContext())
+            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
+            if (user == null)
             {
-                var user = await context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
-                if (user == null)
-                {
-                    user = await context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
-                }
+                user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
+            }
 
-                if (user == null)
-                {
-                    return RedirectToAction("Login", "Users");
-                }
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Users");
+            }
 
-                // Kiểm tra vai trò - chỉ cho phép khách thuê
-                if (user.VaiTro != "0")
-                {
-                    // Redirect về trang chủ hoặc hiển thị thông báo lỗi
-                    TempData["ErrorMessage"] = "Chỉ khách thuê mới được truy cập trang này!";
-                    return RedirectToAction("Index", "Home");
-                }
+            // Kiểm tra vai trò - chỉ cho phép khách thuê
+            if (user.VaiTro != "0")
+            {
+                TempData["ErrorMessage"] = "Chỉ khách thuê mới được truy cập trang này!";
+                return RedirectToAction("Index", "Home");
             }
 
             return View();
         }
         public IActionResult Denbu()
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated != true)
             {
                 return RedirectToAction("Login", "Users");
             }
@@ -97,7 +100,7 @@ namespace Ql_NhaTro_jun.Controllers
         
         public IActionResult Chatbot()
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated != true)
             {
                 return RedirectToAction("Login", "Users");
             }

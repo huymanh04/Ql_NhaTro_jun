@@ -156,15 +156,15 @@ namespace Api_Ql_nhatro.Controllers
             {
                 return Unauthorized(new { message = "Email đã tồn tại" });
             }
-            var recaptchaResponse = model.RecaptchaResponse;
-            string secretKey = "6LcQdhUrAAAAALA0Kf-pPNX8yTyHbpdZpVC3bsuG";
-            var client = new WebClient();
-            var result = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, recaptchaResponse));
-            var response = JsonSerializer.Deserialize<RecaptchaResponse>(result);
-            if (!response.Success)
-            {
-                return BadRequest(new { message = "Xác minh reCAPTCHA thất bại!" });
-            }
+            //var recaptchaResponse = model.RecaptchaResponse;
+            //string secretKey = "<CAPTCHA_SECRET_HIDDEN>";
+            //var client = new WebClient();
+            //var result = client.DownloadString(string.Format("https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}", secretKey, recaptchaResponse));
+            //var response = JsonSerializer.Deserialize<RecaptchaResponse>(result);
+            //if (!response.Success)
+            //{
+                //return BadRequest(new { message = "Xác minh reCAPTCHA thất bại!" });
+            //}
             model.VaiTro = "0";
             var confirmationCode = new Random().Next(100000, 999999).ToString();
             HttpContext.Session.SetString("code", confirmationCode);
