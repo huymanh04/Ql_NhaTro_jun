@@ -171,6 +171,8 @@
 
 /* Status Badge */
 .status-badge {
+    display: inline-block;
+    white-space: nowrap;
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 12px;

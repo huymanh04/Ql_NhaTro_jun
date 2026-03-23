@@ -501,13 +501,23 @@ namespace Ql_NhaTro_jun.Controllers
                 if (contract == null)
                     return NotFound(ApiResponse<object>.CreateError("Hợp đồng không tồn tại"));
 
-                // Update room availability
+                // Chỉ cho phép xóa khi hợp đồng đã kết thúc
+                var isCompleted = contract.DaKetThuc ?? false;
+                if (!isCompleted)
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("Vui lòng đặt trạng thái hợp đồng là 'Đã kết thúc' trước khi xóa."));
+                }
+
+                // Update room availability: nếu còn hợp đồng khác chưa kết thúc, giữ phòng không trống
                 if (contract.MaPhong.HasValue)
                 {
                     var room = await _context.PhongTros.FindAsync(contract.MaPhong.Value);
+                    bool hasAnotherActive = await _context.HopDongs
+                        .AnyAsync(h => h.MaPhong == contract.MaPhong && h.MaHopDong != contract.MaHopDong && (h.DaKetThuc ?? false) == false);
+
                     if (room != null)
                     {
-                        room.ConTrong = true;
+                        room.ConTrong = !hasAnotherActive;
                         _context.PhongTros.Update(room);
                     }
                 }
@@ -567,7 +577,7 @@ namespace Ql_NhaTro_jun.Controllers
             {
                 _logger.LogError(ex, "Lỗi khi xóa hợp đồng");
                 return StatusCode(500, ApiResponse<object>.CreateError(
-                    "Đã xảy ra lỗi khi xóa hợp đồng"
+                    $"Đã xảy ra lỗi khi xóa hợp đồng: {ex.Message}"
                 ));
             }
         }

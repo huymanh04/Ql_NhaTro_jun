@@ -71,7 +71,10 @@ namespace Ql_NhaTro_jun.Models
             // Cập nhật trạng thái kết thúc cho từng hợp đồng
             foreach (var hd in hopDongs)
             {
-                hd.DaKetThuc = hd.NgayKetThuc < homNay;
+                // Nếu hợp đồng đã được đánh dấu là đã kết thúc thì giữ nguyên, còn nếu chưa thì kiểm tra theo ngày kết thúc
+                bool isContractManuallyCompleted = hd.DaKetThuc ?? false;
+                bool isContractExpiredByDate = hd.NgayKetThuc < homNay;
+                hd.DaKetThuc = isContractManuallyCompleted || isContractExpiredByDate;
             }
 
             // Cập nhật danh sách phòng có hợp đồng còn hiệu lực

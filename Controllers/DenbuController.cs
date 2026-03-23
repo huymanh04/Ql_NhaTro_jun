@@ -32,9 +32,9 @@ namespace Ql_NhaTro_jun.Controllers
           MaHopDong = d.MaHopDong ?? 0,
           NoiDung = d.NoiDung,
           SoTien = d.SoTien ?? 0,
-          Nhatro=d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
-          NgayTao = d.NgayTao ?? default(DateTime) ,
-          base64= d.hinhanh != null ? Convert.ToBase64String(d.hinhanh) : null
+          Nhatro = d.MaHopDongNavigation.MaPhongNavigation.MaNhaTroNavigation.TenNhaTro,
+          NgayTao = d.NgayTao ?? default(DateTime),
+          base64 = null
 
       })
       .ToListAsync();
@@ -67,7 +67,7 @@ namespace Ql_NhaTro_jun.Controllers
                             NoiDung = d.NoiDung,
                             SoTien = d.SoTien ?? 0,
                             NgayTao = d.NgayTao ?? default(DateTime),
-                            base64 = d.hinhanh != null ? Convert.ToBase64String(d.hinhanh) : null
+                            base64 = null
                         })
                         .FirstOrDefaultAsync();
 
@@ -101,16 +101,9 @@ namespace Ql_NhaTro_jun.Controllers
                     NoiDung = model.NoiDung,
                     SoTien = model.SoTien,
                     NgayTao = DateTime.Now
-                }; byte[] imageBytes = null;
-                if (model.hinhanh != null && model.hinhanh.Length > 0)
-                {
-                    using var ms = new MemoryStream();
-                    await model.hinhanh.CopyToAsync(ms);
-                    imageBytes = ms.ToArray();
+                };
 
-
-                }
-                denbu.hinhanh = imageBytes;
+                // Hiện tại cột ảnh trong table DenBu không tồn tại, nên không lưu ảnh trực tiếp vào db
                 _context.DenBus.Add(denbu);
                 await _context.SaveChangesAsync();
 
@@ -325,8 +318,7 @@ namespace Ql_NhaTro_jun.Controllers
             public int MaHopDong { get; set; }              // MaHopDong
             public string NoiDung { get; set; }              // NoiDung
             public decimal SoTien { get; set; }
-            public string base64 { get; set; }
-            public IFormFile hinhanh { get; set; } // SoTien
+            public string? base64 { get; set; }
             public DateTime NgayTao { get; set; }        // NgayTao
             public string Nhatro { get; set; } // NhaTro
         }

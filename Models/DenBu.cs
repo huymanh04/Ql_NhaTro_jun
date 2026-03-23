@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Ql_NhaTro_jun.Models;
 
@@ -12,7 +13,9 @@ public partial class DenBu
     public string? NoiDung { get; set; }
 
     public decimal? SoTien { get; set; }
-    public byte[] hinhanh { get; set; } = null!;
+
+    [NotMapped]
+    public byte[]? hinhanh { get; set; }
 
     public DateTime? NgayTao { get; set; }
 
