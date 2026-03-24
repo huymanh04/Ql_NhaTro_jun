@@ -25,142 +25,20 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                #region check quyền và login
-                var userName = User.Identity.Name;
-                if (userName == null)
-                {
-                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
-                }
-                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
-                if (user == null)
-                {
-                    user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
-                }
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Người dùng không tồn tại" });
-                }
-                if (user.VaiTro == "0") // Kiểm tra quyền người dùng
-                {
-                    return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
-                }
-                #endregion
-                var soHopDong = await _context.HopDongs.CountAsync();
-                var soPhong = await _context.PhongTros.CountAsync();
-                var soKhachHang = await _context.NguoiDungs.Where(t => t.VaiTro == "0").CountAsync();
-                var soNhaTro = await _context.NhaTros.CountAsync();
-                var soTinh = await _context.TinhThanhs.CountAsync();
-                var soKhuVuc = await _context.KhuVucs.CountAsync();
-                var soLoaiPhong = await _context.TheLoaiPhongTros.CountAsync();
-                var soBanner = await _context.Banners.CountAsync();
-                var soBank = await _context.Banks.CountAsync();
-                var soTinNhan = await _context.TinNhans.CountAsync();
-                var sophongTrong = await _context.PhongTros.CountAsync(t => t.ConTrong == true);
-                var sophongDaThue = await _context.PhongTros.CountAsync(t => t.ConTrong == false);
-                var soDenBu=await _context.DenBus.CountAsync();
-                var homNay = DateTime.Today;
-                var homQua = homNay.AddDays(-1);
-                #region Thống kê Doanh thu
-                // Tính mốc thời gian
-                int lechThu = (7 + (int)homNay.DayOfWeek - (int)DayOfWeek.Monday) % 7;
-                var dauTuan = homNay.AddDays(-1 * lechThu).Date;
-                var dauTuanTruoc = dauTuan.AddDays(-7);
-                var cuoiTuanTruoc = dauTuan.AddDays(-1);
+                await GetAuthenticatedAdminUser();
 
-                var dauThang = new DateTime(homNay.Year, homNay.Month, 1);
-                var dauThangTruoc = dauThang.AddMonths(-1);
-                var cuoiThangTruoc = dauThang.AddDays(-1);
+                var ketQua = await GetDashboardCounts();
+                await PopulateRevenueStats(ketQua);
 
-                var dauNam = new DateTime(homNay.Year, 1, 1);
-                var dauNamTruoc = dauNam.AddYears(-1);
-                var cuoiNamTruoc = dauNam.AddDays(-1);
-
-                var truyVan = _context.HoaDonTongs.AsQueryable();
-
-                // Chuyển sang DateOnly
-                var homNayDateOnly = DateOnly.FromDateTime(homNay);
-                var homQuaDateOnly = DateOnly.FromDateTime(homQua);
-
-                var dauTuanDateOnly = DateOnly.FromDateTime(dauTuan);
-                var dauTuanTruocDateOnly = dauTuanDateOnly.AddDays(-7);
-                var cuoiTuanTruocDateOnly = dauTuanDateOnly.AddDays(-1);
-
-                var dauThangDateOnly = DateOnly.FromDateTime(dauThang);
-                var dauThangTruocDateOnly = dauThangDateOnly.AddMonths(-1);
-                var cuoiThangTruocDateOnly = dauThangDateOnly.AddDays(-1);
-
-                var dauNamDateOnly = DateOnly.FromDateTime(dauNam);
-                var dauNamTruocDateOnly = dauNamDateOnly.AddYears(-1);
-                var cuoiNamTruocDateOnly = dauNamDateOnly.AddDays(-1);
-                //var homNay = DateTime.Today;
-                var thangNay = homNay.Month;
-                var namNay = homNay.Year;
-
-                int thangTruoc = thangNay == 1 ? 12 : thangNay - 1;
-                int namTruoc = thangNay == 1 ? namNay - 1 : namNay;
-
-                // Tiền điện tháng này
-                var tongTienDienThangNay = await _context.HoaDonTienIches
-                    .Where(h => h.Thang == thangNay && h.Nam == namNay)
-                    .SumAsync(h => (decimal?)((decimal)h.SoDien * h.DonGiaDien)) ?? 0;
-
-                // Tiền điện tháng trước
-                var tongTienDienThangTruoc = await _context.HoaDonTienIches
-                    .Where(h => h.Thang == thangTruoc && h.Nam == namTruoc)
-                    .SumAsync(h => (decimal?)((decimal)h.SoDien * h.DonGiaDien)) ?? 0;
-
-                // Tỷ lệ thay đổi (%)
-                decimal tyLeThayDoi = tongTienDienThangTruoc == 0
-                    ? 0
-                    : ((tongTienDienThangNay - tongTienDienThangTruoc) / tongTienDienThangTruoc) * 100;
-                #endregion
-                var ketQua = new Doarboard
-                {
-                    SoHopDong = soHopDong ,
-                    SoDenBu = soDenBu,
-                    SoPhong = soPhong,
-                    SoKhachHang = soKhachHang,
-                    SoNhaTro = soNhaTro,
-                    SoTinh = soTinh,
-                    SoKhuVuc = soKhuVuc,
-                    SoLoaiPhong = soLoaiPhong,
-                    SoBanner = soBanner,
-                    SoBank = soBank,
-                    SoTinNhan = soTinNhan,
-                    SophongTrong = sophongTrong,
-                    SophongDaThue = sophongDaThue,
-                    HomNay = await truyVan.Where(x => x.NgayXuat == homNayDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0,
-                    HomQua = await truyVan.Where(x => x.NgayXuat == homQuaDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0,
-                    TuanNay = await truyVan.Where(x => x.NgayXuat >= dauTuanDateOnly && x.NgayXuat <= homNayDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0,
-                    TuanTruoc = await truyVan.Where(x => x.NgayXuat >= dauTuanTruocDateOnly && x.NgayXuat <= cuoiTuanTruocDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0,
-                    ThangNay = await truyVan.Where(x => x.NgayXuat >= dauThangDateOnly && x.NgayXuat <= homNayDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0,
-                    ThangTruoc = await truyVan.Where(x => x.NgayXuat >= dauThangTruocDateOnly && x.NgayXuat <= cuoiThangTruocDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0,
-                    NamNay = await truyVan.Where(x => x.NgayXuat >= dauNamDateOnly && x.NgayXuat <= homNayDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0,
-                    NamTruoc = await truyVan.Where(x => x.NgayXuat >= dauNamTruocDateOnly && x.NgayXuat <= cuoiNamTruocDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0,
-                    Dienthangnay = await _context.HoaDonTienIches
-                 .Where(h => h.Thang == thangNay && h.Nam == namNay)
-                 .SumAsync(h => (decimal?)((decimal)h.SoDien * h.DonGiaDien)) ?? 0,
-                    Dienthangtruoc = await _context.HoaDonTienIches
-                 .Where(h => h.Thang == thangTruoc && h.Nam == namTruoc)
-                 .SumAsync(h => (decimal?)((decimal)h.SoDien * h.DonGiaDien)) ?? 0,
-                    Nuocthangnay = await _context.HoaDonTienIches
-                     .Where(h => h.Thang == thangNay && h.Nam == namNay)
-                     .SumAsync(h => (decimal?)((decimal)h.SoNuoc * h.DonGiaNuoc)) ?? 0,
-                    Nuocthangtruoc = await _context.HoaDonTienIches.Where(h => h.Thang == thangTruoc && h.Nam == namTruoc)
-                     .SumAsync(h => (decimal?)((decimal)h.SoNuoc * h.DonGiaNuoc)) ?? 0
-                };
-                ketQua.TyLeThayDoiHomNay = ketQua.HomQua == 0 ? 0 : ((ketQua.HomNay - ketQua.HomQua) / ketQua.HomQua) * 100;
-                ketQua.TyLeThayDoiTuanNay = ketQua.TuanTruoc == 0 ? 0 : ((ketQua.TuanNay - ketQua.TuanTruoc) / ketQua.TuanTruoc) * 100;
-                ketQua.TyLeThayDoiThangNay = ketQua.ThangTruoc == 0 ? 0 : ((ketQua.ThangNay - ketQua.ThangTruoc) / ketQua.ThangTruoc) * 100;
-                ketQua.TyLeThayDoiNamNay = ketQua.NamTruoc == 0 ? 0 : ((ketQua.NamNay - ketQua.NamTruoc) / ketQua.NamTruoc) * 100;
-                ketQua.TyLeThayDoidien = ketQua.Dienthangtruoc == 0 ? 0 : ((ketQua.Dienthangnay - ketQua.Dienthangtruoc) / ketQua.Dienthangtruoc) * 100;
-                ketQua.TyLeThayDoinuoc = ketQua.Nuocthangtruoc == 0 ? 0 : ((ketQua.Nuocthangnay - ketQua.Nuocthangtruoc) / ketQua.Nuocthangtruoc) * 100;
-
-                return Ok(ApiResponse<object>.CreateSuccess( "Lấy Kết quả thành công", ketQua));
+                return Ok(ApiResponse<object>.CreateSuccess("Lấy Kết quả thành công", ketQua));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching number of contracts");
+                _logger.LogError(ex, "Error fetching dashboard data");
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -182,30 +60,27 @@ namespace Ql_NhaTro_jun.Controllers
             public int SophongTrong { get; set; }
             public int SophongDaThue { get; set; }
 
+            public decimal HomNay { get; set; } = 0;
+            public decimal HomQua { get; set; } = 0;
+            public decimal TyLeThayDoiHomNay { get; set; } = 0;
 
+            public decimal TuanNay { get; set; } = 0;
+            public decimal TuanTruoc { get; set; } = 0;
+            public decimal TyLeThayDoiTuanNay { get; set; } = 0;
 
+            public decimal ThangNay { get; set; } = 0;
+            public decimal ThangTruoc { get; set; } = 0;
+            public decimal TyLeThayDoiThangNay { get; set; } = 0;
 
-            public decimal HomNay { get; set; }
-            public decimal HomQua { get; set; }
-            public decimal TyLeThayDoiHomNay { get; set; }
-
-            public decimal TuanNay { get; set; }
-            public decimal TuanTruoc { get; set; }
-            public decimal TyLeThayDoiTuanNay { get; set; }
-
-            public decimal ThangNay { get; set; }
-            public decimal ThangTruoc { get; set; }
-            public decimal TyLeThayDoiThangNay { get; set; }
-
-            public decimal NamNay { get; set; }
-            public decimal NamTruoc { get; set; }
-            public decimal TyLeThayDoiNamNay { get; set; }
-            public decimal Dienthangtruoc { get; set; }
-            public decimal Dienthangnay { get; set; }
-            public decimal Nuocthangtruoc { get; set; }
-            public decimal Nuocthangnay { get; set; }
-            public decimal TyLeThayDoinuoc { get; set; }
-            public decimal TyLeThayDoidien { get; set; }
+            public decimal NamNay { get; set; } = 0;
+            public decimal NamTruoc { get; set; } = 0;
+            public decimal TyLeThayDoiNamNay { get; set; } = 0;
+            public decimal Dienthangtruoc { get; set; } = 0;
+            public decimal Dienthangnay { get; set; } = 0;
+            public decimal Nuocthangtruoc { get; set; } = 0;
+            public decimal Nuocthangnay { get; set; } = 0;
+            public decimal TyLeThayDoinuoc { get; set; } = 0;
+            public decimal TyLeThayDoidien { get; set; } = 0;
         }
 
         [HttpGet("RecentActivities")]
@@ -213,26 +88,7 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                #region check quyền và login
-                var userName = User.Identity.Name;
-                if (userName == null)
-                {
-                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
-                }
-                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
-                if (user == null)
-                {
-                    user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
-                }
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Người dùng không tồn tại" });
-                }
-                if (user.VaiTro == "0") // Kiểm tra quyền người dùng
-                {
-                    return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
-                }
-                #endregion
+                await GetAuthenticatedAdminUser();
 
                 var activities = new List<ActivityItem>();
 
@@ -361,6 +217,10 @@ namespace Ql_NhaTro_jun.Controllers
 
                 return Ok(ApiResponse<object>.CreateSuccess("Lấy hoạt động gần đây thành công", sortedActivities));
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching recent activities");
@@ -403,26 +263,7 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                #region check quyền và login
-                var userName = User.Identity.Name;
-                if (userName == null)
-                {
-                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
-                }
-                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
-                if (user == null)
-                {
-                    user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
-                }
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Người dùng không tồn tại" });
-                }
-                if (user.VaiTro == "0")
-                {
-                    return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
-                }
-                #endregion
+                await GetAuthenticatedAdminUser();
 
                 // Lấy dữ liệu dashboard
                 var dashboardResponse = await doarboard();
@@ -438,6 +279,10 @@ namespace Ql_NhaTro_jun.Controllers
                 var fileName = $"BaoCao_Dashboard_{DateTime.Now:yyyyMMdd_HHmmss}.html";
                 
                 return File(pdfBytes, "text/html", fileName);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -741,26 +586,7 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                #region check quyền và login
-                var userName = User.Identity.Name;
-                if (userName == null)
-                {
-                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
-                }
-                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
-                if (user == null)
-                {
-                    user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
-                }
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Người dùng không tồn tại" });
-                }
-                if (user.VaiTro == "0")
-                {
-                    return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
-                }
-                #endregion
+                await GetAuthenticatedAdminUser();
 
                 var query = _context.NguoiDungs.AsQueryable();
 
@@ -806,9 +632,13 @@ namespace Ql_NhaTro_jun.Controllers
 
                 return Ok(ApiResponse<object>.CreateSuccess("Lấy danh sách người dùng thành công", result));
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching users");
+                _logger.LogError(ex, "Error fetching dashboard data");
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -818,26 +648,7 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                #region check quyền và login
-                var userName = User.Identity.Name;
-                if (userName == null)
-                {
-                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
-                }
-                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
-                if (user == null)
-                {
-                    user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
-                }
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Người dùng không tồn tại" });
-                }
-                if (user.VaiTro == "0")
-                {
-                    return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
-                }
-                #endregion
+                await GetAuthenticatedAdminUser();
 
                 // Kiểm tra email đã tồn tại
                 var existingEmail = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == request.Email);
@@ -875,6 +686,10 @@ namespace Ql_NhaTro_jun.Controllers
                     VaiTro = newUser.VaiTro
                 }));
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating user");
@@ -887,26 +702,7 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                #region check quyền và login
-                var userName = User.Identity.Name;
-                if (userName == null)
-                {
-                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
-                }
-                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
-                if (user == null)
-                {
-                    user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
-                }
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Người dùng không tồn tại" });
-                }
-                if (user.VaiTro == "0")
-                {
-                    return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
-                }
-                #endregion
+                await GetAuthenticatedAdminUser();
 
                 var existingUser = await _context.NguoiDungs.FindAsync(id);
                 if (existingUser == null)
@@ -951,6 +747,10 @@ namespace Ql_NhaTro_jun.Controllers
                     VaiTro = existingUser.VaiTro
                 }));
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating user");
@@ -963,26 +763,7 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                #region check quyền và login
-                var userName = User.Identity.Name;
-                if (userName == null)
-                {
-                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
-                }
-                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
-                if (user == null)
-                {
-                    user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
-                }
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Người dùng không tồn tại" });
-                }
-                if (user.VaiTro == "0")
-                {
-                    return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
-                }
-                #endregion
+                await GetAuthenticatedAdminUser();
 
                 var existingUser = await _context.NguoiDungs.FindAsync(id);
                 if (existingUser == null)
@@ -1000,6 +781,10 @@ namespace Ql_NhaTro_jun.Controllers
                     VaiTroText = existingUser.VaiTro == "1" ? "Admin" : "Khách hàng"
                 }));
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error setting user role");
@@ -1012,26 +797,7 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                #region check quyền và login
-                var userName = User.Identity.Name;
-                if (userName == null)
-                {
-                    return Unauthorized(new { message = "Bạn chưa đăng nhập" });
-                }
-                var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
-                if (user == null)
-                {
-                    user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
-                }
-                if (user == null)
-                {
-                    return Unauthorized(new { message = "Người dùng không tồn tại" });
-                }
-                if (user.VaiTro == "0")
-                {
-                    return BadRequest(ApiResponse<object>.CreateError("Bạn không có quyền thực hiện hành động này"));
-                }
-                #endregion
+                var currentUser = await GetAuthenticatedAdminUser();
 
                 var existingUser = await _context.NguoiDungs.FindAsync(id);
                 if (existingUser == null)
@@ -1040,7 +806,7 @@ namespace Ql_NhaTro_jun.Controllers
                 }
 
                 // Không cho phép xóa chính mình
-                if (existingUser.SoDienThoai == userName || existingUser.Email == userName)
+                if (existingUser.SoDienThoai == currentUser.SoDienThoai || existingUser.Email == currentUser.Email)
                 {
                     return BadRequest(ApiResponse<object>.CreateError("Không thể xóa tài khoản của chính mình"));
                 }
@@ -1050,6 +816,10 @@ namespace Ql_NhaTro_jun.Controllers
 
                 return Ok(ApiResponse<object>.CreateSuccess("Xóa tài khoản thành công", null));
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting user");
@@ -1057,14 +827,81 @@ namespace Ql_NhaTro_jun.Controllers
             }
         }
 
-        // Request models
-        public class CreateUserRequest
+        private async Task PopulateRevenueStats(Doarboard data)
         {
-            public string HoTen { get; set; }
-            public string Email { get; set; }
-            public string SoDienThoai { get; set; }
-            public string MatKhau { get; set; }
-            public string VaiTro { get; set; }
+            var homNay = DateTime.Today;
+            var homQua = homNay.AddDays(-1);
+
+            // Calculate date ranges
+            int lechThu = (7 + (int)homNay.DayOfWeek - (int)DayOfWeek.Monday) % 7;
+            var dauTuan = homNay.AddDays(-1 * lechThu).Date;
+            var dauTuanTruoc = dauTuan.AddDays(-7);
+            var cuoiTuanTruoc = dauTuan.AddDays(-1);
+
+            var dauThang = new DateTime(homNay.Year, homNay.Month, 1);
+            var dauThangTruoc = dauThang.AddMonths(-1);
+            var cuoiThangTruoc = dauThang.AddDays(-1);
+
+            var dauNam = new DateTime(homNay.Year, 1, 1);
+            var dauNamTruoc = dauNam.AddYears(-1);
+            var cuoiNamTruoc = dauNam.AddDays(-1);
+
+            var truyVan = _context.HoaDonTongs.AsQueryable();
+
+            // Convert to DateOnly
+            var homNayDateOnly = DateOnly.FromDateTime(homNay);
+            var homQuaDateOnly = DateOnly.FromDateTime(homQua);
+            var dauTuanDateOnly = DateOnly.FromDateTime(dauTuan);
+            var dauTuanTruocDateOnly = dauTuanDateOnly.AddDays(-7);
+            var cuoiTuanTruocDateOnly = dauTuanDateOnly.AddDays(-1);
+            var dauThangDateOnly = DateOnly.FromDateTime(dauThang);
+            var dauThangTruocDateOnly = dauThangDateOnly.AddMonths(-1);
+            var cuoiThangTruocDateOnly = dauThangDateOnly.AddDays(-1);
+            var dauNamDateOnly = DateOnly.FromDateTime(dauNam);
+            var dauNamTruocDateOnly = dauNamDateOnly.AddYears(-1);
+            var cuoiNamTruocDateOnly = dauNamDateOnly.AddDays(-1);
+
+            var thangNay = homNay.Month;
+            var namNay = homNay.Year;
+            int thangTruoc = thangNay == 1 ? 12 : thangNay - 1;
+            int namTruoc = thangNay == 1 ? namNay - 1 : namNay;
+
+            // Revenue sums
+            data.HomNay = await truyVan.Where(x => x.NgayXuat == homNayDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0;
+            data.HomQua = await truyVan.Where(x => x.NgayXuat == homQuaDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0;
+            data.TuanNay = await truyVan.Where(x => x.NgayXuat >= dauTuanDateOnly && x.NgayXuat <= homNayDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0;
+            data.TuanTruoc = await truyVan.Where(x => x.NgayXuat >= dauTuanTruocDateOnly && x.NgayXuat <= cuoiTuanTruocDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0;
+            data.ThangNay = await truyVan.Where(x => x.NgayXuat >= dauThangDateOnly && x.NgayXuat <= homNayDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0;
+            data.ThangTruoc = await truyVan.Where(x => x.NgayXuat >= dauThangTruocDateOnly && x.NgayXuat <= cuoiThangTruocDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0;
+            data.NamNay = await truyVan.Where(x => x.NgayXuat >= dauNamDateOnly && x.NgayXuat <= homNayDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0;
+            data.NamTruoc = await truyVan.Where(x => x.NgayXuat >= dauNamTruocDateOnly && x.NgayXuat <= cuoiNamTruocDateOnly).SumAsync(x => (decimal?)x.TongTien) ?? 0;
+
+            // Utility bills
+            data.Dienthangnay = await _context.HoaDonTienIches
+                .Where(h => h.Thang == thangNay && h.Nam == namNay)
+                .SumAsync(h => (decimal?)((decimal)h.SoDien * h.DonGiaDien)) ?? 0;
+            data.Dienthangtruoc = await _context.HoaDonTienIches
+                .Where(h => h.Thang == thangTruoc && h.Nam == namTruoc)
+                .SumAsync(h => (decimal?)((decimal)h.SoDien * h.DonGiaDien)) ?? 0;
+            data.Nuocthangnay = await _context.HoaDonTienIches
+                .Where(h => h.Thang == thangNay && h.Nam == namNay)
+                .SumAsync(h => (decimal?)((decimal)h.SoNuoc * h.DonGiaNuoc)) ?? 0;
+            data.Nuocthangtruoc = await _context.HoaDonTienIches
+                .Where(h => h.Thang == thangTruoc && h.Nam == namTruoc)
+                .SumAsync(h => (decimal?)((decimal)h.SoNuoc * h.DonGiaNuoc)) ?? 0;
+
+            // Calculate percentages
+            CalculatePercentages(data);
+        }
+
+        private void CalculatePercentages(Doarboard data)
+        {
+            data.TyLeThayDoiHomNay = data.HomQua == 0 ? 0 : ((data.HomNay - data.HomQua) / data.HomQua) * 100;
+            data.TyLeThayDoiTuanNay = data.TuanTruoc == 0 ? 0 : ((data.TuanNay - data.TuanTruoc) / data.TuanTruoc) * 100;
+            data.TyLeThayDoiThangNay = data.ThangTruoc == 0 ? 0 : ((data.ThangNay - data.ThangTruoc) / data.ThangTruoc) * 100;
+            data.TyLeThayDoiNamNay = data.NamTruoc == 0 ? 0 : ((data.NamNay - data.NamTruoc) / data.NamTruoc) * 100;
+            data.TyLeThayDoidien = data.Dienthangtruoc == 0 ? 0 : ((data.Dienthangnay - data.Dienthangtruoc) / data.Dienthangtruoc) * 100;
+            data.TyLeThayDoinuoc = data.Nuocthangtruoc == 0 ? 0 : ((data.Nuocthangnay - data.Nuocthangtruoc) / data.Nuocthangtruoc) * 100;
         }
 
         public class UpdateUserRequest
@@ -1081,6 +918,49 @@ namespace Ql_NhaTro_jun.Controllers
             public string VaiTro { get; set; }
         }
 
+        private async Task<NguoiDung> GetAuthenticatedAdminUser()
+        {
+            var userName = User.Identity.Name;
+            if (userName == null)
+            {
+                throw new UnauthorizedAccessException("Bạn chưa đăng nhập");
+            }
+            var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.SoDienThoai == userName);
+            if (user == null)
+            {
+                user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == userName);
+            }
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("Người dùng không tồn tại");
+            }
+            if (user.VaiTro == "0")
+            {
+                throw new UnauthorizedAccessException("Bạn không có quyền thực hiện hành động này");
+            }
+            return user;
+        }
+
+        private async Task<Doarboard> GetDashboardCounts()
+        {
+            var counts = new Doarboard
+            {
+                SoHopDong = await _context.HopDongs.CountAsync(),
+                SoPhong = await _context.PhongTros.CountAsync(),
+                SoKhachHang = await _context.NguoiDungs.Where(t => t.VaiTro == "0").CountAsync(),
+                SoNhaTro = await _context.NhaTros.CountAsync(),
+                SoTinh = await _context.TinhThanhs.CountAsync(),
+                SoKhuVuc = await _context.KhuVucs.CountAsync(),
+                SoLoaiPhong = await _context.TheLoaiPhongTros.CountAsync(),
+                SoBanner = await _context.Banners.CountAsync(),
+                SoBank = await _context.Banks.CountAsync(),
+                SoTinNhan = await _context.TinNhans.CountAsync(),
+                SophongTrong = await _context.PhongTros.CountAsync(t => t.ConTrong == true),
+                SophongDaThue = await _context.PhongTros.CountAsync(t => t.ConTrong == false),
+                SoDenBu = await _context.DenBus.CountAsync()
+            };
+            return counts;
+        }
 
     }
 }
