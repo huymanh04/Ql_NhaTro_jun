@@ -18,6 +18,11 @@ namespace Ql_NhaTro_jun.Controllers
         // GET: /RoomSearch/Search?location=...&minPrice=...&maxPrice=...
         public async Task<IActionResult> Search(string location, decimal? minPrice, decimal? maxPrice)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var query = _context.PhongTros.Include(p => p.MaNhaTroNavigation).AsQueryable();
             if (!string.IsNullOrEmpty(location))
             {
