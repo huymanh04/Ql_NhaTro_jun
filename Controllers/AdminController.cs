@@ -23,24 +23,12 @@ namespace Ql_NhaTro_jun.Controllers
         [HttpGet("Dashborad")]
         public async Task<IActionResult> doarboard()
         {
-            try
+            return await ExecuteAdminAction(async () =>
             {
-                await GetAuthenticatedAdminUser();
-
                 var ketQua = await GetDashboardCounts();
                 await PopulateRevenueStats(ketQua);
-
                 return Ok(ApiResponse<object>.CreateSuccess("Lấy Kết quả thành công", ketQua));
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching dashboard data");
-                return StatusCode(500, "Internal server error");
-            }
+            });
         }
 
 
@@ -86,10 +74,8 @@ namespace Ql_NhaTro_jun.Controllers
         [HttpGet("RecentActivities")]
         public async Task<IActionResult> GetRecentActivities()
         {
-            try
+            return await ExecuteAdminAction(async () =>
             {
-                await GetAuthenticatedAdminUser();
-
                 var activities = new List<ActivityItem>();
 
                 // Lấy hợp đồng mới (7 ngày gần đây)
@@ -216,16 +202,7 @@ namespace Ql_NhaTro_jun.Controllers
                     .ToList();
 
                 return Ok(ApiResponse<object>.CreateSuccess("Lấy hoạt động gần đây thành công", sortedActivities));
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching recent activities");
-                return StatusCode(500, "Internal server error");
-            }
+            });
         }
 
         public class ActivityItem
@@ -261,10 +238,8 @@ namespace Ql_NhaTro_jun.Controllers
         [HttpGet("ExportReport")]
         public async Task<IActionResult> ExportReport()
         {
-            try
+            return await ExecuteAdminAction(async () =>
             {
-                await GetAuthenticatedAdminUser();
-
                 // Lấy dữ liệu dashboard
                 var dashboardResponse = await doarboard();
                 var dashboardResult = dashboardResponse as OkObjectResult;
@@ -279,16 +254,7 @@ namespace Ql_NhaTro_jun.Controllers
                 var fileName = $"BaoCao_Dashboard_{DateTime.Now:yyyyMMdd_HHmmss}.html";
                 
                 return File(pdfBytes, "text/html", fileName);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error exporting report");
-                return StatusCode(500, "Internal server error");
-            }
+            });
         }
 
         private string GenerateReportHtml(Doarboard data)
@@ -584,10 +550,8 @@ namespace Ql_NhaTro_jun.Controllers
         [HttpGet("Users")]
         public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string search = "", [FromQuery] string roleFilter = "")
         {
-            try
+            return await ExecuteAdminAction(async () =>
             {
-                await GetAuthenticatedAdminUser();
-
                 var query = _context.NguoiDungs.AsQueryable();
 
                 // Tìm kiếm
@@ -631,25 +595,14 @@ namespace Ql_NhaTro_jun.Controllers
                 };
 
                 return Ok(ApiResponse<object>.CreateSuccess("Lấy danh sách người dùng thành công", result));
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching dashboard data");
-                return StatusCode(500, "Internal server error");
-            }
+            });
         }
 
         [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] NguoiDung request)
         {
-            try
+            return await ExecuteAdminAction(async () =>
             {
-                await GetAuthenticatedAdminUser();
-
                 // Kiểm tra email đã tồn tại
                 var existingEmail = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == request.Email);
                 if (existingEmail != null)
@@ -685,25 +638,14 @@ namespace Ql_NhaTro_jun.Controllers
                     so_cccd=newUser.so_cccd,
                     VaiTro = newUser.VaiTro
                 }));
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating user");
-                return StatusCode(500, "Internal server error");
-            }
+            });
         }
 
         [HttpPut("UpdateUser/{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
-            try
+            return await ExecuteAdminAction(async () =>
             {
-                await GetAuthenticatedAdminUser();
-
                 var existingUser = await _context.NguoiDungs.FindAsync(id);
                 if (existingUser == null)
                 {
@@ -746,25 +688,14 @@ namespace Ql_NhaTro_jun.Controllers
                     SoDienThoai = existingUser.SoDienThoai,
                     VaiTro = existingUser.VaiTro
                 }));
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating user");
-                return StatusCode(500, "Internal server error");
-            }
+            });
         }
 
         [HttpPut("SetUserRole/{id}")]
         public async Task<IActionResult> SetUserRole(int id, [FromBody] SetRoleRequest request)
         {
-            try
+            return await ExecuteAdminAction(async () =>
             {
-                await GetAuthenticatedAdminUser();
-
                 var existingUser = await _context.NguoiDungs.FindAsync(id);
                 if (existingUser == null)
                 {
@@ -780,22 +711,13 @@ namespace Ql_NhaTro_jun.Controllers
                     VaiTro = existingUser.VaiTro,
                     VaiTroText = existingUser.VaiTro == "1" ? "Admin" : "Khách hàng"
                 }));
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error setting user role");
-                return StatusCode(500, "Internal server error");
-            }
+            });
         }
 
         [HttpDelete("DeleteUser/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            try
+            return await ExecuteAdminAction(async () =>
             {
                 var currentUser = await GetAuthenticatedAdminUser();
 
@@ -815,16 +737,7 @@ namespace Ql_NhaTro_jun.Controllers
                 await _context.SaveChangesAsync();
 
                 return Ok(ApiResponse<object>.CreateSuccess("Xóa tài khoản thành công", null));
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting user");
-                return StatusCode(500, "Internal server error");
-            }
+            });
         }
 
         private async Task PopulateRevenueStats(Doarboard data)
@@ -960,6 +873,24 @@ namespace Ql_NhaTro_jun.Controllers
                 SoDenBu = await _context.DenBus.CountAsync()
             };
             return counts;
+        }
+
+        private async Task<IActionResult> ExecuteAdminAction(Func<Task<IActionResult>> action)
+        {
+            try
+            {
+                await GetAuthenticatedAdminUser();
+                return await action();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing admin action");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
     }
