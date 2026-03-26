@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -6,6 +7,7 @@ using NUnit.Framework;
 using Ql_NhaTro_jun.Controllers;
 using Ql_NhaTro_jun.Models;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Ql_NhaTro_jun.Tests
@@ -26,6 +28,20 @@ namespace Ql_NhaTro_jun.Tests
             _context = new QlNhatroContext(options);
             _mockLogger = new Mock<ILogger<AdminController>>();
             _controller = new AdminController(_mockLogger.Object, _context);
+            
+            // Setup mock HttpContext with authenticated admin user
+            var mockHttpContext = new Mock<HttpContext>();
+            var mockUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "1"),
+                new Claim(ClaimTypes.Name, "0912345678")
+            }, "TestAuthType"));
+            mockHttpContext.Setup(x => x.User).Returns(mockUser);
+            var mockControllerContext = new ControllerContext
+            {
+                HttpContext = mockHttpContext.Object
+            };
+            _controller.ControllerContext = mockControllerContext;
         }
 
         [TearDown]
@@ -154,6 +170,18 @@ namespace Ql_NhaTro_jun.Tests
         [Test]
         public async Task Doarboard_ReturnsOkResult_WithEmptyDatabase()
         {
+            // Need to seed admin user for authentication, even if other data is empty
+            var owner = new NguoiDung
+            {
+                MaNguoiDung = 1,
+                SoDienThoai = "0912345678",
+                HoTen = "Admin User",
+                Email = "admin@example.com",
+                VaiTro = "1"
+            };
+            _context.NguoiDungs.Add(owner);
+            _context.SaveChanges();
+            
             var result = await _controller.doarboard();
 
             Assert.That(result, Is.InstanceOf<OkObjectResult>());
@@ -231,6 +259,18 @@ namespace Ql_NhaTro_jun.Tests
         [Test]
         public async Task Doarboard_HandlesEmptyDatabase()
         {
+            // Need to seed admin user for authentication, even if other data is empty
+            var owner = new NguoiDung
+            {
+                MaNguoiDung = 1,
+                SoDienThoai = "0912345678",
+                HoTen = "Admin User",
+                Email = "admin@example.com",
+                VaiTro = "1"
+            };
+            _context.NguoiDungs.Add(owner);
+            _context.SaveChanges();
+            
             var result = await _controller.doarboard();
 
             Assert.That(result, Is.InstanceOf<OkObjectResult>());
