@@ -146,7 +146,8 @@ _TeamCity*
 coverage*.json
 coverage*.xml
 coverage*.info
-
+# Nhưng giữ lại file coverage.opencover.xml
+!coverage.opencover.xml
 # Visual Studio code coverage results
 *.coverage
 *.coveragexml
