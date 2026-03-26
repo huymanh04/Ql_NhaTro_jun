@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="utf-8"?>
 <CoverageSession>
   <Summary numSequencePoints="7081" visitedSequencePoints="1261" numBranchPoints="1778" visitedBranchPoints="118" sequenceCoverage="17.8" branchCoverage="6.63" maxCyclomaticComplexity="2438" minCyclomaticComplexity="2438" visitedClasses="76" numClasses="342" visitedMethods="220" numMethods="834" />
