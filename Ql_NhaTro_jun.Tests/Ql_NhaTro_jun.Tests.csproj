@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <CoverletOutputFormat>opencover</CoverletOutputFormat>
-    <CoverletOutput>coverage.opencover.xml</CoverletOutput>
+    <CoverletOutput>../coverage.opencover.xml</CoverletOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,5 +34,7 @@
   <ItemGroup>
     <Using Include="NUnit.Framework" />
   </ItemGroup>
+
+
 
 </Project>
