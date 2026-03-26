@@ -123,7 +123,7 @@ namespace Ql_NhaTro_jun.Tests
             Assert.That(saved.NoiDung, Is.EqualTo("Vỡ gương"));
         }
 
-        // ─── UpdateDenbu ────────────────────────────────────────────
+        /// ─── UpdateDenbu ────────────────────────────────────────────
 
         [Test]
         public async Task UpdateDenbu_ReturnsBadRequest_WhenModelIsNull()
