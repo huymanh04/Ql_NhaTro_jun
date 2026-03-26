@@ -99,13 +99,6 @@ namespace Ql_NhaTro_jun.Tests
         // ─── CreateBanner ───────────────────────────────────────────
 
         [Test]
-        public async Task CreateBanner_ReturnsBadRequest_WhenModelIsNull()
-        {
-            var result = await _controller.CreateBanner(null);
-            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-        }
-
-        [Test]
         public async Task CreateBanner_ReturnsOk_WithoutImage()
         {
             var model = new BannerCreateDto

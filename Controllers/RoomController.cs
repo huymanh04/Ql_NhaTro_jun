@@ -37,27 +37,26 @@ namespace Ql_NhaTro_jun.Controllers
                    select new PhongTroDTO
                    {
                        MaPhong = p.MaPhong,
-                       MaNhaTro = (int)p.MaNhaTro,
+                       MaNhaTro = (int)(p.MaNhaTro ?? 0),
                        MaTheLoai = p.MaTheLoai,
-                       TenPhong = p.TenPhong,
-                       Gia = (decimal)p.Gia,
-                       DienTich = (float)p.DienTich,
-                       ConTrong = (bool)p.ConTrong,
-                       MoTa = p.MoTa,
-                       Sdt_chu = nt.MaChuTroNavigation.SoDienThoai,
-                       gg_map = null
+                       TenPhong = p.TenPhong ?? string.Empty,
+                       Gia = (decimal)(p.Gia ?? 0),
+                       DienTich = (float)(p.DienTich ?? 0),
+                       ConTrong = (bool)(p.ConTrong ?? false),
+                       MoTa = p.MoTa ?? string.Empty,
+                       Sdt_chu = nt.MaChuTroNavigation != null ? nt.MaChuTroNavigation.SoDienThoai : string.Empty,
+                       gg_map = string.Empty
                    }
                 ).ToListAsync();
 
 
                 var img = await _context.HinhAnhPhongTros
-
                         .Select(i => new HinhAnhPhongDto
                         {
                             MaHinhAnh = i.MaHinhAnh,
                             MaPhong = i.MaPhong,
                             DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-                            IsMain = (bool)i.IsMain
+                            IsMain = (bool)(i.IsMain ?? false)
                         })
                         .ToListAsync();
                     var result = new PhongVaHinhDtoo
@@ -84,13 +83,13 @@ namespace Ql_NhaTro_jun.Controllers
                     .Select(p => new PhongTroDTO
                     {
                         MaPhong = p.MaPhong,
-                        MaNhaTro = (int)p.MaNhaTro,
+                        MaNhaTro = (int)(p.MaNhaTro ?? 0),
                         MaTheLoai = p.MaTheLoai,
-                        TenPhong = p.TenPhong,
-                        Gia = (decimal)p.Gia,
-                        DienTich = (float)p.DienTich,
-                        ConTrong = (bool)p.ConTrong,
-                        MoTa = p.MoTa
+                        TenPhong = p.TenPhong ?? string.Empty,
+                        Gia = (decimal)(p.Gia ?? 0),
+                        DienTich = (float)(p.DienTich ?? 0),
+                        ConTrong = (bool)(p.ConTrong ?? false),
+                        MoTa = p.MoTa ?? string.Empty
                     })
                     .ToListAsync();
 
@@ -101,7 +100,7 @@ namespace Ql_NhaTro_jun.Controllers
               MaHinhAnh = i.MaHinhAnh,
               MaPhong = i.MaPhong,
               DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-              IsMain = (bool)i.IsMain
+              IsMain = (bool)(i.IsMain ?? false)
           })
           .ToListAsync();
                 var result = new PhongVaHinhDtoo
@@ -128,13 +127,13 @@ namespace Ql_NhaTro_jun.Controllers
                     .Select(p => new PhongTroDTO
                     {
                         MaPhong = p.MaPhong,
-                        MaNhaTro = (int)p.MaNhaTro,
+                        MaNhaTro = (int)(p.MaNhaTro ?? 0),
                         MaTheLoai = p.MaTheLoai,
-                        TenPhong = p.TenPhong,
-                        Gia = (decimal)p.Gia,
-                        DienTich = (float)p.DienTich,
-                        ConTrong = (bool)p.ConTrong,
-                        MoTa = p.MoTa
+                        TenPhong = p.TenPhong ?? string.Empty,
+                        Gia = (decimal)(p.Gia ?? 0),
+                        DienTich = (float)(p.DienTich ?? 0),
+                        ConTrong = (bool)(p.ConTrong ?? false),
+                        MoTa = p.MoTa ?? string.Empty
                     })
                     .ToListAsync();
 
@@ -145,7 +144,7 @@ namespace Ql_NhaTro_jun.Controllers
               MaHinhAnh = i.MaHinhAnh,
               MaPhong = i.MaPhong,
               DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-              IsMain = (bool)i.IsMain
+              IsMain = (bool)(i.IsMain ?? false)
           })
           .ToListAsync();
                 var result = new PhongVaHinhDtoo
@@ -172,13 +171,13 @@ namespace Ql_NhaTro_jun.Controllers
                     .Select(p => new PhongTroDTO
                     {
                         MaPhong = p.MaPhong,
-                        MaNhaTro = (int)p.MaNhaTro,
+                        MaNhaTro = (int)(p.MaNhaTro ?? 0),
                         MaTheLoai = p.MaTheLoai,
-                        TenPhong = p.TenPhong,
-                        Gia = (decimal)p.Gia,
-                        DienTich = (float)p.DienTich,
-                        ConTrong = (bool)p.ConTrong,
-                        MoTa = p.MoTa
+                        TenPhong = p.TenPhong ?? string.Empty,
+                        Gia = (decimal)(p.Gia ?? 0),
+                        DienTich = (float)(p.DienTich ?? 0),
+                        ConTrong = (bool)(p.ConTrong ?? false),
+                        MoTa = p.MoTa ?? string.Empty
                     })
                     .ToListAsync();
 
@@ -189,7 +188,7 @@ namespace Ql_NhaTro_jun.Controllers
                   MaHinhAnh = i.MaHinhAnh,
                   MaPhong = i.MaPhong,
                   DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-                  IsMain = (bool)i.IsMain
+                  IsMain = (bool)(i.IsMain ?? false)
               })
               .ToListAsync();
                 var result = new PhongVaHinhDtoo
@@ -222,12 +221,12 @@ namespace Ql_NhaTro_jun.Controllers
                         p.DienTich,
                         p.ConTrong,
                         p.MoTa,
-                        TenTheLoai = p.MaTheLoaiNavigation.TenTheLoai,
-                        TenNhaTro = p.MaNhaTroNavigation.TenNhaTro,
-                        DiaChi = p.MaNhaTroNavigation.DiaChi,
-                        TenKhuVuc = p.MaNhaTroNavigation.MaKhuVucNavigation.TenKhuVuc,
+                        TenTheLoai = p.MaTheLoaiNavigation != null ? p.MaTheLoaiNavigation.TenTheLoai : string.Empty,
+                        TenNhaTro = p.MaNhaTroNavigation != null ? p.MaNhaTroNavigation.TenNhaTro : string.Empty,
+                        DiaChi = p.MaNhaTroNavigation != null ? p.MaNhaTroNavigation.DiaChi : string.Empty,
+                        TenKhuVuc = p.MaNhaTroNavigation != null && p.MaNhaTroNavigation.MaKhuVucNavigation != null ? p.MaNhaTroNavigation.MaKhuVucNavigation.TenKhuVuc : string.Empty,
                         gg_map = (string?)null,
-                        Sdt_chu=p.MaNhaTroNavigation.MaChuTroNavigation.SoDienThoai
+                        Sdt_chu = p.MaNhaTroNavigation != null && p.MaNhaTroNavigation.MaChuTroNavigation != null ? p.MaNhaTroNavigation.MaChuTroNavigation.SoDienThoai : string.Empty
                     })
                     .FirstOrDefaultAsync();
 
@@ -242,7 +241,7 @@ namespace Ql_NhaTro_jun.Controllers
                         MaHinhAnh = i.MaHinhAnh,
                         MaPhong = i.MaPhong,
                         DuongDanHinhBase64 = Convert.ToBase64String(i.DuongDanHinh),
-                        IsMain = (bool)i.IsMain
+                        IsMain = (bool)(i.IsMain ?? false)
                     })
                     .ToListAsync();
                 var result = new {
@@ -738,22 +737,24 @@ namespace Ql_NhaTro_jun.Controllers
         public int MaPhong { get; set; }
         public int MaNhaTro { get; set; }
         public int MaTheLoai { get; set; }
-        public string TenPhong { get; set; }
+        public string? TenPhong { get; set; } = string.Empty;
         public decimal Gia { get; set; }
         public float DienTich { get; set; }
         public bool ConTrong { get; set; }
-        public string MoTa { get; set; }
-        public string Sdt_chu {  get; set; }
-        public string gg_map {  get; set; }
+        public string? MoTa { get; set; } = string.Empty;
+        public string? Sdt_chu { get; set; } = string.Empty;
+        public string? gg_map { get; set; } = string.Empty;
     }
     public class PhongVaHinhDto
     {
-        public PhongTroDTO Phong { get; set; }
-        public List<HinhAnhPhongDto> HinhAnh { get; set; }
-    }   public class PhongVaHinhDtoo
+        public PhongTroDTO? Phong { get; set; }
+        public List<HinhAnhPhongDto>? HinhAnh { get; set; }
+    }
+    
+    public class PhongVaHinhDtoo
     {
-        public List<PhongTroDTO> Phong { get; set; }
-        public List<HinhAnhPhongDto> HinhAnh { get; set; }
+        public List<PhongTroDTO>? Phong { get; set; }
+        public List<HinhAnhPhongDto>? HinhAnh { get; set; }
     }
 
     public class HinhAnhPhongDto

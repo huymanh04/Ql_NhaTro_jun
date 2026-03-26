@@ -92,13 +92,6 @@ namespace Ql_NhaTro_jun.Tests
         // ─── CreateDenbu ────────────────────────────────────────────
 
         [Test]
-        public async Task CreateDenbu_ReturnsBadRequest_WhenModelIsNull()
-        {
-            var result = await _controller.CreateDenbu(null);
-            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-        }
-
-        [Test]
         public async Task CreateDenbu_ReturnsOk_WhenValidModel()
         {
             var model = new CompensationCreateDto

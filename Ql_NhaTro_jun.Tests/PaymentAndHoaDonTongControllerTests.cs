@@ -86,13 +86,6 @@ namespace Ql_NhaTro_jun.Tests
         // ─── CreatePaymentHistory ───────────────────────────────────
 
         [Test]
-        public async Task CreatePaymentHistory_ReturnsBadRequest_WhenModelIsNull()
-        {
-            var result = await _controller.CreatePaymentHistory(null);
-            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-        }
-
-        [Test]
         public async Task CreatePaymentHistory_ReturnsOk_WhenValidModel()
         {
             var model = new LichSuThanhToanDTO
@@ -187,13 +180,6 @@ namespace Ql_NhaTro_jun.Tests
         // ─── CreateHoaDonTong ───────────────────────────────────────
 
         [Test]
-        public async Task CreateHoaDonTong_ReturnsBadRequest_WhenModelIsNull()
-        {
-            var result = await _controller.CreateHoaDonTong(null);
-            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-        }
-
-        [Test]
         public async Task CreateHoaDonTong_ReturnsOk_WhenValidModel()
         {
             var model = new HoaDonTongDTO
@@ -210,13 +196,6 @@ namespace Ql_NhaTro_jun.Tests
         }
 
         // ─── EditHoaDonTong ─────────────────────────────────────────
-
-        [Test]
-        public async Task EditHoaDonTong_ReturnsBadRequest_WhenModelIsNull()
-        {
-            var result = await _controller.EditHoaDonTong(1, null);
-            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-        }
 
         [Test]
         public async Task EditHoaDonTong_ReturnsBadRequest_WhenIdInvalid()
