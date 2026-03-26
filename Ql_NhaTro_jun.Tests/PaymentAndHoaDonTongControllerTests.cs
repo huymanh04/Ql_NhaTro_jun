@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using static Ql_NhaTro_jun.Controllers.PaymentHistoryController;
 using static Ql_NhaTro_jun.Controllers.HoaDonTongController;
 
-namespace SonarCloud_QL_NhaTro
+namespace Ql_NhaTro_jun.Tests
 {
     // ════════════════════════════════════════════════════════════════
     //  PaymentHistoryController Tests

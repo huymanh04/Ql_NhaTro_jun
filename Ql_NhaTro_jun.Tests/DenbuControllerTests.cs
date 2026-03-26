@@ -11,7 +11,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using static Ql_NhaTro_jun.Controllers.DenbuController;
 
-namespace SonarCloud_QL_NhaTro
+namespace Ql_NhaTro_jun.Tests
 {
     [TestFixture]
     public class DenbuControllerTests
@@ -135,7 +135,7 @@ namespace SonarCloud_QL_NhaTro
         [Test]
         public async Task UpdateDenbu_ReturnsBadRequest_WhenModelIsNull()
         {
-            var result = await _controller.UpdateDenbu(1, null);
+            var result = await _controller.UpdateDenbu(1, default!);
             Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 

@@ -11,7 +11,7 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace SonarCloud_QL_NhaTro
+namespace Ql_NhaTro_jun.Tests
 {
     // ════════════════════════════════════════════════════════════════
     //  EmailService Tests

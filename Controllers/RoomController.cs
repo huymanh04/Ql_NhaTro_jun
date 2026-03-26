@@ -766,12 +766,26 @@ namespace Ql_NhaTro_jun.Controllers
 
     public class CreatePhongTroDTO
     {
+        [Required(ErrorMessage = "Mã nhà trọ không được để trống")]
         public int MaNhaTro { get; set; }
+        
+        [Required(ErrorMessage = "Mã thể loại không được để trống")]
         public int MaTheLoai { get; set; }
+        
+        [Required(ErrorMessage = "Tên phòng không được để trống")]
         public string TenPhong { get; set; }
+        
+        [Required(ErrorMessage = "Giá thuê không được để trống")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Giá thuê phải lớn hơn 0")]
         public decimal Gia { get; set; }
+        
+        [Required(ErrorMessage = "Diện tích không được để trống")]
+        [Range(0.1, float.MaxValue, ErrorMessage = "Diện tích phải lớn hơn 0")]
         public float DienTich { get; set; }
+        
+        [Required(ErrorMessage = "Trạng thái không được để trống")]
         public bool ConTrong { get; set; }
+        
         public string MoTa { get; set; }
         public List<IFormFile>? Images { get; set; }
     }

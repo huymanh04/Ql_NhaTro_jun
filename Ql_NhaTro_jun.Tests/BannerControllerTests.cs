@@ -11,7 +11,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SonarCloud_QL_NhaTro
+namespace Ql_NhaTro_jun.Tests
 {
     [TestFixture]
     public class BannerControllerTests
@@ -159,7 +159,7 @@ namespace SonarCloud_QL_NhaTro
         [Test]
         public async Task UpdateBanner_ReturnsBadRequest_WhenModelIsNull()
         {
-            var result = await _controller.UpdateBanner(1, null);
+            var result = await _controller.UpdateBanner(1, default!);
             Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 

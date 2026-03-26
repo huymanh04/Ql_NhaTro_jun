@@ -9,7 +9,7 @@ using System;
 using System.Threading.Tasks;
 using static Ql_NhaTro_jun.Controllers.MotelController;
 
-namespace SonarCloud_QL_NhaTro
+namespace Ql_NhaTro_jun.Tests
 {
     [TestFixture]
     public class MotelControllerTests

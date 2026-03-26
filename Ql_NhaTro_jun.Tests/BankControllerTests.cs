@@ -11,7 +11,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using static Ql_NhaTro_jun.Controllers.BankController;
 
-namespace SonarCloud_QL_NhaTro
+namespace Ql_NhaTro_jun.Tests
 {
     [TestFixture]
     public class BankControllerTests
@@ -94,7 +94,7 @@ namespace SonarCloud_QL_NhaTro
         {
             SetupAuthUser("0912345678", "1");
 
-            var result = await _controller.CreateBank(null);
+            var result = await _controller.CreateBank(default!);
 
             Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
@@ -137,7 +137,7 @@ namespace SonarCloud_QL_NhaTro
         [Test]
         public async Task UpdateBank_ReturnsBadRequest_WhenModelIsNull()
         {
-            var result = await _controller.UpdateBank(1, null);
+            var result = await _controller.UpdateBank(1, default!);
             Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
         }
 
