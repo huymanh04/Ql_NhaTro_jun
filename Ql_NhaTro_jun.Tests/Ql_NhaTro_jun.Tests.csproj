@@ -6,8 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <CoverletOutputFormat>opencover</CoverletOutputFormat>
-    <CoverletOutput>../coverage.opencover.xml</CoverletOutput>
   </PropertyGroup>
 
   <ItemGroup>

@@ -31,12 +31,30 @@ jobs:
       - name: Begin SonarCloud analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: dotnet sonarscanner begin /k:"trantrongphuc1_qlynhatro" /o:"trantrongphuc1" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" /d:sonar.qualitygate.wait=true
+        run: dotnet sonarscanner begin /k:"trantrongphuc1_qlynhatro" /o:"trantrongphuc1" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths="TestResults/coverage.opencover.xml" /d:sonar.cs.vstest.reportsPaths="TestResults/test-results.trx" /d:sonar.qualitygate.wait=true
 
       - name: Build
         run: dotnet build Ql_NhaTro_jun.sln --no-restore --configuration Release
 
       - name: Run Unit Tests + coverage
-        run: dotnet test Ql_NhaTro_jun.Tests/Ql_NhaTro_jun.Tests.csproj --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./TestResults/coverage.opencover.xml --logger "trx;LogFileName=./TestResults/test-results.trx"
+        run: dotnet test Ql_NhaTro_jun.Tests/Ql_NhaTro_jun.Tests.csproj --no-build --configuration Release --results-directory "${{ github.workspace }}/TestResults" --logger "trx;LogFileName=test-results.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput="${{ github.workspace }}/TestResults/coverage.opencover.xml"
+
+
+      - name: Verify Sonar report files
+        shell: pwsh
+        run: |
+          if (!(Test-Path "${{ github.workspace }}/TestResults/test-results.trx")) {
+            Write-Error "Missing TRX report file"
+          }
+          if (!(Test-Path "${{ github.workspace }}/TestResults/coverage.opencover.xml")) {
+            Write-Error "Missing OpenCover report file"
+          }
+          Get-ChildItem "${{ github.workspace }}/TestResults" -File | Format-Table Name, Length -AutoSize
+
+      - name: End SonarCloud analysis
+        if: always()
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
  
