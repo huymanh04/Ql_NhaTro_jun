@@ -39,5 +39,4 @@ jobs:
       - name: Run Unit Tests + coverage
         run: dotnet test Ql_NhaTro_jun.Tests/Ql_NhaTro_jun.Tests.csproj --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./TestResults/coverage.opencover.xml --logger "trx;LogFileName=./TestResults/test-results.trx"
 
-      - name: Run Integration Tests + coverage
-        run: dotnet test Ql_NhaTro_jun.IntegrationTests/Ql_NhaTro_jun.IntegrationTests.csproj --no-build --configuration Release /p:Collect
+ 

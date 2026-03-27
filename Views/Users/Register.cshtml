@@ -164,7 +164,7 @@
         <div class="container">
             <h1>Đăng Ký Tài Khoản</h1>
 
-            <form asp-action="signupForm" id="Register">
+            <form id="registerForm" action="#" method="post" novalidate>
                 <div class="form-group">
 
                     <label for="HoTen" >Họ và tên</label>
@@ -344,7 +344,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-             document.getElementById("Register").addEventListener("submit", async function (e) {
+                  document.getElementById("registerForm").addEventListener("submit", async function (e) {
                     e.preventDefault();
                      if (!validateForm()) return;
                     const email = document.getElementById("email").value;
@@ -363,6 +363,10 @@
                     body: JSON.stringify({ email: email })
                 });
 
+                        if (!res.ok) {
+                            throw new Error('Không thể khởi tạo dữ liệu bảo mật cho đăng ký.');
+                        }
+
                         const { manh, juntech } = await res.json();
 
                 const encrypted = CryptoJS.AES.encrypt(password, CryptoJS.enc.Base64.parse(manh), {
@@ -372,7 +376,7 @@
                 }).toString();
                 console.log('mk' + encrypted);
 
-                            const Register = await fetch('/api/auth/Register', {
+                            const registerRes = await fetch('/api/auth/Register', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json'
 
@@ -384,9 +388,9 @@
                     })
                         });
 
-                        const result = await Register.json();
+                        const result = await registerRes.json();
 
-                            if (Register.ok) {
+                            if (registerRes.ok) {
                             showNotification(result.message, 'success');
                             // Lưu email vào sessionStorage và chuyển hướng sang trang xác thực mã
                             sessionStorage.setItem('registerEmail', email);
@@ -399,7 +403,7 @@
                         }
                     } catch (error) {
                         console.error(error);
-                         showNotification("Có lỗi xảy ra khi đăng nhập." , 'error');
+                        showNotification("Có lỗi xảy ra khi đăng ký." , 'error');
 
 
                     }

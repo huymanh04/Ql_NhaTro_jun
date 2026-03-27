@@ -67,7 +67,11 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<QlNhatroContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure()));
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure();
+            sqlOptions.CommandTimeout(120);
+        }));
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 104857600; // 100 MB

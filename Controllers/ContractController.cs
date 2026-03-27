@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Ql_NhaTro_jun.Models;
 using System.Text.Json;
@@ -291,6 +292,15 @@ namespace Ql_NhaTro_jun.Controllers
         {
             if (model == null)
                 return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
+
+            if (model.RoomId <= 0)
+                return BadRequest(ApiResponse<object>.CreateError("Phòng không hợp lệ"));
+
+            if (model.StartDate.Date > model.EndDate.Date)
+                return BadRequest(ApiResponse<object>.CreateError("Ngày bắt đầu không được sau ngày kết thúc"));
+
+            if (model.TenantIds == null || model.TenantIds.Count == 0)
+                return BadRequest(ApiResponse<object>.CreateError("Vui lòng chọn ít nhất một khách thuê"));
             #region check quyền và login
             var userName = User.Identity.Name;
             if (userName == null)
@@ -318,6 +328,18 @@ namespace Ql_NhaTro_jun.Controllers
                 if (daCoHopDong)
                     return BadRequest(ApiResponse<object>.CreateError("Phòng đã có hợp đồng chưa kết thúc"));
 
+                var phong = await _context.PhongTros.FirstOrDefaultAsync(p => p.MaPhong == model.RoomId);
+                if (phong == null)
+                    return BadRequest(ApiResponse<object>.CreateError("Phòng không tồn tại"));
+
+                var tenantIds = model.TenantIds
+                    .Where(id => id > 0)
+                    .Distinct()
+                    .ToList();
+
+                if (tenantIds.Count == 0)
+                    return BadRequest(ApiResponse<object>.CreateError("Danh sách khách thuê không hợp lệ"));
+
                 var contract = new HopDong
                 {
                     MaPhong = model.RoomId,
@@ -330,22 +352,13 @@ namespace Ql_NhaTro_jun.Controllers
                 };
 
                 _context.HopDongs.Add(contract);
-                var room = await _context.PhongTros.FindAsync(model.RoomId);
-                if (room != null)
-                {
-                    room.ConTrong = false;
-                    _context.PhongTros.Update(room);
-                }
-                await _context.SaveChangesAsync();
+                phong.ConTrong = false;
+                _context.PhongTros.Update(phong);
 
                 // Lấy cấu hình hệ thống (giá điện/nước)
                 var caiDat = await _context.CaiDatHeThongs.FirstOrDefaultAsync();
                 decimal tienDien = caiDat?.TienDien ?? 0;
                 decimal tienNuoc = caiDat?.TienNuoc ?? 0;
-
-                // Lấy phòng và giá thuê
-                var phong = await _context.PhongTros.FindAsync(model.RoomId);
-                decimal tienPhong = phong?.Gia ?? 0;
 
                 // Tạo hóa đơn tiện ích
                 var hoaDonTienIch = new HoaDonTienIch
@@ -361,12 +374,11 @@ namespace Ql_NhaTro_jun.Controllers
                     DaThanhToan = true
                 };
                 _context.HoaDonTienIches.Add(hoaDonTienIch);
-                await _context.SaveChangesAsync();
       
                 // Tạo hóa đơn tổng
                 var hoaDonTong = new HoaDonTong
                 {
-                    MaHopDong = contract.MaHopDong,  // FK đến hợp đồng vừa tạo
+                    MaHopDongNavigation = contract,
                     NgayXuat = DateOnly.FromDateTime(DateTime.Today),
                     TongTien = model.DepositAmount,
                     GhiChu = "Đóng tiền cọc tháng đầu tiên. Chưa có hóa đơn tiện ích cụ thể. " +
@@ -377,11 +389,11 @@ namespace Ql_NhaTro_jun.Controllers
                 _context.HoaDonTongs.Add(hoaDonTong);
         
 
-                foreach (var tenantId in model.TenantIds)
+                foreach (var tenantId in tenantIds)
                 {
                     _context.HopDongNguoiThues.Add(new HopDongNguoiThue
                     {
-                        MaHopDong = contract.MaHopDong,
+                        MaHopDongNavigation = contract,
                         MaKhachThue = tenantId
                     });
                     
@@ -391,7 +403,7 @@ namespace Ql_NhaTro_jun.Controllers
                     Amount = model.DepositAmount,
                     CreatedAt = DateTime.Now,
                     TransactionCode = "Cọc tiền phòng",
-                    Note = "Mã hóa đơn HD" + hoaDonTienIch.MaHoaDon,
+                    Note = "Tiền cọc hợp đồng phòng " + model.RoomId,
                     BankName = "MB BANK",
                     Phuong_thuc = "Thanh toán Tiền mặt",
                     MaPhong = (int)phong.MaPhong
@@ -405,6 +417,13 @@ namespace Ql_NhaTro_jun.Controllers
                 return Ok(ApiResponse<ContractDetailDto>.CreateSuccess(
                     "Tạo hợp đồng thành công",
                     createdContract
+                ));
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && sqlEx.Number == -2)
+            {
+                _logger.LogError(ex, "Timeout SQL khi tạo hợp đồng");
+                return StatusCode(504, ApiResponse<object>.CreateError(
+                    "Hệ thống đang bận khi lưu hợp đồng. Vui lòng thử lại sau vài giây."
                 ));
             }
             catch (Exception ex)
