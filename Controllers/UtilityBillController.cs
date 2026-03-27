@@ -70,12 +70,31 @@ namespace Ql_NhaTro_jun.Controllers
             if (model == null)
                 return BadRequest(ApiResponse<object>.CreateError("Dữ liệu không hợp lệ"));
 
+            if (model.MaPhong <= 0)
+                return BadRequest(ApiResponse<object>.CreateError("Vui lòng chọn phòng hợp lệ"));
+
             try
             {
                 DateTime date = DateTime.Now;
                 var m = await _context.CaiDatHeThongs.FirstOrDefaultAsync();
                 var phong = await _context.PhongTros.FirstOrDefaultAsync(p => p.MaPhong == model.MaPhong);
                 var hopdong = await _context.HopDongs.FirstOrDefaultAsync(h => h.MaPhong == model.MaPhong);
+
+                if (m == null)
+                    return BadRequest(ApiResponse<object>.CreateError("Chưa cấu hình cài đặt hệ thống (điện/nước/phí dịch vụ)"));
+
+                if (phong == null)
+                    return NotFound(ApiResponse<object>.CreateError("Không tìm thấy phòng"));
+
+                if (hopdong == null)
+                    return BadRequest(ApiResponse<object>.CreateError("Phòng này chưa có hợp đồng để lập hóa đơn"));
+
+                var tienPhong = phong.Gia ?? 0;
+                var tienDien = (decimal)model.SoDien * (m.TienDien ?? 0);
+                var tienNuoc = (decimal)model.SoNuoc * (m.TienNuoc ?? 0);
+                var phiGiuXe = (decimal)hopdong.SoXe * (m.PhiGiuXe ?? 0);
+                var phiDichVu = m.Phidv ?? 0;
+
                 var hoaDon = new HoaDonTienIch
                 {
                     MaPhong = model.MaPhong,
@@ -87,19 +106,18 @@ namespace Ql_NhaTro_jun.Controllers
                     DonGiaNuoc = m.TienNuoc ?? 0,
                     Soxe = hopdong.SoXe,
                     Phidv = m.Phidv ?? 0,
-                    TongTien = phong.Gia + ((decimal)model.SoDien * m.TienDien) + ((decimal)model.SoNuoc * m.TienNuoc) + ((decimal)hopdong.SoXe * m.PhiGiuXe) + m.Phidv,
+                    TongTien = tienPhong + tienDien + tienNuoc + phiGiuXe + phiDichVu,
                     DaThanhToan = false,
                 };
 
                 _context.HoaDonTienIches.Add(hoaDon);
                 await _context.SaveChangesAsync();
-                var hdct = await _context.HoaDonTienIches.FirstOrDefaultAsync(h => h.MaPhong == model.MaPhong && h.Thang == date.Month && h.Nam == date.Year);
 
                 var hoaDonTong = new HoaDonTong
                 {
                     MaHopDong = hopdong.MaHopDong,
                     NgayXuat = DateOnly.FromDateTime(date),
-                    TongTien = hdct.TongTien,
+                    TongTien = hoaDon.TongTien,
                     GhiChu = model.note
                 };
 

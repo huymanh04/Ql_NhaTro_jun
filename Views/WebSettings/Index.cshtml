@@ -11,7 +11,7 @@
                 <p>Cài đặt và tùy chỉnh giao diện, thông tin hệ thống</p>
             </div>
             <div class="header-right">
-                <button class="btn btn-primary" id="saveAllBtn">
+                <button type="button" class="btn btn-primary" id="saveAllBtn">
                     <i class="fas fa-save"></i> Lưu tất cả
                 </button>
             </div>
@@ -914,16 +914,21 @@ class WebSettingsManager {
             formData.append('soDienThoai', document.getElementById('soDienThoai').value.trim());
             formData.append('diaChi', document.getElementById('diaChi').value.trim());
             formData.append('googleMapEmbed', document.getElementById('googleMapEmbed').value.trim());
-            
-            const tienDien = document.getElementById('tienDien').value;
-            const tienNuoc = document.getElementById('tienNuoc').value;
-            const PhiDV = document.getElementById('PhiDV').value;
-            const PhiGiuXe = document.getElementById('PhiGiuXe').value;
-            
-            if (tienDien) formData.append('tienDien', tienDien);
-            if (PhiGiuXe) formData.append('PhiGiuXe', PhiGiuXe);
-            if (PhiDV) formData.append('PhiDV', PhiDV);
-            if (tienNuoc) formData.append('tienNuoc', tienNuoc);
+
+            const tienDienInput = document.getElementById('tienDien');
+            const tienNuocInput = document.getElementById('tienNuoc');
+            const phiDvInput = document.getElementById('PhiDV');
+            const phiGiuXeInput = document.getElementById('PhiGiuXe');
+
+            const tienDien = Number(tienDienInput.value);
+            const tienNuoc = Number(tienNuocInput.value);
+            const phiDv = Number(phiDvInput.value);
+            const phiGiuXe = Number(phiGiuXeInput.value);
+
+            if (tienDienInput.value !== '' && !Number.isNaN(tienDien)) formData.append('tienDien', tienDien.toString());
+            if (phiGiuXeInput.value !== '' && !Number.isNaN(phiGiuXe)) formData.append('PhiGiuXe', phiGiuXe.toString());
+            if (phiDvInput.value !== '' && !Number.isNaN(phiDv)) formData.append('PhiDV', phiDv.toString());
+            if (tienNuocInput.value !== '' && !Number.isNaN(tienNuoc)) formData.append('tienNuoc', tienNuoc.toString());
             
             formData.append('aiApikey', document.getElementById('aiApikey').value.trim());
             
@@ -950,7 +955,14 @@ class WebSettingsManager {
                 });
             }
 
-            const result = await response.json();
+            let result = null;
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                result = await response.json();
+            } else {
+                const text = await response.text();
+                result = { success: false, message: text || 'Phản hồi không hợp lệ từ máy chủ' };
+            }
 
             if (response.ok && result.success) {
                 this.showAlert(result.message || 'Lưu cài đặt thành công!', 'success');

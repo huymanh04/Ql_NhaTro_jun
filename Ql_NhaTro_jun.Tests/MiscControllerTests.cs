@@ -253,6 +253,13 @@ namespace Ql_NhaTro_jun.Tests
         }
 
         [Test]
+        public void Details_ReturnsBadRequest_WhenIdInvalid()
+        {
+            var result = _controller.Details(0);
+            Assert.That(result, Is.InstanceOf<BadRequestResult>());
+        }
+
+        [Test]
         public void ViewBill_ReturnsViewResult()
         {
             var result = _controller.ViewBill();
@@ -260,25 +267,57 @@ namespace Ql_NhaTro_jun.Tests
         }
 
         [Test]
-        public void Edit_Get_ReturnsViewResult()
+        public void Edit_Get_RedirectsToIndex_WhenModelStateValid()
         {
+            var result = _controller.Edit(1);
+            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+        }
+
+        [Test]
+        public void Edit_Get_ReturnsView_WhenModelStateInvalid()
+        {
+            _controller.ModelState.AddModelError("x", "invalid");
+
             var result = _controller.Edit(1);
             Assert.That(result, Is.InstanceOf<ViewResult>());
         }
 
         [Test]
-        public void Delete_Get_ReturnsViewResult()
+        public void Delete_Post_RedirectsToIndex_WhenModelStateValid()
         {
-            var result = _controller.Delete(1);
+            var collection = new FormCollection(new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>());
+            var result = _controller.Delete(1, collection);
+            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+        }
+
+        [Test]
+        public void Delete_Post_ReturnsView_WhenModelStateInvalid()
+        {
+            _controller.ModelState.AddModelError("x", "invalid");
+
+            var collection = new FormCollection(new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>());
+            var result = _controller.Delete(1, collection);
+
             Assert.That(result, Is.InstanceOf<ViewResult>());
         }
 
         [Test]
-        public void Create_Post_RedirectsToIndex()
+        public void Create_Post_RedirectsToIndex_WhenModelStateValid()
         {
             var collection = new FormCollection(new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>());
             var result = _controller.Create(collection);
             Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+        }
+
+        [Test]
+        public void Create_Post_ReturnsView_WhenModelStateInvalid()
+        {
+            _controller.ModelState.AddModelError("x", "invalid");
+
+            var collection = new FormCollection(new System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>());
+            var result = _controller.Create(collection);
+
+            Assert.That(result, Is.InstanceOf<ViewResult>());
         }
     }
 }

@@ -43,6 +43,27 @@ namespace Ql_NhaTro_jun.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(IFormCollection collection)
         {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+            try
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+        
+            }
+        }
+        // GET: HoadonController/Edit/5
+        public ActionResult Edit(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
             try
             {
                 return RedirectToAction(nameof(Index));
@@ -51,19 +72,18 @@ namespace Ql_NhaTro_jun.Controllers
             {
                 return View();
             }
-        }
-
-        // GET: HoadonController/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
+            
         }
 
         // POST: HoadonController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+                public ActionResult Delete(int id, IFormCollection collection)
         {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
             try
             {
                 return RedirectToAction(nameof(Index));
@@ -74,25 +94,6 @@ namespace Ql_NhaTro_jun.Controllers
             }
         }
 
-        // GET: HoadonController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: HoadonController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+        
     }
 }

@@ -245,7 +245,7 @@ namespace Ql_NhaTro_jun.Controllers
         {
             public string? CheDoGiaoDien { get; set; }
 
-            public IFormFile ImageFile { get; set; }
+            public IFormFile? ImageFile { get; set; }
 
             public string? TieuDeWeb { get; set; }
             public decimal? TienDien { get; set; }

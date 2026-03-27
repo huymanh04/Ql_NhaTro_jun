@@ -171,10 +171,24 @@
 
             // Thêm hóa đơn mới
             $('#saveBillBtn').click(function () {
+                const maPhong = Number($('#maPhong').val());
+                const soDien = Number($('#soDien').val());
+                const soNuoc = Number($('#soNuoc').val());
+
+                if (!maPhong || Number.isNaN(maPhong)) {
+                    toastr.error('Vui lòng chọn phòng');
+                    return;
+                }
+
+                if (Number.isNaN(soDien) || soDien < 0 || Number.isNaN(soNuoc) || soNuoc < 0) {
+                    toastr.error('Số điện và số nước phải là số không âm');
+                    return;
+                }
+
                 const data = {
-                    maPhong: $('#maPhong').val(),
-                    soDien: $('#soDien').val(),
-                    soNuoc: $('#soNuoc').val(),
+                    maPhong: maPhong,
+                    soDien: soDien,
+                    soNuoc: soNuoc,
                     note: $('#note').val()
                 };
 
@@ -191,6 +205,10 @@
                         } else {
                             toastr.error(response.message);
                         }
+                    },
+                    error: function (xhr) {
+                        const message = xhr?.responseJSON?.message || 'Lưu hóa đơn thất bại. Vui lòng thử lại.';
+                        toastr.error(message);
                     }
                 });
             });
