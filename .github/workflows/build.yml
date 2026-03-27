@@ -20,13 +20,10 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '7.0.x' # hoặc phiên bản bạn đang dùng
+          dotnet-version: '8.0.x'
 
       - name: Restore dependencies
         run: dotnet restore
-
-      - name: Build
-        run: dotnet build --no-restore
 
       - name: Install SonarScanner
         run: dotnet tool install --global dotnet-sonarscanner
@@ -34,12 +31,13 @@ jobs:
       - name: Begin SonarCloud analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: dotnet sonarscanner begin /k:"trantrongphuc1_qlynhatro" /o:"trantrongphuc1" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        run: dotnet sonarscanner begin /k:"trantrongphuc1_qlynhatro" /o:"trantrongphuc1" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.cs.vstest.reportsPaths="**/TestResults/*.trx" /d:sonar.qualitygate.wait=true
 
-      - name: Build again for analysis
-        run: dotnet build
+      - name: Build
+        run: dotnet build Ql_NhaTro_jun.sln --no-restore --configuration Release
 
-      - name: End SonarCloud analysis
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+      - name: Run Unit Tests + coverage
+        run: dotnet test Ql_NhaTro_jun.Tests/Ql_NhaTro_jun.Tests.csproj --no-build --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./TestResults/coverage.opencover.xml --logger "trx;LogFileName=./TestResults/test-results.trx"
+
+      - name: Run Integration Tests + coverage
+        run: dotnet test Ql_NhaTro_jun.IntegrationTests/Ql_NhaTro_jun.IntegrationTests.csproj --no-build --configuration Release /p:Collect

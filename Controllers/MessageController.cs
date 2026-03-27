@@ -142,7 +142,7 @@ namespace Ql_NhaTro_jun.Controllers
                     return Unauthorized(ApiResponse<object>.CreateError("Bạn chưa đăng nhập"));
                 }   
 
-                _logger.LogInformation($"[add-message] currentUserId: {currentUserId}, model.NguoiGuiID: {model.NguoiGuiID}, model.NguoiNhanID: {model.NguoiNhanID}, NoiDung: {model.NoiDung}, MaPhong: {model.MaPhong}");
+                _logger.LogInformation("[add-message] currentUserId: {CurrentUserId}, from: {FromUserId}, to: {ToUserId}, maPhong: {MaPhong}", currentUserId, model.NguoiGuiID, model.NguoiNhanID, model.MaPhong);
 
                 if (model.NguoiGuiID != currentUserId)
                 {
@@ -151,9 +151,9 @@ namespace Ql_NhaTro_jun.Controllers
 
                 var sender = await _context.NguoiDungs.FindAsync(model.NguoiGuiID);
                 var receiver = await _context.NguoiDungs.FindAsync(model.NguoiNhanID);
-                _logger.LogInformation($"[add-message] Sender: {sender?.HoTen} (Role: {sender?.VaiTro}), Receiver: {receiver?.HoTen} (Role: {receiver?.VaiTro})");
+                _logger.LogInformation("[add-message] SenderId: {SenderId}, ReceiverId: {ReceiverId}, senderRole: {SenderRole}, receiverRole: {ReceiverRole}", sender?.MaNguoiDung, receiver?.MaNguoiDung, sender?.VaiTro, receiver?.VaiTro);
 
-                _logger.LogInformation($"Checking permission for message: Sender={model.NguoiGuiID}, Receiver={model.NguoiNhanID}, MaPhong={model.MaPhong}");
+                _logger.LogInformation("Checking permission for message: SenderId={SenderId}, ReceiverId={ReceiverId}, MaPhong={MaPhong}", model.NguoiGuiID, model.NguoiNhanID, model.MaPhong);
                 var hasPermission = await CheckChatPermission(model.NguoiGuiID, model.NguoiNhanID, model.MaPhong);
                 _logger.LogInformation($"Permission result: {hasPermission}");
                 
@@ -187,7 +187,7 @@ namespace Ql_NhaTro_jun.Controllers
                 _context.TinNhans.Add(message);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation($"[add-message] Tin nhắn đã lưu: MaTinNhan={message.MaTinNhan}, NguoiGuiId={message.NguoiGuiId}, NguoiNhanId={message.NguoiNhanId}, NoiDung={message.NoiDung}, MaPhong={message.MaPhong}");
+                _logger.LogInformation("[add-message] Tin nhắn đã lưu: MaTinNhan={MaTinNhan}, NguoiGuiId={NguoiGuiId}, NguoiNhanId={NguoiNhanId}, MaPhong={MaPhong}", message.MaTinNhan, message.NguoiGuiId, message.NguoiNhanId, message.MaPhong);
 
                 // Gửi tin nhắn real-time qua SignalR đến cả người gửi và người nhận
                 _logger.LogInformation($"[SignalR] Gửi tin nhắn đến người nhận: user_{message.NguoiNhanId}");

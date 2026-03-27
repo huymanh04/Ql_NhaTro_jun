@@ -81,10 +81,9 @@ namespace Ql_NhaTro_jun.Controllers
             }
 
             // Kiểm tra vai trò - chỉ cho phép khách thuê
-            if (user.VaiTro != "0")
+            if (string.IsNullOrEmpty(user.VaiTro) || user.VaiTro != "0")
             {
-                TempData["ErrorMessage"] = "Chỉ khách thuê mới được truy cập trang này!";
-                return RedirectToAction("Index", "Home");
+                return BadRequest(new { message = "Chỉ khách thuê mới được truy cập trang này!" });
             }
 
             return View();
