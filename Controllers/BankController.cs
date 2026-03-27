@@ -258,7 +258,7 @@ namespace Ql_NhaTro_jun.Controllers
             {
                 _logger.LogError(ex, "Lỗi khi cập nhật ngân hàng");
                 return StatusCode(500, ApiResponse<object>.CreateError(
-                    "Đã xảy ra l���i khi cập nhật ngân hàng"
+                    "Da xay ra loi khi cap nhat ngan hang"
                 ));
             }
         }
