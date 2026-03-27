@@ -25,6 +25,10 @@ namespace Ql_NhaTro_jun.Controllers
         // GET: HoadonController/Details/5
         public ActionResult Details(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest();
+            }
             return View();
         }
 

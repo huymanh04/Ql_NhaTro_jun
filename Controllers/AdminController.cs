@@ -14,7 +14,7 @@ namespace Ql_NhaTro_jun.Controllers
     public class AdminController : ControllerBase
     {
         private readonly ILogger<AdminController> _logger;
-        QlNhatroContext _context;
+        readonly QlNhatroContext _context;
         public AdminController(ILogger<AdminController> logger, QlNhatroContext context)
         {
             _logger = logger;
@@ -527,7 +527,7 @@ namespace Ql_NhaTro_jun.Controllers
         {
             try
             {
-                var tempPath = Path.GetTempFileName() + ".html";
+                var tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".html");
                 System.IO.File.WriteAllText(tempPath, html, Encoding.UTF8);
                 
                 // Đọc lại và trả về dưới dạng bytes
