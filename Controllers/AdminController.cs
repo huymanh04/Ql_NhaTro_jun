@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using Ql_NhaTro_jun.Models;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Ql_NhaTro_jun.Controllers
@@ -167,7 +169,7 @@ namespace Ql_NhaTro_jun.Controllers
                         icon = "fas fa-file-contract",
                         iconClass = "danger",
                         title = "Hợp đồng sắp hết hạn",
-                        description = $"Hợp đồng phòng {expiring.MaPhongNavigation?.TenPhong ?? "N/A"} sẽ hết hạn vào {expiring.NgayKetThuc:dd/MM/yyyy}",
+                        description = $"Hợp đồng phòng {expiring.MaPhongNavigation?.TenPhong ?? "N/A"} sẽ hết hạn vào {expiring.NgayKetThuc:MM/dd/yyyy}",
                         time = $"Còn {daysLeft} ngày",
                         timestamp = expiring.NgayKetThuc?.ToDateTime(TimeOnly.MinValue) ?? DateTime.Now
                     });
@@ -232,7 +234,7 @@ namespace Ql_NhaTro_jun.Controllers
             if (timeSpan.TotalDays < 30)
                 return $"{(int)(timeSpan.TotalDays / 7)} tuần trước";
             
-            return dateTime.ToString("dd/MM/yyyy");
+            return dateTime.ToString("MM/dd/yyyy");
         }
 
         [HttpGet("ExportReport")]
@@ -603,6 +605,11 @@ namespace Ql_NhaTro_jun.Controllers
         {
             return await ExecuteAdminAction(async () =>
             {
+                if (string.IsNullOrWhiteSpace(request.so_cccd) || !Regex.IsMatch(request.so_cccd, @"^\d{12}$"))
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("Số CCCD phải gồm đúng 12 chữ số"));
+                }
+
                 // Kiểm tra email đã tồn tại
                 var existingEmail = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == request.Email);
                 if (existingEmail != null)
@@ -615,6 +622,13 @@ namespace Ql_NhaTro_jun.Controllers
                 if (existingPhone != null)
                 {
                     return BadRequest(ApiResponse<object>.CreateError("Số điện thoại đã tồn tại"));
+                }
+
+                // Kiểm tra CCCD đã tồn tại
+                var existingCccd = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.so_cccd == request.so_cccd);
+                if (existingCccd != null)
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("Số CCCD đã tồn tại"));
                 }
 
                 var newUser = new NguoiDung
@@ -646,6 +660,11 @@ namespace Ql_NhaTro_jun.Controllers
         {
             return await ExecuteAdminAction(async () =>
             {
+                if (string.IsNullOrWhiteSpace(request.so_cccd) || !Regex.IsMatch(request.so_cccd, @"^\d{12}$"))
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("Số CCCD phải gồm đúng 12 chữ số"));
+                }
+
                 var existingUser = await _context.NguoiDungs.FindAsync(id);
                 if (existingUser == null)
                 {
@@ -668,9 +687,18 @@ namespace Ql_NhaTro_jun.Controllers
                     return BadRequest(ApiResponse<object>.CreateError("Số điện thoại đã tồn tại"));
                 }
 
+                // Kiểm tra CCCD trùng (trừ chính user đang update)
+                var cccdExists = await _context.NguoiDungs
+                    .FirstOrDefaultAsync(u => u.so_cccd == request.so_cccd && u.MaNguoiDung != id);
+                if (cccdExists != null)
+                {
+                    return BadRequest(ApiResponse<object>.CreateError("Số CCCD đã tồn tại"));
+                }
+
                 existingUser.HoTen = request.HoTen;
                 existingUser.Email = request.Email;
                 existingUser.SoDienThoai = request.SoDienThoai;
+                existingUser.so_cccd = request.so_cccd;
                 existingUser.VaiTro = request.VaiTro;
 
                 // Chỉ update mật khẩu nếu có mật khẩu mới
@@ -686,6 +714,7 @@ namespace Ql_NhaTro_jun.Controllers
                     HoTen = existingUser.HoTen,
                     Email = existingUser.Email,
                     SoDienThoai = existingUser.SoDienThoai,
+                    so_cccd = existingUser.so_cccd,
                     VaiTro = existingUser.VaiTro
                 }));
             });
@@ -819,10 +848,22 @@ namespace Ql_NhaTro_jun.Controllers
 
         public class UpdateUserRequest
         {
+            [Required]
             public string HoTen { get; set; }
+
+            [Required]
             public string Email { get; set; }
+
+            [Required]
             public string SoDienThoai { get; set; }
-            public string MatKhau { get; set; } // Optional
+
+            [Required]
+            [RegularExpression(@"^\d{12}$", ErrorMessage = "Số CCCD phải gồm đúng 12 chữ số")]
+            public string so_cccd { get; set; }
+
+            public string? MatKhau { get; set; } // Optional
+
+            [Required]
             public string VaiTro { get; set; }
         }
 
@@ -886,10 +927,17 @@ namespace Ql_NhaTro_jun.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database update error when executing admin action");
+                return BadRequest(ApiResponse<object>.CreateError(
+                    "Không thể cập nhật dữ liệu. Vui lòng kiểm tra lại Email, Số điện thoại hoặc CCCD.",
+                    ex.InnerException?.Message ?? ex.Message));
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error executing admin action");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ApiResponse<object>.CreateError("Có lỗi hệ thống xảy ra", ex.Message));
             }
         }
 

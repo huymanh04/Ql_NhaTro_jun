@@ -143,7 +143,7 @@
                 
                 <div class="form-group">
                     <label for="so_cccd">Số CCCD <span class="required">*</span></label>
-                    <input type="text" id="so_cccd" name="so_cccd" required placeholder="Nhập Số CCCD">
+                    <input type="text" id="so_cccd" name="so_cccd" required maxlength="12" placeholder="Nhập Số CCCD">
                     <div class="error-message" id="so_cccdError"></div>
                 </div>
             </div>
@@ -1350,6 +1350,8 @@
             }
             if (!so_cccd) {
                 $('#so_cccdError').text('Vui lòng nhập số căn cước công dân.'); isValid = false;
+            } else if (!/^\d{12}$/.test(so_cccd)) {
+                $('#so_cccdError').text('Số CCCD phải gồm đúng 12 chữ số.'); isValid = false;
             }
             if (!currentEditId && !matKhau) {
                 $('#matKhauError').text('Vui lòng nhập mật khẩu.'); isValid = false;
@@ -1391,7 +1393,7 @@
                     closeModal();
                     fetchUsers();
                 } else {
-                    showAlert(result.message || 'Có lỗi xảy ra.', 'danger');
+                    showAlert(extractApiErrorMessage(result), 'danger');
                 }
             } catch (error) {
                 showAlert('Không thể kết nối đến máy chủ.', 'danger');
@@ -1463,6 +1465,24 @@
             setTimeout(() => {
                 $(`#${alertId}`).remove();
             }, 5000);
+        }
+
+        function extractApiErrorMessage(result) {
+            if (!result) return 'Có lỗi xảy ra.';
+            if (typeof result === 'string') return result;
+
+            if (result.errors && typeof result.errors === 'object') {
+                const firstKey = Object.keys(result.errors)[0];
+                const firstValue = firstKey ? result.errors[firstKey] : null;
+                if (Array.isArray(firstValue) && firstValue.length > 0) {
+                    return firstValue[0];
+                }
+            }
+
+            if (result.message) return result.message;
+            if (result.title) return result.title;
+
+            return 'Có lỗi xảy ra.';
         }
 
         // --- INITIALIZATION ---

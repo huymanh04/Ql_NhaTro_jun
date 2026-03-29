@@ -124,6 +124,23 @@
         return `<span class=\"contract-row-icon\"><i class=\"${icon}\"></i></span>`;
     }
 
+    function formatContractDate(dateValue) {
+        if (!dateValue) {
+            return '';
+        }
+
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) {
+            return '';
+        }
+
+        return new Intl.DateTimeFormat('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric'
+        }).format(date);
+    }
+
     async function loadContract() {
         const infoDiv = document.getElementById('contractInfo');
         infoDiv.innerHTML = '<div style="text-align:center;color:#aaa;padding:32px 0;">Đang tải hợp đồng...</div>';
@@ -137,8 +154,8 @@
                         <tr><th>${iconHtml('fas fa-hashtag')} Mã hợp đồng</th><td>${c.contractId ?? ''}</td></tr>
                         <tr><th>${iconHtml('fas fa-door-open')} Phòng</th><td>${c.room?.tenPhong ?? ''}</td></tr>
                         <tr><th>${iconHtml('fas fa-building')} Nhà trọ</th><td>${c.room?.nhaTro?.tenNhaTro ?? ''}</td></tr>
-                        <tr><th>${iconHtml('fas fa-calendar-alt')} Ngày bắt đầu</th><td>${c.startDate ? new Date(c.startDate).toLocaleDateString('vi-VN') : ''}</td></tr>
-                        <tr><th>${iconHtml('fas fa-calendar-check')} Ngày kết thúc</th><td>${c.endDate ? new Date(c.endDate).toLocaleDateString('vi-VN') : ''}</td></tr>
+                        <tr><th>${iconHtml('fas fa-calendar-alt')} Ngày bắt đầu</th><td>${formatContractDate(c.startDate)}</td></tr>
+                        <tr><th>${iconHtml('fas fa-calendar-check')} Ngày kết thúc</th><td>${formatContractDate(c.endDate)}</td></tr>
                         <tr><th>${iconHtml('fas fa-users')} Số người ở</th><td>${c.numberOfTenants ?? ''}</td></tr>
                         <tr><th>${iconHtml('fas fa-motorcycle')} Số xe</th><td>${c.soxe ?? ''}</td></tr>
                         <tr><th>${iconHtml('fas fa-coins')} Tiền đặt cọc</th><td>${c.depositAmount ? c.depositAmount.toLocaleString('vi-VN') + ' đ' : ''}</td></tr>

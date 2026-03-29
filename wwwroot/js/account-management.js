@@ -506,6 +506,7 @@ class AccountManager {
         const hoTenElement = document.getElementById('hoTen');
         const emailElement = document.getElementById('email');
         const soDienThoaiElement = document.getElementById('soDienThoai');
+        const soCccdElement = document.getElementById('so_cccd');
         const vaiTroElement = document.getElementById('vaiTro');
         const matKhauElement = document.getElementById('matKhau');
         const modalTitleText = document.getElementById('modalTitleText');
@@ -516,6 +517,7 @@ class AccountManager {
         if (hoTenElement) hoTenElement.value = user.hoTen || '';
         if (emailElement) emailElement.value = user.email || '';
         if (soDienThoaiElement) soDienThoaiElement.value = user.soDienThoai || '';
+        if (soCccdElement) soCccdElement.value = user.so_cccd || '';
         if (vaiTroElement) vaiTroElement.value = user.vaiTro || '0';
         if (matKhauElement) {
             matKhauElement.value = '';
@@ -596,6 +598,7 @@ class AccountManager {
             hoTen: document.getElementById('hoTen').value.trim(),
             email: document.getElementById('email').value.trim(),
             soDienThoai: document.getElementById('soDienThoai').value.trim(),
+            so_cccd: document.getElementById('so_cccd').value.trim(),
             matKhau: document.getElementById('matKhau').value,
             vaiTro: document.getElementById('vaiTro').value
         };
@@ -634,7 +637,7 @@ class AccountManager {
                 this.closeUserModal();
                 this.loadUsers();
             } else {
-                this.showToast('error', 'Lỗi', data.message || 'Có lỗi xảy ra');
+                this.showToast('error', 'Lỗi', this.extractApiErrorMessage(data, 'Có lỗi xảy ra'));
             }
         } catch (error) {
             console.error('Error saving user:', error);
@@ -685,6 +688,7 @@ class AccountManager {
                 hoTen: user.hoTen,
                 email: user.email,
                 soDienThoai: user.soDienThoai,
+                so_cccd: user.so_cccd,
                 vaiTro: newRole,
                 matKhau: '' // Không đổi mật khẩu
             };
@@ -697,18 +701,14 @@ class AccountManager {
                 body: JSON.stringify(updateData)
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
             const data = await response.json();
 
-            if (data.success) {
+            if (response.ok && data.success) {
                 this.showToast('success', 'Thành công', 'Đã cập nhật quyền người dùng thành công');
                 this.closeRoleModal();
                 this.loadUsers();
             } else {
-                this.showToast('error', 'Lỗi', data.message || 'Có lỗi xảy ra');
+                this.showToast('error', 'Lỗi', this.extractApiErrorMessage(data, 'Có lỗi xảy ra'));
             }
         } catch (error) {
             console.error('Error changing role:', error);
@@ -769,6 +769,7 @@ class AccountManager {
         const hoTen = document.getElementById('hoTen').value.trim();
         const email = document.getElementById('email').value.trim();
         const soDienThoai = document.getElementById('soDienThoai').value.trim();
+        const soCccd = document.getElementById('so_cccd').value.trim();
         const matKhau = document.getElementById('matKhau').value;
         const vaiTro = document.getElementById('vaiTro').value;
 
@@ -790,6 +791,14 @@ class AccountManager {
             isValid = false;
         } else if (!this.isValidPhone(soDienThoai)) {
             this.showError('soDienThoaiError', 'Số điện thoại không hợp lệ');
+            isValid = false;
+        }
+
+        if (!soCccd) {
+            this.showError('so_cccdError', 'Vui lòng nhập số căn cước công dân');
+            isValid = false;
+        } else if (!/^\d{12}$/.test(soCccd)) {
+            this.showError('so_cccdError', 'Số CCCD phải gồm đúng 12 chữ số');
             isValid = false;
         }
 
@@ -1059,6 +1068,21 @@ class AccountManager {
         setTimeout(() => {
             this.closeToast(toastId);
         }, 5000);
+    }
+
+    extractApiErrorMessage(data, fallbackMessage) {
+        if (!data) return fallbackMessage;
+        if (typeof data === 'string') return data;
+
+        if (data.errors && typeof data.errors === 'object') {
+            const firstKey = Object.keys(data.errors)[0];
+            const firstValue = firstKey ? data.errors[firstKey] : null;
+            if (Array.isArray(firstValue) && firstValue.length > 0) {
+                return firstValue[0];
+            }
+        }
+
+        return data.message || data.title || fallbackMessage;
     }
 
     closeToast(toastId) {
